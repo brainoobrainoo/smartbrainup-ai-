@@ -1,6 +1,6 @@
 'use client'
 
-// app/(smartbrainup-ai)/licensing/page.tsx
+// app/smartbrainup-ai/licensing/page.tsx
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
@@ -112,10 +112,14 @@ export default function LicensingPage() {
 
           </div>
 
-          {/* Note */}
-          <p className="text-[17px] md:text-[18px] font-normal leading-[1.5] opacity-70 mt-12 max-w-[560px]">
-            {pricing.note}
-          </p>
+          {/* Notes */}
+          <div className="mt-12 max-w-[560px] space-y-2">
+            {pricing.notes.map((note, index) => (
+              <p key={index} className="text-[17px] md:text-[18px] font-normal leading-[1.5] opacity-70">
+                {note}
+              </p>
+            ))}
+          </div>
 
         </section>
 

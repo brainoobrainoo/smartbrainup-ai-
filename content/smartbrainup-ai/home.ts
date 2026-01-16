@@ -7,91 +7,58 @@ export const homeContent = {
       secondary: "SECOND BRAIN™"
     },
     headline: ["no prompts.", "ai asks,", "you decide."],
-    description: "a proprietary method that builds your context and guides ai interactions — one focused question at a time.",
+    description: "a proprietary method that keeps your ai aligned with your work.",
     cta: {
       label: "B2B ONLY",
-      button: "CONTACT"
+      button: "request access"
     },
     scroll: "scroll to explore"
   },
 
   problem: {
     section: "01 — the problem",
-    headline: "most professionals don't know what to ask generative ai.",
+    headline: "ai breaks when work gets complex.",
     paragraphs: [
-      "they get stuck, receive inconsistent outputs, or waste time crafting prompts that don't work.",
-      "ai changes tone, logic, and direction without a stable structure. this creates noise, slows down workflows, and breaks decision-making."
+      "not because of you.",
+      "without a stable structure, ai changes tone, logic, and direction. this creates noise, slows down workflows, and breaks decision-making."
     ]
   },
 
   solution: {
     section: "02 — the solution",
-    headline: "the method reverses the interaction.",
+    headline: "the interaction changes.",
     paragraphs: [
-      "you describe your situation once. the ai builds your context — goals, constraints, workflows — and guides the conversation from there.",
-      "every interaction follows a stable reasoning path. one question at a time. deterministic. coherent. aligned with your domain."
-    ]
-  },
-
-  process: {
-    section: "03 — process",
-    headline: "how it works",
-    steps: [
-      {
-        number: "01",
-        title: "structured input",
-        description: "a short set of questions defines your operational situation and objectives"
-      },
-      {
-        number: "02",
-        title: "context construction",
-        description: "the method builds your professional context: goals, constraints, workflows"
-      },
-      {
-        number: "03",
-        title: "guided interaction",
-        description: "the ai asks targeted questions based on your context. clarity emerges"
-      },
-      {
-        number: "04",
-        title: "actionable output",
-        description: "every session produces decisions you can use immediately"
-      }
+      "clarity replaces guessing.",
+      "reasoning stays stable. decisions stay aligned with your work."
     ]
   },
 
   impact: {
-    section: "04 — impact",
-    headline: "what changes",
+    section: "03 — impact",
+    headline: "what changes in your work",
     items: [
       "stable, repeatable outputs across sessions",
       "faster workflows and reduced cognitive load",
-      "immediate team alignment on complex topics",
-      "simplified onboarding and knowledge transfer",
-      "deterministic results across unstable models"
+      "clear alignment on complex decisions",
+      "knowledge stays usable, not scattered",
+      "consistent results, even when models change"
     ]
   },
 
-  licensing: {
-    section: "05 — licensing",
-    headline: ["one method.", "multiple platforms."],
+  platforms: {
+    section: "04 — multiple platforms",
+    headline: "one method. multiple platforms.",
     paragraphs: [
-      "the method is licensed per second brain, not per user or platform. each second brain represents an independent context — a domain, a role, a function.",
-      "one second brain can be executed across multiple ai platforms: gpt, claude, gemini, grok, perplexity."
+      "the value is not tied to the platform. it's tied to the way you work.",
+      "gpt · claude · gemini · grok · perplexity"
     ],
-    note: "enterprise pricing available"
-  },
-
-  security: {
-    section: "06 — security",
-    headline: "protection",
-    description: "the method is protected end-to-end. cryptographic integrity ensures every version is verifiable. blockchain anchoring provides tamper-proof records for compliance and audit."
+    note: "enterprise access available"
   },
 
   cta: {
     headline: "ready to start?",
-    description: "request access for your team or organization. we'll walk you through the method.",
+    description: "apply the method to your work.",
     label: "B2B ONLY",
-    button: "CONTACT"
+    button: "request access"
   }
 }

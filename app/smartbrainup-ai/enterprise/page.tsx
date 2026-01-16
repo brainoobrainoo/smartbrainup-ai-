@@ -1,6 +1,6 @@
 'use client'
 
-// app/(smartbrainup-ai)/enterprise/page.tsx
+// app/smartbrainup-ai/enterprise/page.tsx
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
@@ -100,19 +100,58 @@ export default function EnterprisePage() {
 
           </div>
 
-          {/* Deployment + Process - Unified text */}
-          <div className="mt-16 max-w-[560px]">
-            <p className="text-[17px] md:text-[18px] font-normal leading-[1.5] opacity-70 mb-6">
-              {process.description}
-            </p>
-            <p className="text-[17px] md:text-[18px] font-normal leading-[1.5] opacity-60">
-              {cta.description}
-            </p>
-          </div>
-
         </section>
 
       </div>
+
+      {/* What you get */}
+      <section className="relative max-w-[1200px] mx-auto px-6 md:px-8 py-32">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+          
+          <div className="lg:col-span-5">
+            <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em] mb-8">
+              {deployment.headline}
+            </h2>
+            <div className="w-16 h-[1px] bg-[#1a1a1a] opacity-20"></div>
+          </div>
+          
+          <div className="lg:col-span-6 lg:col-start-7">
+            <div className="space-y-6">
+              {deployment.items.map((item, index) => (
+                <div key={index} className="flex items-start gap-4">
+                  <span className="font-ui text-[10px] tracking-wide opacity-40 pt-1">—</span>
+                  <p className="text-[16px] md:text-[18px] font-normal leading-[1.4] opacity-70">{item}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+          
+        </div>
+      </section>
+
+      {/* How it works */}
+      <section className="relative max-w-[1200px] mx-auto px-6 md:px-8 py-32 border-t border-[#e8e8e8]">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+          
+          <div className="lg:col-span-5">
+            <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em] mb-8">
+              {process.headline}
+            </h2>
+            <div className="w-16 h-[1px] bg-[#1a1a1a] opacity-20"></div>
+          </div>
+          
+          <div className="lg:col-span-6 lg:col-start-7">
+            <div className="space-y-6">
+              {process.paragraphs.map((paragraph, index) => (
+                <p key={index} className="text-[17px] md:text-[18px] font-normal leading-[1.5] opacity-60">
+                  {paragraph}
+                </p>
+              ))}
+            </div>
+          </div>
+          
+        </div>
+      </section>
 
       {/* CTA - gradient to footer */}
       <section className="w-full text-white py-24" style={{ background: 'linear-gradient(to bottom, #2f2f2f 0%, #1a1a1a 100%)' }}>
@@ -120,9 +159,14 @@ export default function EnterprisePage() {
           
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
             
-            <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.0] tracking-[-0.02em]">
-              {cta.headline}
-            </h2>
+            <div>
+              <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.0] tracking-[-0.02em] mb-4">
+                {cta.headline}
+              </h2>
+              <p className="text-[17px] md:text-[18px] font-normal leading-[1.5] opacity-60">
+                {cta.description}
+              </p>
+            </div>
             
             <div className="flex items-center gap-4 self-end md:self-auto">
               <span className="font-ui text-[12px] font-medium tracking-wide uppercase-force opacity-40">{cta.label}</span>

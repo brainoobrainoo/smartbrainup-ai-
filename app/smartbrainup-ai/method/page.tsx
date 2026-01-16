@@ -1,24 +1,21 @@
 'use client'
 
-// app/(smartbrainup-ai)/method/page.tsx
+// app/smartbrainup-ai/method/page.tsx
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { methodContent } from '@/content/smartbrainup-ai/method'
 
 export default function MethodPage() {
-  const { hero, core, inversion, determinism, components, platforms, results, cta } = methodContent
+  const { hero, core, inversion, determinism, process, execution, platforms, delivery, outcomes, cta } = methodContent
 
   const [showFirst, setShowFirst] = useState(false)
   const [showSecond, setShowSecond] = useState(false)
   const [showCore, setShowCore] = useState(false)
 
   useEffect(() => {
-    // Prima frase hero: parte subito
     const timerFirst = setTimeout(() => setShowFirst(true), 10)
-    // Seconda frase hero: parte dopo 0.5 secondi
     const timerSecond = setTimeout(() => setShowSecond(true), 500)
-    // Titolo sezione Core: parte dopo 1 secondo
     const timerCore = setTimeout(() => setShowCore(true), 1000)
 
     return () => {
@@ -38,7 +35,6 @@ export default function MethodPage() {
         <section className="relative z-10 max-w-[1200px] mx-auto px-6 md:px-8 pt-32 pb-24">
           
           <div className="relative">
-            {/* Logo text */}
             <p className="font-ui text-[11px] font-medium tracking-widest uppercase mb-4">
               <span className="opacity-100 uppercase-force">{hero.badge.primary}</span>
               <span className="opacity-50 uppercase-force"> {hero.badge.secondary}</span>
@@ -91,13 +87,9 @@ export default function MethodPage() {
             </div>
             
             <div className="lg:col-span-6 lg:col-start-7">
-              <div className="space-y-6">
-                {core.paragraphs.map((paragraph, index) => (
-                  <p key={index} className="text-[17px] md:text-[18px] font-normal leading-[1.5] opacity-60">
-                    {paragraph}
-                  </p>
-                ))}
-              </div>
+              <p className="text-[17px] md:text-[18px] font-normal leading-[1.5] opacity-60">
+                {core.paragraph}
+              </p>
             </div>
             
           </div>
@@ -118,13 +110,9 @@ export default function MethodPage() {
           </div>
           
           <div className="lg:col-span-6 lg:col-start-7">
-            <div className="space-y-6">
-              {inversion.paragraphs.map((paragraph, index) => (
-                <p key={index} className="text-[17px] md:text-[18px] font-normal leading-[1.5] opacity-60">
-                  {paragraph}
-                </p>
-              ))}
-            </div>
+            <p className="text-[17px] md:text-[18px] font-normal leading-[1.5] opacity-60">
+              {inversion.paragraph}
+            </p>
           </div>
           
         </div>
@@ -143,100 +131,141 @@ export default function MethodPage() {
           </div>
           
           <div className="lg:col-span-6 lg:col-start-7">
-            <div className="space-y-6">
-              {determinism.paragraphs.map((paragraph, index) => (
-                <p key={index} className="text-[17px] md:text-[18px] font-normal leading-[1.5] opacity-60">
-                  {paragraph}
-                </p>
-              ))}
-            </div>
+            <p className="text-[17px] md:text-[18px] font-normal leading-[1.5] opacity-60">
+              {determinism.paragraph}
+            </p>
           </div>
           
         </div>
       </section>
 
-      {/* DARK ZONE: Delivery only */}
+      {/* DARK ZONE: Process */}
       <div className="w-full text-white" style={{ background: 'linear-gradient(to bottom, #303030 0%, #191919 100%)' }}>
         
-        {/* Delivery - Components */}
         <section className="py-32">
           <div className="max-w-[1200px] mx-auto px-6 md:px-8">
             
             <div className="flex items-end justify-between mb-16">
               <div>
-                <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-4">{components.section}</p>
-                <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em]">{components.headline}</h2>
+                <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-4">{process.section}</p>
+                <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em]">{process.headline}</h2>
               </div>
               <div className="hidden md:block w-24 h-[1px] bg-white opacity-20 mb-4"></div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-              {components.items.map((item, index) => (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {process.steps.map((step, index) => (
                 <div key={index} className="bg-[#313131] rounded-[4px] p-8">
-                  <h3 className="text-[17px] md:text-[18px] font-normal leading-[1.3] mb-3">{item.name}</h3>
+                  <h3 className="text-[17px] md:text-[18px] font-normal leading-[1.3] mb-3">{step.title}</h3>
                   <p className="text-[15px] md:text-[16px] font-normal leading-[1.5] opacity-60">
-                    {item.description}
+                    {step.description}
                   </p>
                 </div>
               ))}
             </div>
-
-            <p className="font-ui text-[11px] tracking-widest uppercase opacity-40">
-              {components.note}
-            </p>
 
           </div>
         </section>
 
       </div>
 
-      {/* Outcomes - light card */}
+      {/* Execution */}
+      <section className="relative max-w-[1200px] mx-auto px-6 md:px-8 py-32">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+          
+          <div className="lg:col-span-5">
+            <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-4">{execution.section}</p>
+            <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em] mb-8">
+              {execution.headline}
+            </h2>
+            <div className="w-16 h-[1px] bg-[#1a1a1a] opacity-20"></div>
+          </div>
+          
+          <div className="lg:col-span-6 lg:col-start-7">
+            <p className="text-[17px] md:text-[18px] font-normal leading-[1.5] opacity-60">
+              {execution.paragraph}
+            </p>
+          </div>
+          
+        </div>
+      </section>
+
+      {/* Platforms - light card */}
       <section className="relative max-w-[1200px] mx-auto px-6 md:px-8 py-32">
         
         <div className="bg-[#f7f7f7] rounded-[4px] p-12 md:p-16 relative">
           
-          <span className="absolute top-6 right-6 font-ui text-[10px] tracking-widest uppercase opacity-30">{results.section}</span>
+          <span className="absolute top-6 right-6 font-ui text-[10px] tracking-widest uppercase opacity-30">{platforms.section}</span>
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             
             <div>
               <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em] mb-6">
-                {results.headline}
+                {platforms.headline}
               </h2>
               <div className="w-16 h-[1px] bg-[#1a1a1a] opacity-20"></div>
             </div>
             
-            <div className="space-y-6">
-              {results.items.map((item, index) => (
-                <div key={index} className="flex items-start gap-4">
-                  <span className="font-ui text-[10px] tracking-wide opacity-40 pt-1">—</span>
-                  <p className="text-[16px] md:text-[18px] font-normal leading-[1.4] opacity-70">{item}</p>
-                </div>
-              ))}
+            <div>
+              <p className="text-[17px] md:text-[18px] font-normal leading-[1.5] opacity-70">
+                {platforms.paragraph}
+              </p>
             </div>
             
           </div>
         </div>
       </section>
 
-      {/* Platforms - normal section */}
+      {/* Delivery */}
       <section className="relative max-w-[1200px] mx-auto px-6 md:px-8 py-32 border-t border-[#e8e8e8]">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
           
           <div className="lg:col-span-5">
-            <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-4">{platforms.section}</p>
+            <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-4">{delivery.section}</p>
             <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em] mb-8">
-              {platforms.headline}
+              {delivery.headline}
+            </h2>
+            <div className="w-16 h-[1px] bg-[#1a1a1a] opacity-20"></div>
+          </div>
+          
+          <div className="lg:col-span-6 lg:col-start-7">
+            <div className="space-y-8">
+              {delivery.items.map((item, index) => (
+                <div key={index}>
+                  <h3 className="text-[17px] md:text-[18px] font-normal leading-[1.3] mb-2">{item.name}</h3>
+                  <p className="text-[15px] md:text-[16px] font-normal leading-[1.5] opacity-60">
+                    {item.description}
+                  </p>
+                </div>
+              ))}
+              <p className="font-ui text-[11px] tracking-widest uppercase opacity-40 pt-4">
+                {delivery.note}
+              </p>
+            </div>
+          </div>
+          
+        </div>
+      </section>
+
+      {/* Outcomes */}
+      <section className="relative max-w-[1200px] mx-auto px-6 md:px-8 py-32 border-t border-[#e8e8e8]">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+          
+          <div className="lg:col-span-5">
+            <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-4">{outcomes.section}</p>
+            <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em] mb-8">
+              {outcomes.headline}
             </h2>
             <div className="w-16 h-[1px] bg-[#1a1a1a] opacity-20"></div>
           </div>
           
           <div className="lg:col-span-6 lg:col-start-7">
             <div className="space-y-6">
-              {platforms.paragraphs.map((paragraph, index) => (
-                <p key={index} className="text-[17px] md:text-[18px] font-normal leading-[1.5] opacity-60">
-                  {paragraph}
-                </p>
+              {outcomes.items.map((item, index) => (
+                <div key={index} className="flex items-start gap-4">
+                  <span className="font-ui text-[10px] tracking-wide opacity-40 pt-1">—</span>
+                  <p className="text-[16px] md:text-[18px] font-normal leading-[1.4] opacity-70">{item}</p>
+                </div>
               ))}
             </div>
           </div>

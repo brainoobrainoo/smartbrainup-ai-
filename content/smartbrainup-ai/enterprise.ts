@@ -36,22 +36,22 @@ export const enterpriseContent = {
   },
 
   deployment: {
-    headline: 'what you get.',
+    headline: 'what you get',
     items: [
       'unlimited Second Brains',
       'PMF Dynamic™ with semantic watermarking',
       'dedicated onboarding and configuration',
       'multi-user context modeling',
-      'cryptographic verification',
-      'blockchain anchoring',
-      'optional API layer',
-      'legal IP protection framework'
+      'optional API layer'
     ]
   },
 
   process: {
-    headline: 'how it works.',
-    description: 'We analyze your organization, define the Second Brain architecture, configure PMF Dynamic™ for your domains, and deploy across your teams. Onboarding is hands-on. Support is continuous.'
+    headline: 'how it works',
+    paragraphs: [
+      'We analyze your organization, define the Second Brain architecture, configure PMF Dynamic™ for your domains, and deploy across your teams.',
+      'Onboarding is hands-on. Support is continuous.'
+    ]
   },
 
   cta: {

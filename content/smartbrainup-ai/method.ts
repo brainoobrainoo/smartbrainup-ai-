@@ -7,77 +7,94 @@ export const methodContent = {
       secondary: "SECOND BRAIN™"
     },
     headline: ["the method.", "not the tool."],
-    description: "a deterministic framework that transforms generative ai into a structured, context-aware system for professional use."
+    description: "a deterministic framework that gives structure to generative ai, so it can be used reliably in real professional work."
   },
 
   core: {
     section: "01 — core principle",
     headline: "ai that understands before it answers.",
-    paragraphs: [
-      "most ai tools respond to what you type. this method responds to what you need.",
-      "it builds your operational context first — goals, constraints, workflows — then guides every interaction from that foundation."
-    ]
+    paragraph: "most ai systems react to input. this method starts from the situation. before producing answers, it establishes a stable operational context and keeps the interaction anchored to it."
   },
 
   inversion: {
     section: "02 — interaction model",
     headline: "the flow is reversed.",
-    paragraphs: [
-      "you don't write prompts. the ai asks targeted questions based on your context.",
-      "one question at a time. each answer refines the next. clarity emerges through structure, not guesswork."
-    ]
+    paragraph: "instead of relying on prompts, the interaction is guided through questions. each question narrows the situation. each answer stabilizes the reasoning. clarity is not guessed. it is constructed."
   },
 
   determinism: {
     section: "03 — determinism",
-    headline: "same input, same logic, stable output.",
-    paragraphs: [
-      "generative ai is inherently unstable. tone shifts, logic drifts, answers vary.",
-      "this method enforces a stable reasoning path. the interaction stays aligned with your context, every time."
+    headline: "same situation. same logic. stable outcomes.",
+    paragraph: "generative ai varies by nature. tone, logic, and direction can shift between interactions. this method constrains the reasoning path, so the interaction remains aligned with the same context every time."
+  },
+
+  process: {
+    section: "04 — process",
+    headline: "how it works",
+    steps: [
+      {
+        title: "structured input",
+        description: "a short set of questions defines the situation you are working on."
+      },
+      {
+        title: "context construction",
+        description: "the method organizes goals, constraints, and workflows into a stable context."
+      },
+      {
+        title: "guided interaction",
+        description: "the ai leads the interaction through targeted questions."
+      },
+      {
+        title: "actionable output",
+        description: "each session produces decisions that can be applied immediately."
+      }
     ]
   },
 
-  components: {
-    section: "04 — delivery",
-    headline: "how you receive it",
-    items: [
-      {
-        name: "PMF™",
-        description: "portable masked formula. a ready-to-use version that replicates the method's behavior without exposing its structure."
-      },
-      {
-        name: "PMF Dynamic™",
-        description: "enterprise-grade version with semantic watermarking for ip protection and source attribution."
-      }
-    ],
-    note: "both versions work across all major ai platforms: gpt, claude, gemini, grok, perplexity."
+  execution: {
+    section: "05 — execution",
+    headline: "platform-agnostic.",
+    paragraph: "the method is independent from any single ai tool. it can be applied wherever a persistent execution context is supported. you choose the surface. the method remains the same."
   },
 
   platforms: {
-    section: "05 — execution",
-    headline: "platform-agnostic.",
-    paragraphs: [
-      "the method is not tied to a single ai tool. it runs natively on any platform that supports project-level instructions.",
-      "you choose the surface. the method stays identical."
-    ]
+    section: "06 — multiple platforms",
+    headline: "one method. multiple platforms.",
+    paragraph: "the method is licensed per Second Brain, not per user and not per platform. each Second Brain represents an independent context — a domain, a role, a function. one Second Brain can be executed across multiple ai platforms: gpt · claude · gemini · grok · perplexity"
   },
 
-  results: {
-    section: "06 — outcomes",
+  delivery: {
+    section: "07 — delivery",
+    headline: "how the method is applied",
+    items: [
+      {
+        name: "PMF™",
+        description: "a portable, masked implementation of the method. it reproduces the same behavior without exposing the underlying logic."
+      },
+      {
+        name: "PMF Dynamic™",
+        description: "an enterprise-grade implementation, designed for controlled distribution and source attribution."
+      }
+    ],
+    note: "both versions operate across major ai platforms: gpt · claude · gemini · grok · perplexity"
+  },
+
+  outcomes: {
+    section: "08 — outcomes",
     headline: "what you get",
     items: [
-      "structured context that persists across sessions",
-      "ai-led interactions that reduce cognitive load",
-      "consistent outputs regardless of model updates",
-      "faster decisions with less noise",
-      "a reusable cognitive layer for your organization"
+      "a structured context that remains stable over time",
+      "interactions guided by the method, not by guesswork",
+      "consistent results even as models evolve",
+      "clearer decisions with less cognitive overhead",
+      "a reusable reasoning layer across roles and teams"
     ]
   },
 
   cta: {
     headline: "see it in action.",
-    description: "request a walkthrough for your team. no prompt writing required.",
+    description: "request access for your team.",
     label: "B2B ONLY",
-    button: "CONTACT"
+    button: "contact"
   }
 }
