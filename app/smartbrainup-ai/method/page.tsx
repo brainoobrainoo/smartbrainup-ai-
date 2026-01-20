@@ -32,7 +32,7 @@ export default function MethodPage() {
       <div className="relative w-full overflow-hidden text-white" style={{ background: 'linear-gradient(to bottom, #252525 0%, #161616 100%)' }}>
         
         {/* Hero */}
-        <section className="relative z-10 max-w-[1200px] mx-auto px-6 md:px-8 pt-32 pb-24">
+        <section className="relative z-10 max-w-[1200px] mx-auto px-6 md:px-8 pt-20 md:pt-32 pb-24">
           
           <div className="relative">
             <p className="font-ui text-[11px] font-medium tracking-widest uppercase mb-4">
@@ -61,7 +61,7 @@ export default function MethodPage() {
               </span>
             </h1>
             
-            <p className="text-[17px] md:text-[18px] font-normal leading-[1.4] max-w-[560px] opacity-70">
+            <p className="text-[17px] md:text-[18px] font-normal leading-[1.5] max-w-[560px] opacity-70">
               {hero.description}
             </p>
           </div>
@@ -69,13 +69,13 @@ export default function MethodPage() {
         </section>
 
         {/* Core Principle */}
-        <section className="relative max-w-[1200px] mx-auto px-6 md:px-8 pb-32">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+        <section className="relative max-w-[1200px] mx-auto px-6 md:px-8 pb-24 md:pb-32">
+          <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-8">{core.section}</p>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             
             <div className="lg:col-span-5">
-              <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-4">{core.section}</p>
               <h2 
-                className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em] mb-8"
+                className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em]"
                 style={{ 
                   opacity: showCore ? 1 : 0.03,
                   transition: 'opacity 4s cubic-bezier(0.4, 0, 0.2, 1)'
@@ -83,7 +83,6 @@ export default function MethodPage() {
               >
                 {core.headline}
               </h2>
-              <div className="w-16 h-[1px] bg-white opacity-20"></div>
             </div>
             
             <div className="lg:col-span-6 lg:col-start-7">
@@ -98,15 +97,14 @@ export default function MethodPage() {
       </div>
 
       {/* Interaction Model */}
-      <section className="relative max-w-[1200px] mx-auto px-6 md:px-8 py-32">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+      <section className="relative max-w-[1200px] mx-auto px-6 md:px-8 py-16 md:py-32">
+        <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-8">{inversion.section}</p>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           
           <div className="lg:col-span-5">
-            <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-4">{inversion.section}</p>
-            <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em] mb-8">
+            <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em]">
               {inversion.headline}
             </h2>
-            <div className="w-16 h-[1px] bg-[#1a1a1a] opacity-20"></div>
           </div>
           
           <div className="lg:col-span-6 lg:col-start-7">
@@ -119,15 +117,14 @@ export default function MethodPage() {
       </section>
 
       {/* Determinism */}
-      <section className="relative max-w-[1200px] mx-auto px-6 md:px-8 py-32 border-t border-[#e8e8e8]">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+      <section className="relative max-w-[1200px] mx-auto px-6 md:px-8 py-16 md:py-32 border-t border-[#e8e8e8]">
+        <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-8">{determinism.section}</p>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           
           <div className="lg:col-span-5">
-            <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-4">{determinism.section}</p>
-            <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em] mb-8">
+            <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em]">
               {determinism.headline}
             </h2>
-            <div className="w-16 h-[1px] bg-[#1a1a1a] opacity-20"></div>
           </div>
           
           <div className="lg:col-span-6 lg:col-start-7">
@@ -140,22 +137,17 @@ export default function MethodPage() {
       </section>
 
       {/* DARK ZONE: Process */}
-      <div className="w-full text-white" style={{ background: 'linear-gradient(to bottom, #303030 0%, #191919 100%)' }}>
+      <div className="w-full text-white" style={{ background: 'linear-gradient(to bottom, #484848 0%, #2f2f2f 100%)' }}>
         
-        <section className="py-32">
+        <section className="py-16 md:py-32">
           <div className="max-w-[1200px] mx-auto px-6 md:px-8">
             
-            <div className="flex items-end justify-between mb-16">
-              <div>
-                <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-4">{process.section}</p>
-                <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em]">{process.headline}</h2>
-              </div>
-              <div className="hidden md:block w-24 h-[1px] bg-white opacity-20 mb-4"></div>
-            </div>
+            <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-8">{process.section}</p>
+            <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em] mb-12">{process.headline}</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {process.steps.map((step, index) => (
-                <div key={index} className="bg-[#313131] rounded-[4px] p-8">
+                <div key={index} className="bg-[#3a3a3a] rounded-[4px] p-8">
                   <h3 className="text-[17px] md:text-[18px] font-normal leading-[1.3] mb-3">{step.title}</h3>
                   <p className="text-[15px] md:text-[16px] font-normal leading-[1.5] opacity-60">
                     {step.description}
@@ -170,15 +162,14 @@ export default function MethodPage() {
       </div>
 
       {/* Execution */}
-      <section className="relative max-w-[1200px] mx-auto px-6 md:px-8 py-32">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+      <section className="relative max-w-[1200px] mx-auto px-6 md:px-8 py-16 md:py-32">
+        <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-8">{execution.section}</p>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           
           <div className="lg:col-span-5">
-            <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-4">{execution.section}</p>
-            <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em] mb-8">
+            <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em]">
               {execution.headline}
             </h2>
-            <div className="w-16 h-[1px] bg-[#1a1a1a] opacity-20"></div>
           </div>
           
           <div className="lg:col-span-6 lg:col-start-7">
@@ -190,20 +181,19 @@ export default function MethodPage() {
         </div>
       </section>
 
-      {/* Platforms - light card */}
-      <section className="relative max-w-[1200px] mx-auto px-6 md:px-8 py-32">
+      {/* Platforms - card style */}
+      <section className="relative max-w-[1200px] mx-auto px-6 md:px-8 py-16 md:py-32">
         
-        <div className="bg-[#f7f7f7] rounded-[4px] p-12 md:p-16 relative">
+        <div className="bg-[#f7f7f7] rounded-[4px] p-6 pt-14 md:p-16 relative">
           
           <span className="absolute top-6 right-6 font-ui text-[10px] tracking-widest uppercase opacity-30">{platforms.section}</span>
           
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center">
             
             <div>
-              <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em] mb-6">
+              <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em]">
                 {platforms.headline}
               </h2>
-              <div className="w-16 h-[1px] bg-[#1a1a1a] opacity-20"></div>
             </div>
             
             <div>
@@ -217,15 +207,14 @@ export default function MethodPage() {
       </section>
 
       {/* Delivery */}
-      <section className="relative max-w-[1200px] mx-auto px-6 md:px-8 py-32 border-t border-[#e8e8e8]">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+      <section className="relative max-w-[1200px] mx-auto px-6 md:px-8 py-16 md:py-32 border-t border-[#e8e8e8]">
+        <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-8">{delivery.section}</p>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           
           <div className="lg:col-span-5">
-            <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-4">{delivery.section}</p>
-            <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em] mb-8">
+            <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em]">
               {delivery.headline}
             </h2>
-            <div className="w-16 h-[1px] bg-[#1a1a1a] opacity-20"></div>
           </div>
           
           <div className="lg:col-span-6 lg:col-start-7">
@@ -248,19 +237,18 @@ export default function MethodPage() {
       </section>
 
       {/* Outcomes */}
-      <section className="relative max-w-[1200px] mx-auto px-6 md:px-8 py-32 border-t border-[#e8e8e8]">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+      <section className="relative max-w-[1200px] mx-auto px-6 md:px-8 py-16 md:py-32 border-t border-[#e8e8e8]">
+        <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-8">{outcomes.section}</p>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           
           <div className="lg:col-span-5">
-            <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-4">{outcomes.section}</p>
-            <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em] mb-8">
+            <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em]">
               {outcomes.headline}
             </h2>
-            <div className="w-16 h-[1px] bg-[#1a1a1a] opacity-20"></div>
           </div>
           
           <div className="lg:col-span-6 lg:col-start-7">
-            <div className="space-y-6">
+            <div className="space-y-4">
               {outcomes.items.map((item, index) => (
                 <div key={index} className="flex items-start gap-4">
                   <span className="font-ui text-[10px] tracking-wide opacity-40 pt-1">—</span>
@@ -274,10 +262,10 @@ export default function MethodPage() {
       </section>
 
       {/* CTA - gradient to footer */}
-      <section className="w-full text-white py-32" style={{ background: 'linear-gradient(to bottom, #2f2f2f 0%, #1a1a1a 100%)' }}>
+      <section className="w-full text-white py-16 md:py-32" style={{ background: 'linear-gradient(to bottom, #2f2f2f 0%, #1a1a1a 100%)' }}>
         <div className="max-w-[1200px] mx-auto px-6 md:px-8">
           
-          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-8 items-start">
+          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-8">
             
             <div>
               <h2 className="text-[36px] md:text-[52px] font-normal leading-[1.0] tracking-[-0.02em] mb-6">
@@ -288,7 +276,7 @@ export default function MethodPage() {
               </p>
             </div>
             
-            <div className="flex items-center gap-4 self-end md:self-auto">
+            <div className="flex items-center gap-4">
               <span className="font-ui text-[12px] font-medium tracking-wide uppercase-force opacity-40">{cta.label}</span>
               <Link href="/contact" className="relative font-ui text-[12px] font-medium tracking-wide uppercase px-6 py-4 rounded-[4px] overflow-hidden">
                 <span className="absolute inset-0 bg-[#3a3a3a] animate-pulse-soft rounded-[4px]"></span>

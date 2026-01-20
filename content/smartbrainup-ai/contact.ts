@@ -3,34 +3,29 @@
 export const contactContent = {
   hero: {
     badge: {
-      prefix: 'AI-UP',
-      name: 'Second Brain™',
-      secondary: 'Contact'
+      primary: "AI-UP",
+      secondary: "SECOND BRAIN™ CONTACT"
     },
-    headline: [
-      'start the',
-      'conversation.'
-    ],
-    description: 'Tell us about your organization and how you want to use the method. We respond within 48 hours.'
+    headline: ["Start the", "conversation"],
+    description: "Tell us about your organization and how you want to apply the method. We'll take it from there."
   },
 
   form: {
     fields: {
-      name: 'Your name',
-      email: 'Email address',
-      company: 'Company',
-      role: 'Your role',
-      message: 'How can we help?'
+      name: "Your name",
+      email: "Email address",
+      company: "Company",
+      role: "Your role",
+      message: "How can we help"
     },
-    button: 'send message'
+    button: "SEND MESSAGE"
   },
 
   info: {
-    company: 'SmartBrainUp S.r.l.',
-    address: 'Fiera del Levante — Pavilion 129, Viale Volga — 70132 Bari, Italy',
-    email: 'info@smartbrainup.com',
-    pec: 'smartbrainup@pec.it'
+    company: "SmartBrainUp S.r.l.",
+    address: "Fiera del Levante — Pavilion 129, Viale Volga — 70132 Bari, Italy",
+    email: "info@smartbrainup.com"
   },
 
-  note: 'For enterprise inquiries, licensing questions, or partnership opportunities.'
+  note: "For enterprise use, licensing, or strategic partnerships."
 }

@@ -6,58 +6,59 @@ export const homeContent = {
       primary: "AI-UP",
       secondary: "SECOND BRAIN™"
     },
-    headline: ["no prompts.", "ai asks,", "you decide."],
-    description: "a proprietary method that keeps your ai aligned with your work.",
+    headline: [
+      "A promptless method",
+      "that transforms statistical AI",
+      "into a deterministic system"
+    ],
+    description: "The interaction is guided. The reasoning stays stable. The results become repeatable.",
     cta: {
       label: "B2B ONLY",
-      button: "request access"
+      button: "see how it works"
     },
     scroll: "scroll to explore"
   },
 
   problem: {
     section: "01 — the problem",
-    headline: "ai breaks when work gets complex.",
+    headline: ["AI breaks when work gets complex", "not because of you"],
     paragraphs: [
-      "not because of you.",
-      "without a stable structure, ai changes tone, logic, and direction. this creates noise, slows down workflows, and breaks decision-making."
+      "Without structure, AI drifts. Tone changes. Logic shifts. Decisions lose alignment.",
+      "Guessing prompts becomes the work."
     ]
   },
 
   solution: {
     section: "02 — the solution",
-    headline: "the interaction changes.",
+    headline: ["The interaction inverts", "The AI asks the questions"],
     paragraphs: [
-      "clarity replaces guessing.",
-      "reasoning stays stable. decisions stay aligned with your work."
+      "One at a time. Each answer builds context. Each step stabilizes reasoning.",
+      "You stop prompting. Clarity emerges."
     ]
   },
 
   impact: {
     section: "03 — impact",
-    headline: "what changes in your work",
+    headline: "What changes in your work",
     items: [
-      "stable, repeatable outputs across sessions",
-      "faster workflows and reduced cognitive load",
-      "clear alignment on complex decisions",
-      "knowledge stays usable, not scattered",
-      "consistent results, even when models change"
+      "no prompt writing",
+      "stable, repeatable outputs",
+      "faster decisions with less effort",
+      "clarity instead of trial and error",
+      "consistent results over time"
     ]
   },
 
   platforms: {
     section: "04 — multiple platforms",
-    headline: "one method. multiple platforms.",
+    headline: ["One method", "multiple platforms"],
     paragraphs: [
-      "the value is not tied to the platform. it's tied to the way you work.",
-      "gpt · claude · gemini · grok · perplexity"
-    ],
-    note: "enterprise access available"
+      "The value is not tied to the platform. It's tied to the way you work.",
+      "GPT · Claude · Gemini · Grok · Perplexity"
+    ]
   },
 
   cta: {
-    headline: "ready to start?",
-    description: "apply the method to your work.",
     label: "B2B ONLY",
     button: "request access"
   }

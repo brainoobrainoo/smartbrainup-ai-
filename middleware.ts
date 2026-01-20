@@ -14,14 +14,22 @@ export function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
+  // Check for surface override (for local testing via IP)
+  const surfaceParam = request.nextUrl.searchParams.get('surface')
+  
   // Determine which surface based on host
   let surface = 'smartbrainup-ai'
 
-  if (host.includes('smartbrainup-com') || host.includes('smartbrainup.com')) {
+  if (surfaceParam === 'brainoo') {
+    surface = 'brainoo'
+  } else if (surfaceParam === 'smartbrainup-com') {
+    surface = 'smartbrainup-com'
+  } else if (host.includes('smartbrainup-com') || host.includes('smartbrainup.com')) {
     surface = 'smartbrainup-com'
   } else if (host.includes('brainoo')) {
     surface = 'brainoo'
   }
+  // IP locale = smartbrainup-ai (default)
 
   // Rewrite to the appropriate route
   const url = request.nextUrl.clone()

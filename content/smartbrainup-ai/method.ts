@@ -6,95 +6,95 @@ export const methodContent = {
       primary: "AI-UP",
       secondary: "SECOND BRAIN™"
     },
-    headline: ["the method.", "not the tool."],
-    description: "a deterministic framework that gives structure to generative ai, so it can be used reliably in real professional work."
+    headline: ["The method", "not the tool"],
+    description: "A promptless deterministic framework designed to give structure to generative AI so it can be used reliably in real professional work."
   },
 
   core: {
-    section: "01 — core principle",
-    headline: "ai that understands before it answers.",
-    paragraph: "most ai systems react to input. this method starts from the situation. before producing answers, it establishes a stable operational context and keeps the interaction anchored to it."
+    section: "01 — CORE PRINCIPLE",
+    headline: "AI understands before it answers",
+    paragraph: "Most AI systems react to prompts. This method starts from the situation. It builds a stable operational context and keeps the interaction anchored to it."
   },
 
   inversion: {
-    section: "02 — interaction model",
-    headline: "the flow is reversed.",
-    paragraph: "instead of relying on prompts, the interaction is guided through questions. each question narrows the situation. each answer stabilizes the reasoning. clarity is not guessed. it is constructed."
+    section: "02 — INTERACTION MODEL",
+    headline: "The flow is reversed",
+    paragraph: "Promptless by design. No prompts. No guessing. The interaction is guided through questions. Each question narrows the situation. Each answer stabilizes the reasoning. Clarity is constructed."
   },
 
   determinism: {
-    section: "03 — determinism",
-    headline: "same situation. same logic. stable outcomes.",
-    paragraph: "generative ai varies by nature. tone, logic, and direction can shift between interactions. this method constrains the reasoning path, so the interaction remains aligned with the same context every time."
+    section: "03 — DETERMINISM",
+    headline: "Same situation. Same logic. Stable outcomes.",
+    paragraph: "Generative AI varies by nature. This method constrains the reasoning path so decisions stay aligned over time."
   },
 
   process: {
-    section: "04 — process",
-    headline: "how it works",
+    section: "04 — PROCESS",
+    headline: "How it works",
     steps: [
       {
-        title: "structured input",
-        description: "a short set of questions defines the situation you are working on."
+        title: "Structured input",
+        description: "A short set of questions defines the situation you are working on."
       },
       {
-        title: "context construction",
-        description: "the method organizes goals, constraints, and workflows into a stable context."
+        title: "Context construction",
+        description: "Goals, constraints, workflows are organized into a stable context."
       },
       {
-        title: "guided interaction",
-        description: "the ai leads the interaction through targeted questions."
+        title: "Guided interaction",
+        description: "The AI leads through targeted questions."
       },
       {
-        title: "actionable output",
-        description: "each session produces decisions that can be applied immediately."
+        title: "Actionable output",
+        description: "Each session produces decisions that can be applied immediately."
       }
     ]
   },
 
   execution: {
-    section: "05 — execution",
-    headline: "platform-agnostic.",
-    paragraph: "the method is independent from any single ai tool. it can be applied wherever a persistent execution context is supported. you choose the surface. the method remains the same."
+    section: "05 — EXECUTION",
+    headline: "Platform agnostic",
+    paragraph: "The method is independent from any single AI tool. You choose the surface. The method remains the same."
   },
 
   platforms: {
-    section: "06 — multiple platforms",
-    headline: "one method. multiple platforms.",
-    paragraph: "the method is licensed per Second Brain, not per user and not per platform. each Second Brain represents an independent context — a domain, a role, a function. one Second Brain can be executed across multiple ai platforms: gpt · claude · gemini · grok · perplexity"
+    section: "06 — MULTIPLE PLATFORMS",
+    headline: "One method. Multiple platforms.",
+    paragraph: "The method is licensed per Second Brain. Not per user. Not per platform. Each Second Brain represents an independent persistent context: a role, a domain, a function. GPT · Claude · Gemini · Grok · Perplexity"
   },
 
   delivery: {
-    section: "07 — delivery",
-    headline: "how the method is applied",
+    section: "07 — DELIVERY",
+    headline: "How the method is applied",
     items: [
       {
         name: "PMF™",
-        description: "a portable, masked implementation of the method. it reproduces the same behavior without exposing the underlying logic."
+        description: "A portable masked implementation that reproduces the same behavior without exposing the underlying logic."
       },
       {
         name: "PMF Dynamic™",
-        description: "an enterprise-grade implementation, designed for controlled distribution and source attribution."
+        description: "An enterprise grade implementation designed for controlled distribution and source attribution."
       }
     ],
-    note: "both versions operate across major ai platforms: gpt · claude · gemini · grok · perplexity"
+    note: "Both versions operate across major AI platforms."
   },
 
   outcomes: {
-    section: "08 — outcomes",
-    headline: "what you get",
+    section: "08 — OUTCOMES",
+    headline: "What you get",
     items: [
-      "a structured context that remains stable over time",
-      "interactions guided by the method, not by guesswork",
-      "consistent results even as models evolve",
-      "clearer decisions with less cognitive overhead",
-      "a reusable reasoning layer across roles and teams"
+      "A structured context that remains stable over time",
+      "Interactions guided by the method",
+      "Consistent results as models evolve",
+      "Clearer decisions with less cognitive overhead",
+      "A reusable reasoning layer across roles and teams"
     ]
   },
 
   cta: {
-    headline: "see it in action.",
-    description: "request access for your team.",
+    headline: "See it in action.",
+    description: "Request access for your team.",
     label: "B2B ONLY",
-    button: "contact"
+    button: "REQUEST ACCESS"
   }
 }

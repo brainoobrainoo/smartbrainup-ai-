@@ -3,61 +3,64 @@
 export const enterpriseContent = {
   hero: {
     badge: {
-      prefix: 'AI-UP',
-      name: 'Second Brain™',
-      secondary: 'Enterprise'
+      primary: "AI-UP",
+      secondary: "SECOND BRAIN™ ENTERPRISE"
     },
-    headline: [
-      'scale the method.',
-      'not the complexity.'
-    ],
-    principle: 'Organization-wide deployment with PMF Dynamic™. Multiple users, multiple domains, one deterministic method. Custom architecture. Full control.'
+    headline: ["Scale the method", "not the complexity"],
+    description: "Organization-wide deployment of a single deterministic method. Multiple users, multiple domains, full control."
+  },
+
+  subhero: {
+    section: "01 — PMF DYNAMIC™",
+    headline: "Enterprise-grade execution",
+    paragraph: "PMF Dynamic™ enables enterprise-grade execution with controlled distribution, source attribution, and IP protection. The architecture scales. The method remains stable."
   },
 
   capabilities: {
+    section: "02 — CAPABILITIES",
+    headline: "What the method enables",
     items: [
       {
-        name: 'PMF Dynamic™',
-        description: 'Enterprise-grade masked formula with semantic watermarking for IP protection and source attribution.'
+        name: "PMF Dynamic™",
+        description: "Enterprise-grade masked formula with semantic watermarking for IP protection and source attribution."
       },
       {
-        name: 'Multi-context architecture',
-        description: 'Separated Second Brains across teams, roles, and domains. Each context is independent and persistent.'
+        name: "Multi-context architecture",
+        description: "Separated Second Brains across teams, roles, and domains. Each context is independent and persistent."
       },
       {
-        name: 'API integration',
-        description: 'Programmatic access to the method. Embed deterministic AI interaction into existing workflows and systems.'
+        name: "API integration",
+        description: "Programmatic access to the method. Embed deterministic AI interaction into existing workflows and systems."
       },
       {
-        name: 'Governance & compliance',
-        description: 'Audit trails, access control, and data governance aligned with enterprise security requirements.'
+        name: "Governance and compliance",
+        description: "Audit trails, access control, data governance. Aligned with enterprise security requirements."
       }
     ]
   },
 
   deployment: {
-    headline: 'what you get',
+    section: "03 — WHAT YOU GET",
+    headline: "What you get",
     items: [
-      'unlimited Second Brains',
-      'PMF Dynamic™ with semantic watermarking',
-      'dedicated onboarding and configuration',
-      'multi-user context modeling',
-      'optional API layer'
+      "Unlimited Second Brains",
+      "PMF Dynamic™ with semantic watermarking",
+      "Dedicated onboarding and configuration",
+      "Multi-user context modeling",
+      "Optional API layer"
     ]
   },
 
   process: {
-    headline: 'how it works',
-    paragraphs: [
-      'We analyze your organization, define the Second Brain architecture, configure PMF Dynamic™ for your domains, and deploy across your teams.',
-      'Onboarding is hands-on. Support is continuous.'
-    ]
+    section: "04 — HOW IT WORKS",
+    headline: "How it works",
+    paragraph: "We analyze your organization, define the Second Brain architecture, configure PMF Dynamic™ across domains and roles. Deployment is structured, onboarding is hands-on, support is continuous."
   },
 
   cta: {
-    headline: 'start the conversation.',
-    description: 'Enterprise pricing is defined case by case.',
-    label: 'Enterprise',
-    button: 'contact'
+    headline: "Start the conversation",
+    description: "Enterprise pricing is defined case by case.",
+    label: "ENTERPRISE",
+    button: "CONTACT"
   }
 }

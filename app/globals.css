@@ -12,6 +12,12 @@ body {
   color: #252525;
   background: #ffffff;
   min-height: 100vh;
+  line-height: 1.4;
+}
+
+/* Body text standard - use this class for all paragraph/description text */
+p, .body-text {
+  line-height: 1.4;
 }
 
 /* Force uppercase for UI elements */
