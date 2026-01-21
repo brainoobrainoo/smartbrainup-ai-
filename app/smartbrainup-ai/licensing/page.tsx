@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react'
 import { licensingContent } from '@/content/smartbrainup-ai/licensing'
 
 export default function LicensingPage() {
-  const { hero, subhero, pricing, notes, cta } = licensingContent
+  const { hero, pricing, platforms, notes, cta } = licensingContent
 
   const [showFirst, setShowFirst] = useState(false)
   const [showSecond, setShowSecond] = useState(false)
@@ -25,11 +25,10 @@ export default function LicensingPage() {
   return (
     <div className="min-h-screen bg-white">
       
-      {/* Hero + Subhero - DARK zone */}
+      {/* Hero - DARK zone */}
       <div className="relative w-full overflow-hidden text-white" style={{ background: 'linear-gradient(to bottom, #252525 0%, #161616 100%)' }}>
         
-        {/* Hero */}
-        <section className="relative z-10 max-w-[1200px] mx-auto px-6 md:px-8 pt-20 md:pt-32 pb-24">
+        <section className="relative z-10 max-w-[1200px] mx-auto px-6 md:px-8 pt-20 md:pt-32 pb-24 md:pb-32">
           
           <div className="relative">
             <p className="font-ui text-[11px] font-medium tracking-widest uppercase mb-4">
@@ -65,64 +64,63 @@ export default function LicensingPage() {
 
         </section>
 
-        {/* Subhero - Platforms */}
-        <section className="relative max-w-[1200px] mx-auto px-6 md:px-8 pb-24 md:pb-32">
-          <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-8">{subhero.section}</p>
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            
-            <div className="lg:col-span-5">
-              <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em]">
-                {subhero.headline}
-              </h2>
-            </div>
-            
-            <div className="lg:col-span-6 lg:col-start-7">
-              <p className="text-[17px] md:text-[18px] font-normal leading-[1.5] opacity-60">
-                {subhero.paragraph}
-              </p>
-            </div>
-            
-          </div>
-        </section>
-
       </div>
 
-      {/* Pricing Plans */}
+      {/* Pricing Plans - 01 */}
       <section className="relative max-w-[1200px] mx-auto px-6 md:px-8 py-16 md:py-32">
         <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-8">{pricing.section}</p>
         <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em] mb-12">{pricing.headline}</h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-          {pricing.plans.map((plan, index) => (
-            <div key={index} className="bg-[#f7f7f7] rounded-[4px] p-8">
-              <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-2">{plan.name}</p>
-              <p className="text-[14px] font-normal opacity-60 mb-4">{plan.brains}</p>
-              <p className="text-[28px] md:text-[32px] font-normal leading-[1.1] tracking-[-0.01em] mb-4">{plan.price}</p>
-              <p className="text-[15px] md:text-[16px] font-normal leading-[1.5] opacity-60">
-                {plan.description}
-              </p>
-            </div>
-          ))}
-        </div>
-
-        {/* Enterprise card */}
-        <div className="bg-[#1a1a1a] text-white rounded-[4px] p-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-            <div className="lg:col-span-5">
-              <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-2">{pricing.enterprise.name}</p>
-              <p className="text-[14px] font-normal opacity-60 mb-4">{pricing.enterprise.brains}</p>
-              <p className="text-[28px] md:text-[32px] font-normal leading-[1.1] tracking-[-0.01em]">{pricing.enterprise.price}</p>
-            </div>
-            <div className="lg:col-span-6 lg:col-start-7">
-              <p className="text-[15px] md:text-[16px] font-normal leading-[1.5] opacity-70">
-                {pricing.enterprise.description}
-              </p>
-            </div>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          
+          {/* 4 cards in 2x2 grid - left side */}
+          <div className="lg:col-span-7 grid grid-cols-1 md:grid-cols-2 gap-6">
+            {pricing.plans.map((plan, index) => (
+              <div key={index} className="rounded-[4px] p-8" style={{ background: 'linear-gradient(to bottom, #f7f7f7 0%, #efefef 100%)' }}>
+                <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-2">{plan.name}</p>
+                <p className="text-[14px] font-normal opacity-60 mb-4">{plan.brains}</p>
+                <p className="text-[28px] md:text-[32px] font-normal leading-[1.1] tracking-[-0.01em] mb-4">{plan.price}</p>
+                <p className="text-[15px] md:text-[16px] font-normal leading-[1.5] opacity-60">
+                  {plan.description}
+                </p>
+              </div>
+            ))}
           </div>
+
+          {/* Enterprise card - right side */}
+          <div className="lg:col-span-5 text-white rounded-[4px] p-8 flex flex-col justify-center" style={{ background: 'linear-gradient(to bottom, #3a3a3a 0%, #1a1a1a 100%)' }}>
+            <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-2">{pricing.enterprise.name}</p>
+            <p className="text-[14px] font-normal opacity-60 mb-4">{pricing.enterprise.brains}</p>
+            <p className="text-[28px] md:text-[32px] font-normal leading-[1.1] tracking-[-0.01em] mb-6">{pricing.enterprise.price}</p>
+            <p className="text-[15px] md:text-[16px] font-normal leading-[1.5] opacity-70">
+              {pricing.enterprise.description}
+            </p>
+          </div>
+
         </div>
       </section>
 
-      {/* Notes */}
+      {/* Platforms - 02 */}
+      <section className="relative max-w-[1200px] mx-auto px-6 md:px-8 py-16 md:py-32 border-t border-[#e8e8e8]">
+        <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-8">{platforms.section}</p>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+          
+          <div className="lg:col-span-5">
+            <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em]">
+              {platforms.headline}
+            </h2>
+          </div>
+          
+          <div className="lg:col-span-6 lg:col-start-7">
+            <p className="text-[17px] md:text-[18px] font-normal leading-[1.5] opacity-60">
+              {platforms.paragraph}
+            </p>
+          </div>
+          
+        </div>
+      </section>
+
+      {/* Notes - 03 */}
       <section className="relative max-w-[1200px] mx-auto px-6 md:px-8 py-16 md:py-32 border-t border-[#e8e8e8]">
         <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-8">{notes.section}</p>
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">

@@ -94,7 +94,7 @@ export default function EnterprisePage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {capabilities.items.map((item, index) => (
-            <div key={index} className="bg-[#f7f7f7] rounded-[4px] p-8">
+            <div key={index} className="rounded-[4px] p-8" style={{ background: 'linear-gradient(to bottom, #f7f7f7 0%, #ececec 100%)' }}>
               <h3 className="text-[17px] md:text-[18px] font-normal leading-[1.3] mb-3">{item.name}</h3>
               <p className="text-[15px] md:text-[16px] font-normal leading-[1.5] opacity-60">
                 {item.description}

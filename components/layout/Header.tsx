@@ -23,7 +23,7 @@ export default function Header({ logo, links, variant = 'dark' }: HeaderProps) {
   const lineColor = variant === 'dark' ? 'bg-white' : 'bg-[#1a1a1a]'
 
   return (
-    <header className={`w-full ${bgColor}`}>
+    <header className={`fixed top-0 left-0 right-0 z-50 w-full ${bgColor}`}>
       <div className="max-w-[1200px] mx-auto px-6 md:px-8 py-5 flex items-center justify-between">
         <Link href="/" className={`font-editorial text-[18px] font-normal ${textColor} tracking-[-0.01em]`}>
           {logo}

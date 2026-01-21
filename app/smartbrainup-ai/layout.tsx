@@ -15,6 +15,9 @@ export default function SmartBrainUpAILayout({
       
       <Header logo={navigationAi.logo} links={navigationAi.links} />
 
+      {/* Spacer per compensare l'header fixed */}
+      <div className="h-[21px] md:h-0"></div>
+
       <main className="flex-1 relative">
         {children}
       </main>

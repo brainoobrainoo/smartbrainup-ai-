@@ -137,7 +137,7 @@ export default function MethodPage() {
       </section>
 
       {/* DARK ZONE: Process */}
-      <div className="w-full text-white" style={{ background: 'linear-gradient(to bottom, #484848 0%, #2f2f2f 100%)' }}>
+      <div className="w-full text-white" style={{ background: 'linear-gradient(to bottom, #484848 0%, #2a2a2a 100%)' }}>
         
         <section className="py-16 md:py-32">
           <div className="max-w-[1200px] mx-auto px-6 md:px-8">
@@ -147,7 +147,7 @@ export default function MethodPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {process.steps.map((step, index) => (
-                <div key={index} className="bg-[#3a3a3a] rounded-[4px] p-8">
+                <div key={index} className="rounded-[4px] p-8" style={{ background: 'linear-gradient(to bottom, #383838 0%, #3a3a3a 100%)' }}>
                   <h3 className="text-[17px] md:text-[18px] font-normal leading-[1.3] mb-3">{step.title}</h3>
                   <p className="text-[15px] md:text-[16px] font-normal leading-[1.5] opacity-60">
                     {step.description}

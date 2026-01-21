@@ -10,14 +10,8 @@ export const licensingContent = {
     description: "The method is licensed per Second Brain. Not per user. Not per platform. Each Second Brain is a discrete, persistent operational context. The value is in the method."
   },
 
-  subhero: {
-    section: "01 — PLATFORMS",
-    headline: "One method. Five platforms.",
-    paragraph: "One Second Brain can be executed on GPT · Claude · Gemini · Grok · Perplexity. Platforms change. The method remains."
-  },
-
   pricing: {
-    section: "02 — PRICING",
+    section: "01 — PRICING",
     headline: "Choose your scale",
     plans: [
       {
@@ -51,6 +45,12 @@ export const licensingContent = {
       price: "Custom pricing",
       description: "PMF Dynamic™, semantic watermarking, API layer, dedicated onboarding."
     }
+  },
+
+  platforms: {
+    section: "02 — PLATFORMS",
+    headline: "One method. Five platforms.",
+    paragraph: "One Second Brain can be executed on GPT · Claude · Gemini · Grok · Perplexity. Platforms change. The method remains."
   },
 
   notes: {
