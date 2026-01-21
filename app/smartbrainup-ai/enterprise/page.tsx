@@ -160,7 +160,7 @@ export default function EnterprisePage() {
                 href={item.link.href}
                 className="mt-6 text-[15px] md:text-[16px] font-normal animate-pulse-link hover:opacity-100 transition-opacity"
               >
-                → {item.link.text} <span className="opacity-60">({item.link.domain})</span>
+                {item.link.text}
               </a>
             </div>
           ))}

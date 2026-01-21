@@ -30,9 +30,8 @@ export const enterpriseContent = {
           "and source attribution"
         ],
         link: {
-          text: "Intellectual Property",
-          domain: ".com",
-          href: "https://smartbrainup.com/ip"
+          text: "View IP architecture",
+          href: "https://smartbrainup.com/intellectual-property"
         }
       },
       {
@@ -47,9 +46,8 @@ export const enterpriseContent = {
           "and persistent"
         ],
         link: {
-          text: "Intellectual Property",
-          domain: ".com",
-          href: "https://smartbrainup.com/ip"
+          text: "View IP architecture",
+          href: "https://smartbrainup.com/intellectual-property"
         }
       },
       {
@@ -62,9 +60,8 @@ export const enterpriseContent = {
           "and systems"
         ],
         link: {
-          text: "Security & Compliance",
-          domain: ".com",
-          href: "https://smartbrainup.com/security"
+          text: "View security and compliance",
+          href: "https://smartbrainup.com/security-compliance"
         }
       },
       {
@@ -77,9 +74,8 @@ export const enterpriseContent = {
           "Aligned with enterprise security requirements"
         ],
         link: {
-          text: "Security & Compliance",
-          domain: ".com",
-          href: "https://smartbrainup.com/security"
+          text: "View security and compliance",
+          href: "https://smartbrainup.com/security-compliance"
         }
       }
     ]
