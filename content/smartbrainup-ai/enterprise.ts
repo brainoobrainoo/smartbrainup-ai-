@@ -11,25 +11,15 @@ export const enterpriseContent = {
       "not the complexity"
     ],
     body: [
-      "Organization-wide deployment of a single deterministic method",
-      "",
-      "Multiple users",
-      "multiple domains",
-      "full control"
-    ],
-    subhero: [
-      "PMF Dynamic™ enables enterprise-grade execution",
-      "with controlled distribution",
-      "source attribution",
-      "IP protection",
-      "",
-      "The architecture scales",
-      "the method remains stable"
+      "Enterprise deployment requires more than answers",
+      "It requires structure",
+      "governance",
+      "and control"
     ]
   },
 
   capabilities: {
-    section: "CAPABILITIES",
+    section: "01 — CAPABILITIES",
     items: [
       {
         label: "PMF Dynamic™",
@@ -38,7 +28,12 @@ export const enterpriseContent = {
           "with semantic watermarking",
           "for IP protection",
           "and source attribution"
-        ]
+        ],
+        link: {
+          text: "Intellectual Property",
+          domain: ".com",
+          href: "https://smartbrainup.com/ip"
+        }
       },
       {
         label: "Multi-context architecture",
@@ -50,7 +45,12 @@ export const enterpriseContent = {
           "",
           "Each context is independent",
           "and persistent"
-        ]
+        ],
+        link: {
+          text: "Intellectual Property",
+          domain: ".com",
+          href: "https://smartbrainup.com/ip"
+        }
       },
       {
         label: "API integration",
@@ -60,7 +60,12 @@ export const enterpriseContent = {
           "Embed deterministic AI interaction",
           "into existing workflows",
           "and systems"
-        ]
+        ],
+        link: {
+          text: "Security & Compliance",
+          domain: ".com",
+          href: "https://smartbrainup.com/security"
+        }
       },
       {
         label: "Governance and compliance",
@@ -70,13 +75,19 @@ export const enterpriseContent = {
           "data governance",
           "",
           "Aligned with enterprise security requirements"
-        ]
+        ],
+        link: {
+          text: "Security & Compliance",
+          domain: ".com",
+          href: "https://smartbrainup.com/security"
+        }
       }
     ]
   },
 
   deployment: {
-    section: "WHAT YOU GET",
+    section: "02 — OUTCOMES",
+    title: "What you get",
     items: [
       "Unlimited Second Brains.",
       "PMF Dynamic™ with semantic watermarking.",
@@ -87,7 +98,8 @@ export const enterpriseContent = {
   },
 
   process: {
-    section: "HOW IT WORKS",
+    section: "03 — PROCESS",
+    title: "How it works",
     body: [
       "We analyze your organization",
       "define the Second Brain architecture",
@@ -103,6 +115,6 @@ export const enterpriseContent = {
     title: "Start the conversation",
     description: "Enterprise pricing is defined case by case",
     label: "ENTERPRISE",
-    button: "CONTACT"
+    button: "contact"
   }
 }

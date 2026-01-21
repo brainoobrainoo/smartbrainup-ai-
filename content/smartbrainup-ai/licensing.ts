@@ -11,19 +11,13 @@ export const licensingContent = {
       "one commitment"
     ],
     body: [
-      "The method is licensed per Second Brain",
-      "not per user",
-      "not per platform",
-      "",
-      "Each Second Brain is a discrete",
-      "persistent operational context",
-      "",
-      "The value is in the method"
+      "The value is not in the platform",
+      "It's in the Second Brain"
     ]
   },
 
   pricing: {
-    section: "PRICING PLANS",
+    section: "01 — PRICING PLANS",
     plans: [
       {
         name: "Single",
@@ -33,7 +27,7 @@ export const licensingContent = {
           "Individual use",
           "",
           "One persistent Second Brain",
-          "executed across five AI platforms"
+          "executed across supported AI platforms"
         ]
       },
       {
@@ -80,27 +74,44 @@ export const licensingContent = {
         "API layer",
         "dedicated onboarding"
       ]
-    },
-    notes: [
-      "Promptless execution",
-      "deterministic interaction",
-      "",
-      "Each Second Brain is licensed",
-      "as a discrete",
-      "independent unit"
+    }
+  },
+
+  principles: {
+    section: "02 — LICENSING PRINCIPLES",
+    title: [
+      "The method is licensed",
+      "per Second Brain",
+      "not per user",
+      "not per platform"
     ],
-    platforms: [
-      "One Second Brain can be executed on",
+    body: [
+      "Each Second Brain represents",
+      "a discrete",
+      "persistent operational context",
+      "",
+      "Promptless execution",
+      "supported platforms",
       "GPT · Claude · Gemini · Grok · Perplexity",
       "",
+      "Deterministic interaction",
+      "independent from the execution surface",
+      "",
       "Platforms change",
-      "the method remains"
-    ]
+      "the method remains",
+      "",
+      "The value is in the method"
+    ],
+    link: {
+      text: "How licensing and IP protection work",
+      url: "SmartBrainUp.com / intellectual-property",
+      href: "https://smartbrainup.com/intellectual-property"
+    }
   },
 
   cta: {
-    title: "start with the method",
+    title: "Start with the method",
     label: "B2B",
-    button: "REQUEST ACCESS"
+    button: "request access"
   }
 }
