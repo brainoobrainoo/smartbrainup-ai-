@@ -29,6 +29,38 @@ export default function HomePage() {
     }
   }, [])
 
+  // Helper to render body with proper spacing
+  const renderBody = (lines: string[], opacity: string = "opacity-60") => {
+    const blocks: string[][] = []
+    let currentBlock: string[] = []
+    
+    lines.forEach((line) => {
+      if (line === "") {
+        if (currentBlock.length > 0) {
+          blocks.push(currentBlock)
+          currentBlock = []
+        }
+      } else {
+        currentBlock.push(line)
+      }
+    })
+    if (currentBlock.length > 0) {
+      blocks.push(currentBlock)
+    }
+
+    return (
+      <div className="space-y-5">
+        {blocks.map((block, blockIndex) => (
+          <p key={blockIndex} className={`text-[17px] md:text-[18px] font-normal leading-[1.15] ${opacity}`}>
+            {block.map((line, lineIndex) => (
+              <span key={lineIndex} className="block">{line}</span>
+            ))}
+          </p>
+        ))}
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-white">
       
@@ -76,8 +108,10 @@ export default function HomePage() {
               </span>
             </h1>
             
-            <p className="text-[17px] md:text-[18px] font-normal leading-[1.5] max-w-[480px] opacity-70 mb-12">
-              {hero.description}
+            <p className="text-[17px] md:text-[18px] font-normal leading-[1.15] max-w-[480px] opacity-70 mb-12">
+              {hero.subtext.map((line, index) => (
+                <span key={index} className="block">{line}</span>
+              ))}
             </p>
 
             {/* Scrolling Credits Card */}
@@ -106,24 +140,18 @@ export default function HomePage() {
             
             <div className="lg:col-span-5">
               <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em]">
-                {Array.isArray(problem.headline) ? (
-                  problem.headline.map((line, index) => (
+                {Array.isArray(problem.title) ? (
+                  problem.title.map((line, index) => (
                     <span key={index} className="block">{line}</span>
                   ))
                 ) : (
-                  problem.headline
+                  problem.title
                 )}
               </h2>
             </div>
             
             <div className="lg:col-span-6 lg:col-start-7">
-              <div className="space-y-4">
-                {problem.paragraphs.map((paragraph, index) => (
-                  <p key={index} className="text-[17px] md:text-[18px] font-normal leading-[1.5] opacity-60">
-                    {paragraph}
-                  </p>
-                ))}
-              </div>
+              {renderBody(problem.body)}
             </div>
             
           </div>
@@ -138,24 +166,18 @@ export default function HomePage() {
           
           <div className="lg:col-span-5">
             <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em]">
-              {Array.isArray(solution.headline) ? (
-                solution.headline.map((line, index) => (
+              {Array.isArray(solution.title) ? (
+                solution.title.map((line, index) => (
                   <span key={index} className="block">{line}</span>
                 ))
               ) : (
-                solution.headline
+                solution.title
               )}
             </h2>
           </div>
           
           <div className="lg:col-span-6 lg:col-start-7">
-            <div className="space-y-4">
-              {solution.paragraphs.map((paragraph, index) => (
-                <p key={index} className="text-[17px] md:text-[18px] font-normal leading-[1.5] opacity-60">
-                  {paragraph}
-                </p>
-              ))}
-            </div>
+            {renderBody(solution.body)}
           </div>
           
         </div>
@@ -171,16 +193,15 @@ export default function HomePage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center">
             
             <div>
-              <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em]">{impact.headline}</h2>
+              <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em]">{impact.title}</h2>
             </div>
             
             <div>
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {impact.items.map((item, index) => (
-                  <div key={index} className="flex items-start gap-4">
-                    <span className="font-ui text-[10px] tracking-wide opacity-40 pt-1">—</span>
-                    <p className="text-[16px] md:text-[18px] font-normal leading-[1.4] opacity-70">{item}</p>
-                  </div>
+                  <p key={index} className="text-[16px] md:text-[18px] font-normal leading-[1.4] opacity-70">
+                    {item}
+                  </p>
                 ))}
               </div>
             </div>
@@ -199,23 +220,28 @@ export default function HomePage() {
               
               <div className="lg:col-span-5">
                 <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em]">
-                  {Array.isArray(platforms.headline) ? (
-                    platforms.headline.map((line, index) => (
+                  {Array.isArray(platforms.title) ? (
+                    platforms.title.map((line, index) => (
                       <span key={index} className="block">{line}</span>
                     ))
                   ) : (
-                    platforms.headline
+                    platforms.title
                   )}
                 </h2>
               </div>
               
               <div className="lg:col-span-6 lg:col-start-7">
-                <div className="space-y-4">
-                  {platforms.paragraphs.map((paragraph, index) => (
-                    <p key={index} className="text-[17px] md:text-[18px] font-normal leading-[1.5] opacity-70">
-                      {paragraph}
-                    </p>
-                  ))}
+                <div className="space-y-5">
+                  {/* First paragraph block */}
+                  <p className="text-[17px] md:text-[18px] font-normal leading-[1.15] opacity-70">
+                    {platforms.body.map((line, index) => (
+                      <span key={index} className="block">{line}</span>
+                    ))}
+                  </p>
+                  {/* Platform list - separate block */}
+                  <p className="text-[17px] md:text-[18px] font-normal leading-[1.15] opacity-70">
+                    {platforms.list}
+                  </p>
                 </div>
               </div>
               

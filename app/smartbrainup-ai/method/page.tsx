@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react'
 import { methodContent } from '@/content/smartbrainup-ai/method'
 
 export default function MethodPage() {
-  const { hero, core, inversion, determinism, process, execution, platforms, delivery, outcomes, cta } = methodContent
+  const { hero, core, interaction, determinism, process, execution, platforms, delivery, outcomes, cta } = methodContent
 
   const [showFirst, setShowFirst] = useState(false)
   const [showSecond, setShowSecond] = useState(false)
@@ -24,6 +24,38 @@ export default function MethodPage() {
       clearTimeout(timerCore)
     }
   }, [])
+
+  // Helper to render body with proper spacing
+  const renderBody = (lines: string[], opacity: string = "opacity-60") => {
+    const blocks: string[][] = []
+    let currentBlock: string[] = []
+    
+    lines.forEach((line) => {
+      if (line === "") {
+        if (currentBlock.length > 0) {
+          blocks.push(currentBlock)
+          currentBlock = []
+        }
+      } else {
+        currentBlock.push(line)
+      }
+    })
+    if (currentBlock.length > 0) {
+      blocks.push(currentBlock)
+    }
+
+    return (
+      <div className="space-y-5">
+        {blocks.map((block, blockIndex) => (
+          <p key={blockIndex} className={`text-[17px] md:text-[18px] font-normal leading-[1.15] ${opacity}`}>
+            {block.map((line, lineIndex) => (
+              <span key={lineIndex} className="block">{line}</span>
+            ))}
+          </p>
+        ))}
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -48,7 +80,7 @@ export default function MethodPage() {
                   transition: 'opacity 4s cubic-bezier(0.4, 0, 0.2, 1)'
                 }}
               >
-                {hero.headline[0]}
+                {hero.title[0]}
               </span>
               <span 
                 className="block"
@@ -57,12 +89,14 @@ export default function MethodPage() {
                   transition: 'opacity 4s cubic-bezier(0.4, 0, 0.2, 1)'
                 }}
               >
-                {hero.headline[1]}
+                {hero.title[1]}
               </span>
             </h1>
             
-            <p className="text-[17px] md:text-[18px] font-normal leading-[1.5] max-w-[560px] opacity-70">
-              {hero.description}
+            <p className="text-[17px] md:text-[18px] font-normal leading-[1.15] max-w-[560px] opacity-70">
+              {hero.subtext.map((line, index) => (
+                <span key={index} className="block">{line}</span>
+              ))}
             </p>
           </div>
 
@@ -81,14 +115,12 @@ export default function MethodPage() {
                   transition: 'opacity 4s cubic-bezier(0.4, 0, 0.2, 1)'
                 }}
               >
-                {core.headline}
+                {core.title}
               </h2>
             </div>
             
             <div className="lg:col-span-6 lg:col-start-7">
-              <p className="text-[17px] md:text-[18px] font-normal leading-[1.5] opacity-60">
-                {core.paragraph}
-              </p>
+              {renderBody(core.body, "opacity-60")}
             </div>
             
           </div>
@@ -98,39 +130,41 @@ export default function MethodPage() {
 
       {/* Interaction Model */}
       <section className="relative max-w-[1200px] mx-auto px-6 md:px-8 py-16 md:py-32">
-        <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-8">{inversion.section}</p>
+        <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-8">{interaction.section}</p>
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           
           <div className="lg:col-span-5">
             <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em]">
-              {inversion.headline}
+              {interaction.title}
             </h2>
           </div>
           
           <div className="lg:col-span-6 lg:col-start-7">
-            <p className="text-[17px] md:text-[18px] font-normal leading-[1.5] opacity-60">
-              {inversion.paragraph}
-            </p>
+            {renderBody(interaction.body)}
           </div>
           
         </div>
       </section>
 
       {/* Determinism */}
-      <section className="relative max-w-[1200px] mx-auto px-6 md:px-8 py-16 md:py-32 border-t border-[#e8e8e8]">
+      <section className="relative max-w-[1200px] mx-auto px-6 md:px-8 py-16 md:py-32">
         <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-8">{determinism.section}</p>
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           
           <div className="lg:col-span-5">
             <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em]">
-              {determinism.headline}
+              {Array.isArray(determinism.title) ? (
+                determinism.title.map((line, index) => (
+                  <span key={index} className="block">{line}</span>
+                ))
+              ) : (
+                determinism.title
+              )}
             </h2>
           </div>
           
           <div className="lg:col-span-6 lg:col-start-7">
-            <p className="text-[17px] md:text-[18px] font-normal leading-[1.5] opacity-60">
-              {determinism.paragraph}
-            </p>
+            {renderBody(determinism.body)}
           </div>
           
         </div>
@@ -143,14 +177,16 @@ export default function MethodPage() {
           <div className="max-w-[1200px] mx-auto px-6 md:px-8">
             
             <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-8">{process.section}</p>
-            <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em] mb-12">{process.headline}</h2>
+            <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em] mb-12">{process.title}</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {process.steps.map((step, index) => (
                 <div key={index} className="rounded-[4px] p-8" style={{ background: 'linear-gradient(to bottom, #383838 0%, #3a3a3a 100%)' }}>
-                  <h3 className="text-[17px] md:text-[18px] font-normal leading-[1.3] mb-3">{step.title}</h3>
-                  <p className="text-[15px] md:text-[16px] font-normal leading-[1.5] opacity-60">
-                    {step.description}
+                  <h3 className="text-[17px] md:text-[18px] font-normal leading-[1.3] mb-3">{step.label}</h3>
+                  <p className="text-[15px] md:text-[16px] font-normal leading-[1.15] opacity-60">
+                    {step.body.map((line, lineIndex) => (
+                      <span key={lineIndex} className="block">{line}</span>
+                    ))}
                   </p>
                 </div>
               ))}
@@ -168,14 +204,12 @@ export default function MethodPage() {
           
           <div className="lg:col-span-5">
             <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em]">
-              {execution.headline}
+              {execution.title}
             </h2>
           </div>
           
           <div className="lg:col-span-6 lg:col-start-7">
-            <p className="text-[17px] md:text-[18px] font-normal leading-[1.5] opacity-60">
-              {execution.paragraph}
-            </p>
+            {renderBody(execution.body)}
           </div>
           
         </div>
@@ -192,14 +226,23 @@ export default function MethodPage() {
             
             <div>
               <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em]">
-                {platforms.headline}
+                {Array.isArray(platforms.title) ? (
+                  platforms.title.map((line, index) => (
+                    <span key={index} className="block">{line}</span>
+                  ))
+                ) : (
+                  platforms.title
+                )}
               </h2>
             </div>
             
             <div>
-              <p className="text-[17px] md:text-[18px] font-normal leading-[1.5] opacity-70">
-                {platforms.paragraph}
-              </p>
+              <div className="space-y-5">
+                {renderBody(platforms.body, "opacity-70")}
+                <p className="text-[17px] md:text-[18px] font-normal leading-[1.15] opacity-70">
+                  {platforms.list}
+                </p>
+              </div>
             </div>
             
           </div>
@@ -207,13 +250,13 @@ export default function MethodPage() {
       </section>
 
       {/* Delivery */}
-      <section className="relative max-w-[1200px] mx-auto px-6 md:px-8 py-16 md:py-32 border-t border-[#e8e8e8]">
+      <section className="relative max-w-[1200px] mx-auto px-6 md:px-8 py-16 md:py-32">
         <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-8">{delivery.section}</p>
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           
           <div className="lg:col-span-5">
             <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em]">
-              {delivery.headline}
+              {delivery.title}
             </h2>
           </div>
           
@@ -221,14 +264,18 @@ export default function MethodPage() {
             <div className="space-y-8">
               {delivery.items.map((item, index) => (
                 <div key={index}>
-                  <h3 className="text-[17px] md:text-[18px] font-normal leading-[1.3] mb-2">{item.name}</h3>
-                  <p className="text-[15px] md:text-[16px] font-normal leading-[1.5] opacity-60">
-                    {item.description}
+                  <h3 className="text-[17px] md:text-[18px] font-normal leading-[1.3] mb-3">{item.label}</h3>
+                  <p className="text-[15px] md:text-[16px] font-normal leading-[1.15] opacity-60">
+                    {item.body.map((line, lineIndex) => (
+                      <span key={lineIndex} className="block">{line}</span>
+                    ))}
                   </p>
                 </div>
               ))}
-              <p className="font-ui text-[11px] tracking-widest uppercase opacity-40 pt-4">
-                {delivery.note}
+              <p className="text-[15px] md:text-[16px] font-normal leading-[1.15] opacity-40 pt-4">
+                {delivery.note.map((line, index) => (
+                  <span key={index} className="block">{line}</span>
+                ))}
               </p>
             </div>
           </div>
@@ -237,23 +284,22 @@ export default function MethodPage() {
       </section>
 
       {/* Outcomes */}
-      <section className="relative max-w-[1200px] mx-auto px-6 md:px-8 py-16 md:py-32 border-t border-[#e8e8e8]">
+      <section className="relative max-w-[1200px] mx-auto px-6 md:px-8 py-16 md:py-32">
         <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-8">{outcomes.section}</p>
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           
           <div className="lg:col-span-5">
             <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em]">
-              {outcomes.headline}
+              {outcomes.title}
             </h2>
           </div>
           
           <div className="lg:col-span-6 lg:col-start-7">
-            <div className="space-y-4">
+            <div className="space-y-3">
               {outcomes.items.map((item, index) => (
-                <div key={index} className="flex items-start gap-4">
-                  <span className="font-ui text-[10px] tracking-wide opacity-40 pt-1">—</span>
-                  <p className="text-[16px] md:text-[18px] font-normal leading-[1.4] opacity-70">{item}</p>
-                </div>
+                <p key={index} className="text-[16px] md:text-[18px] font-normal leading-[1.4] opacity-70">
+                  {item}
+                </p>
               ))}
             </div>
           </div>
@@ -265,25 +311,12 @@ export default function MethodPage() {
       <section className="w-full text-white py-16 md:py-32" style={{ background: 'linear-gradient(to bottom, #2f2f2f 0%, #1a1a1a 100%)' }}>
         <div className="max-w-[1200px] mx-auto px-6 md:px-8">
           
-          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-8">
-            
-            <div>
-              <h2 className="text-[36px] md:text-[52px] font-normal leading-[1.0] tracking-[-0.02em] mb-6">
-                {cta.headline}
-              </h2>
-              <p className="text-[17px] md:text-[18px] font-normal leading-[1.5] opacity-60 max-w-[400px]">
-                {cta.description}
-              </p>
-            </div>
-            
-            <div className="flex items-center gap-4">
-              <span className="font-ui text-[12px] font-medium tracking-wide uppercase-force opacity-40">{cta.label}</span>
-              <Link href="/contact" className="relative font-ui text-[12px] font-medium tracking-wide uppercase px-6 py-4 rounded-[4px] overflow-hidden">
-                <span className="absolute inset-0 bg-[#3a3a3a] animate-pulse-soft rounded-[4px]"></span>
-                <span className="relative z-10 text-white uppercase-force">{cta.button}</span>
-              </Link>
-            </div>
-            
+          <div className="flex items-center gap-4 justify-end">
+            <span className="font-ui text-[12px] font-medium tracking-wide uppercase-force opacity-40">{cta.label}</span>
+            <Link href="/contact" className="relative font-ui text-[12px] font-medium tracking-wide uppercase px-6 py-4 rounded-[4px] overflow-hidden">
+              <span className="absolute inset-0 bg-[#3a3a3a] animate-pulse-soft rounded-[4px]"></span>
+              <span className="relative z-10 text-white uppercase-force">{cta.button}</span>
+            </Link>
           </div>
           
         </div>

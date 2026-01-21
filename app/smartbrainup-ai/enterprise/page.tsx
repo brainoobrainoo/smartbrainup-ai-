@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react'
 import { enterpriseContent } from '@/content/smartbrainup-ai/enterprise'
 
 export default function EnterprisePage() {
-  const { hero, subhero, capabilities, deployment, process, cta } = enterpriseContent
+  const { hero, capabilities, deployment, process, cta } = enterpriseContent
 
   const [showFirst, setShowFirst] = useState(false)
   const [showSecond, setShowSecond] = useState(false)
@@ -22,14 +22,77 @@ export default function EnterprisePage() {
     }
   }, [])
 
+  // Helper to render body with proper spacing
+  const renderBody = (lines: string[], opacity: string = "opacity-60") => {
+    const blocks: string[][] = []
+    let currentBlock: string[] = []
+    
+    lines.forEach((line) => {
+      if (line === "") {
+        if (currentBlock.length > 0) {
+          blocks.push(currentBlock)
+          currentBlock = []
+        }
+      } else {
+        currentBlock.push(line)
+      }
+    })
+    if (currentBlock.length > 0) {
+      blocks.push(currentBlock)
+    }
+
+    return (
+      <div className="space-y-5">
+        {blocks.map((block, blockIndex) => (
+          <p key={blockIndex} className={`text-[17px] md:text-[18px] font-normal leading-[1.15] ${opacity}`}>
+            {block.map((line, lineIndex) => (
+              <span key={lineIndex} className="block">{line}</span>
+            ))}
+          </p>
+        ))}
+      </div>
+    )
+  }
+
+  // Helper for card body (smaller text)
+  const renderCardBody = (lines: string[], opacity: string = "opacity-60") => {
+    const blocks: string[][] = []
+    let currentBlock: string[] = []
+    
+    lines.forEach((line) => {
+      if (line === "") {
+        if (currentBlock.length > 0) {
+          blocks.push(currentBlock)
+          currentBlock = []
+        }
+      } else {
+        currentBlock.push(line)
+      }
+    })
+    if (currentBlock.length > 0) {
+      blocks.push(currentBlock)
+    }
+
+    return (
+      <div className="space-y-4">
+        {blocks.map((block, blockIndex) => (
+          <p key={blockIndex} className={`text-[15px] md:text-[16px] font-normal leading-[1.15] ${opacity}`}>
+            {block.map((line, lineIndex) => (
+              <span key={lineIndex} className="block">{line}</span>
+            ))}
+          </p>
+        ))}
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-white">
       
-      {/* Hero + Subhero - DARK zone */}
+      {/* Hero - DARK zone */}
       <div className="relative w-full overflow-hidden text-white" style={{ background: 'linear-gradient(to bottom, #252525 0%, #161616 100%)' }}>
         
-        {/* Hero */}
-        <section className="relative z-10 max-w-[1200px] mx-auto px-6 md:px-8 pt-20 md:pt-32 pb-24">
+        <section className="relative z-10 max-w-[1200px] mx-auto px-6 md:px-8 pt-20 md:pt-32 pb-24 md:pb-32">
           
           <div className="relative">
             <p className="font-ui text-[11px] font-medium tracking-widest uppercase mb-4">
@@ -45,7 +108,7 @@ export default function EnterprisePage() {
                   transition: 'opacity 4s cubic-bezier(0.4, 0, 0.2, 1)'
                 }}
               >
-                {hero.headline[0]}
+                {hero.title[0]}
               </span>
               <span 
                 className="block"
@@ -54,98 +117,59 @@ export default function EnterprisePage() {
                   transition: 'opacity 4s cubic-bezier(0.4, 0, 0.2, 1)'
                 }}
               >
-                {hero.headline[1]}
+                {hero.title[1]}
               </span>
             </h1>
             
-            <p className="text-[17px] md:text-[18px] font-normal leading-[1.5] max-w-[560px] opacity-70">
-              {hero.description}
-            </p>
+            <div className="max-w-[560px]">
+              {renderBody(hero.body, "opacity-70")}
+            </div>
           </div>
 
-        </section>
-
-        {/* Subhero - PMF Dynamic */}
-        <section className="relative max-w-[1200px] mx-auto px-6 md:px-8 pb-24 md:pb-32">
-          <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-8">{subhero.section}</p>
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            
-            <div className="lg:col-span-5">
-              <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em]">
-                {subhero.headline}
-              </h2>
-            </div>
-            
-            <div className="lg:col-span-6 lg:col-start-7">
-              <p className="text-[17px] md:text-[18px] font-normal leading-[1.5] opacity-60">
-                {subhero.paragraph}
-              </p>
-            </div>
-            
-          </div>
         </section>
 
       </div>
 
+      {/* Sub-hero */}
+      <section className="relative max-w-[1200px] mx-auto px-6 md:px-8 py-16 md:py-32">
+        <div className="max-w-[560px]">
+          {renderBody(hero.subhero)}
+        </div>
+      </section>
+
       {/* Capabilities */}
       <section className="relative max-w-[1200px] mx-auto px-6 md:px-8 py-16 md:py-32">
-        <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-8">{capabilities.section}</p>
-        <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em] mb-12">{capabilities.headline}</h2>
+        <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-12">{capabilities.section}</p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {capabilities.items.map((item, index) => (
             <div key={index} className="rounded-[4px] p-8" style={{ background: 'linear-gradient(to bottom, #f7f7f7 0%, #ececec 100%)' }}>
-              <h3 className="text-[17px] md:text-[18px] font-normal leading-[1.3] mb-3">{item.name}</h3>
-              <p className="text-[15px] md:text-[16px] font-normal leading-[1.5] opacity-60">
-                {item.description}
-              </p>
+              <h3 className="text-[17px] md:text-[18px] font-normal leading-[1.3] mb-4">{item.label}</h3>
+              {renderCardBody(item.body)}
             </div>
           ))}
         </div>
       </section>
 
-      {/* Deployment - What you get */}
-      <section className="relative max-w-[1200px] mx-auto px-6 md:px-8 py-16 md:py-32 border-t border-[#e8e8e8]">
+      {/* What you get */}
+      <section className="relative max-w-[1200px] mx-auto px-6 md:px-8 py-16 md:py-32">
         <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-8">{deployment.section}</p>
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          
-          <div className="lg:col-span-5">
-            <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em]">
-              {deployment.headline}
-            </h2>
+        <div className="max-w-[560px]">
+          <div className="space-y-3">
+            {deployment.items.map((item, index) => (
+              <p key={index} className="text-[17px] md:text-[18px] font-normal leading-[1.4] opacity-70">
+                {item}
+              </p>
+            ))}
           </div>
-          
-          <div className="lg:col-span-6 lg:col-start-7">
-            <div className="space-y-4">
-              {deployment.items.map((item, index) => (
-                <div key={index} className="flex items-start gap-4">
-                  <span className="font-ui text-[10px] tracking-wide opacity-40 pt-1">—</span>
-                  <p className="text-[16px] md:text-[18px] font-normal leading-[1.4] opacity-70">{item}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-          
         </div>
       </section>
 
-      {/* Process - How it works */}
-      <section className="relative max-w-[1200px] mx-auto px-6 md:px-8 py-16 md:py-32 border-t border-[#e8e8e8]">
+      {/* How it works */}
+      <section className="relative max-w-[1200px] mx-auto px-6 md:px-8 py-16 md:py-32">
         <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-8">{process.section}</p>
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          
-          <div className="lg:col-span-5">
-            <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em]">
-              {process.headline}
-            </h2>
-          </div>
-          
-          <div className="lg:col-span-6 lg:col-start-7">
-            <p className="text-[17px] md:text-[18px] font-normal leading-[1.5] opacity-60">
-              {process.paragraph}
-            </p>
-          </div>
-          
+        <div className="max-w-[560px]">
+          {renderBody(process.body)}
         </div>
       </section>
 
@@ -157,9 +181,9 @@ export default function EnterprisePage() {
             
             <div>
               <h2 className="text-[36px] md:text-[52px] font-normal leading-[1.0] tracking-[-0.02em] mb-6">
-                {cta.headline}
+                {cta.title}
               </h2>
-              <p className="text-[17px] md:text-[18px] font-normal leading-[1.5] opacity-60 max-w-[400px]">
+              <p className="text-[17px] md:text-[18px] font-normal leading-[1.15] opacity-60 max-w-[400px]">
                 {cta.description}
               </p>
             </div>

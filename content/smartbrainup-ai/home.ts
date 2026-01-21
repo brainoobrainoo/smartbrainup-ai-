@@ -11,7 +11,11 @@ export const homeContent = {
       "that transforms statistical AI",
       "into a deterministic system"
     ],
-    description: "The interaction is guided. The reasoning stays stable. The results become repeatable.",
+    subtext: [
+      "The interaction is guided",
+      "the reasoning stays stable",
+      "the results become repeatable"
+    ],
     cta: {
       label: "B2B ONLY",
       button: "see how it works"
@@ -20,42 +24,59 @@ export const homeContent = {
   },
 
   problem: {
-    section: "01 — the problem",
-    headline: ["AI breaks when work gets complex", "not because of you"],
-    paragraphs: [
-      "Without structure, AI drifts. Tone changes. Logic shifts. Decisions lose alignment.",
-      "Guessing prompts becomes the work."
+    section: "01 — THE PROBLEM",
+    title: [
+      "AI breaks when work gets complex",
+      "not because of you"
+    ],
+    body: [
+      "Without structure, AI drifts",
+      "tone changes",
+      "logic shifts",
+      "decisions lose alignment",
+      "",
+      "Guessing prompts becomes the work"
     ]
   },
 
   solution: {
-    section: "02 — the solution",
-    headline: ["The interaction inverts", "The AI asks the questions"],
-    paragraphs: [
-      "One at a time. Each answer builds context. Each step stabilizes reasoning.",
-      "You stop prompting. Clarity emerges."
+    section: "02 — THE SOLUTION",
+    title: "The interaction inverts",
+    body: [
+      "The AI asks the questions",
+      "one at a time",
+      "",
+      "Each answer builds context",
+      "each step stabilizes reasoning",
+      "",
+      "You stop prompting",
+      "clarity emerges"
     ]
   },
 
   impact: {
-    section: "03 — impact",
-    headline: "What changes in your work",
+    section: "03 — IMPACT",
+    title: "What changes in your work",
     items: [
-      "no prompt writing",
-      "stable, repeatable outputs",
-      "faster decisions with less effort",
-      "clarity instead of trial and error",
-      "consistent results over time"
+      "No prompt writing.",
+      "Stable, repeatable outputs.",
+      "Faster decisions with less effort.",
+      "Clarity instead of trial and error.",
+      "Consistent results over time."
     ]
   },
 
   platforms: {
-    section: "04 — multiple platforms",
-    headline: ["One method", "multiple platforms"],
-    paragraphs: [
-      "The value is not tied to the platform. It's tied to the way you work.",
-      "GPT · Claude · Gemini · Grok · Perplexity"
-    ]
+    section: "04 — MULTIPLE PLATFORMS",
+    title: [
+      "One method",
+      "multiple platforms"
+    ],
+    body: [
+      "The value is not tied to the platform.",
+      "It's tied to the way you work."
+    ],
+    list: "GPT · Claude · Gemini · Grok · Perplexity"
   },
 
   cta: {

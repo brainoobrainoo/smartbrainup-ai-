@@ -6,20 +6,46 @@ import { useEffect, useState } from 'react'
 import { contactContent } from '@/content/smartbrainup-ai/contact'
 
 export default function ContactPage() {
-  const { hero, form, info, note } = contactContent
+  const { hero, form, micro, info } = contactContent
 
-  const [showFirst, setShowFirst] = useState(false)
-  const [showSecond, setShowSecond] = useState(false)
+  const [showTitle, setShowTitle] = useState(false)
 
   useEffect(() => {
-    const timerFirst = setTimeout(() => setShowFirst(true), 10)
-    const timerSecond = setTimeout(() => setShowSecond(true), 500)
-
-    return () => {
-      clearTimeout(timerFirst)
-      clearTimeout(timerSecond)
-    }
+    const timer = setTimeout(() => setShowTitle(true), 10)
+    return () => clearTimeout(timer)
   }, [])
+
+  // Helper to render body with proper spacing
+  const renderBody = (lines: string[], opacity: string = "opacity-60") => {
+    const blocks: string[][] = []
+    let currentBlock: string[] = []
+    
+    lines.forEach((line) => {
+      if (line === "") {
+        if (currentBlock.length > 0) {
+          blocks.push(currentBlock)
+          currentBlock = []
+        }
+      } else {
+        currentBlock.push(line)
+      }
+    })
+    if (currentBlock.length > 0) {
+      blocks.push(currentBlock)
+    }
+
+    return (
+      <div className="space-y-5">
+        {blocks.map((block, blockIndex) => (
+          <p key={blockIndex} className={`text-[17px] md:text-[18px] font-normal leading-[1.15] ${opacity}`}>
+            {block.map((line, lineIndex) => (
+              <span key={lineIndex} className="block">{line}</span>
+            ))}
+          </p>
+        ))}
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -33,30 +59,19 @@ export default function ContactPage() {
             <span className="opacity-50 uppercase-force"> {hero.badge.secondary}</span>
           </p>
           
-          <h1 className="text-[42px] md:text-[64px] font-normal leading-[1.0] tracking-[-0.02em] mb-8">
-            <span 
-              className="block"
-              style={{ 
-                opacity: showFirst ? 1 : 0.08,
-                transition: 'opacity 4s cubic-bezier(0.4, 0, 0.2, 1)'
-              }}
-            >
-              {hero.headline[0]}
-            </span>
-            <span 
-              className="block"
-              style={{ 
-                opacity: showSecond ? 1 : 0.03,
-                transition: 'opacity 4s cubic-bezier(0.4, 0, 0.2, 1)'
-              }}
-            >
-              {hero.headline[1]}
-            </span>
+          <h1 
+            className="text-[42px] md:text-[64px] font-normal leading-[1.0] tracking-[-0.02em] mb-8"
+            style={{ 
+              opacity: showTitle ? 1 : 0.08,
+              transition: 'opacity 4s cubic-bezier(0.4, 0, 0.2, 1)'
+            }}
+          >
+            {hero.title}
           </h1>
           
-          <p className="text-[17px] md:text-[18px] font-normal leading-[1.5] max-w-[480px] opacity-70">
-            {hero.description}
-          </p>
+          <div className="max-w-[480px]">
+            {renderBody(hero.body, "opacity-70")}
+          </div>
         </div>
 
       </section>
@@ -134,18 +149,22 @@ export default function ContactPage() {
           <div className="lg:col-span-5 lg:col-start-8">
             <div className="space-y-8">
               
-              <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50">
-                {note}
+              <p className="text-[15px] md:text-[16px] font-normal leading-[1.15] opacity-50">
+                {micro.map((line, index) => (
+                  <span key={index} className="block">{line}</span>
+                ))}
               </p>
               
-              <div className="pt-8 border-t border-[#e8e8e8]">
-                <p className="text-[17px] md:text-[18px] font-normal leading-[1.5] mb-2">
+              <div className="pt-8">
+                <p className="text-[17px] md:text-[18px] font-normal leading-[1.15] mb-4">
                   {info.company}
                 </p>
-                <p className="text-[15px] md:text-[16px] font-normal leading-[1.6] opacity-60">
-                  {info.address}
+                <p className="text-[15px] md:text-[16px] font-normal leading-[1.15] opacity-60">
+                  {info.address.map((line, index) => (
+                    <span key={index} className="block">{line}</span>
+                  ))}
                 </p>
-                <p className="text-[15px] md:text-[16px] font-normal leading-[1.6] opacity-60 mt-4">
+                <p className="text-[15px] md:text-[16px] font-normal leading-[1.15] opacity-60 mt-4">
                   {info.email}
                 </p>
               </div>
