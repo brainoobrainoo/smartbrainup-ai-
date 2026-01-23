@@ -2,32 +2,50 @@
 
 // app/smartbrainup-ai/page.tsx
 
-import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { homeContent } from '@/content/smartbrainup-ai/home'
-import HeroCredits from '@/components/sections/HeroCredits'
-
-// const DiagonalLines = dynamic(() => import('@/components/ui/DiagonalLines'), { ssr: false })
+import Container from '@/components/layout/Container'
+import Lottie from 'lottie-react'
+import sphereAnimation from '../../public/animations/SFERA_LOGO_B.json'
 
 export default function HomePage() {
   const { hero, problem, solution, impact, platforms, cta } = homeContent
+  const { loopMessages } = hero
 
-  const [showFirst, setShowFirst] = useState(false)
-  const [showSecond, setShowSecond] = useState(false)
-  const [showThird, setShowThird] = useState(false)
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [showLine1, setShowLine1] = useState(false)
+  const [showLine2, setShowLine2] = useState(false)
+  const [isFadingOut, setIsFadingOut] = useState(false)
 
   useEffect(() => {
-    const timerFirst = setTimeout(() => setShowFirst(true), 10)
-    const timerSecond = setTimeout(() => setShowSecond(true), 500)
-    const timerThird = setTimeout(() => setShowThird(true), 1000)
+    setIsFadingOut(false)
+    
+    // Fade-in line 1 (3s)
+    const timer1 = setTimeout(() => setShowLine1(true), 100)
+    
+    // Quando line 1 è al 100% (dopo 3s), fade-in line 2 (3s)
+    const timer2 = setTimeout(() => setShowLine2(true), 3100)
+    
+    // Entrambe al 100% a 6.1s, restano 1s, poi fade-out a 7.1s
+    const timer3 = setTimeout(() => {
+      setIsFadingOut(true)
+      setShowLine1(false)
+      setShowLine2(false)
+    }, 7100)
+    
+    // Dopo fade-out (4s), subito prossimo messaggio a 11.1s
+    const timer4 = setTimeout(() => {
+      setCurrentIndex((prev) => (prev + 1) % loopMessages.length)
+    }, 11100)
 
     return () => {
-      clearTimeout(timerFirst)
-      clearTimeout(timerSecond)
-      clearTimeout(timerThird)
+      clearTimeout(timer1)
+      clearTimeout(timer2)
+      clearTimeout(timer3)
+      clearTimeout(timer4)
     }
-  }, [])
+  }, [currentIndex, loopMessages.length])
 
   // Helper to render body with proper spacing
   const renderBody = (lines: string[], opacity: string = "opacity-60") => {
@@ -61,80 +79,92 @@ export default function HomePage() {
     )
   }
 
+  const transitionDuration = isFadingOut ? '4s' : '3s'
+
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white overflow-x-hidden">
       
-      {/* Hero + Problem - gradient zone */}
-      <div className="relative w-full" style={{ background: 'linear-gradient(to bottom, #e8e8e8 0%, #ffffff 100%)' }}>
+      {/* Gradient zone: Hero + CTA */}
+      <div style={{ background: 'linear-gradient(to bottom, #ebebeb 0%, #ffffff calc(100% - 200px), #ffffff 100%)' }}>
         
-        {/* <DiagonalLines /> */}
+        {/* Hero Section */}
+        <section className="relative pt-20 md:pt-32 pb-16 md:pb-24">
+          <Container>
+            <div className="relative">
+              <p className="font-ui text-[11px] font-medium tracking-widest uppercase mb-8">
+                <span className="opacity-100 uppercase-force">{hero.badge.primary}</span>
+                <span className="opacity-50 uppercase-force"> {hero.badge.secondary}</span>
+              </p>
+              
+              {/* Sfera logo - centro allineato alla linea sinistra */}
+              <div className="mb-8 ml-[-27.5px] md:ml-[-37.5px]">
+                <Lottie 
+                  animationData={sphereAnimation}
+                  loop={true}
+                  className="w-[55px] h-[55px] md:w-[75px] md:h-[75px]"
+                />
+              </div>
+              
+              {/* Loop messaggi animato */}
+              <p className="text-[17px] md:text-[18px] font-bold leading-[1.15] max-w-[480px] mb-8">
+                <span 
+                  className="block"
+                  style={{ 
+                    opacity: showLine1 ? 0.7 : 0,
+                    transition: `opacity ${transitionDuration} cubic-bezier(0.4, 0, 0.2, 1)`
+                  }}
+                >
+                  {loopMessages[currentIndex].line1}
+                </span>
+                <span 
+                  className="block"
+                  style={{ 
+                    opacity: showLine2 ? 0.7 : 0,
+                    transition: `opacity ${transitionDuration} cubic-bezier(0.4, 0, 0.2, 1)`
+                  }}
+                >
+                  {loopMessages[currentIndex].line2}
+                </span>
+              </p>
+              
+              {/* Headline statico */}
+              <p className="text-[17px] md:text-[18px] font-normal leading-[1.15] max-w-[480px] opacity-70 mb-8">
+                {hero.headline.map((line, index) => (
+                  <span key={index} className="block">{line}</span>
+                ))}
+              </p>
+              
+              {/* Subtext statico */}
+              <p className="text-[17px] md:text-[18px] font-normal leading-[1.15] max-w-[480px] opacity-70">
+                {hero.subtext.map((line, index) => (
+                  <span key={index} className="block">{line}</span>
+                ))}
+              </p>
+            </div>
+          </Container>
+        </section>
         
-        {/* Hero */}
-        <section className="relative z-10 max-w-[1200px] mx-auto px-6 md:px-8 pt-20 md:pt-32 pb-24 md:pb-40">
-          
-          <div className="relative">
-            <p className="font-ui text-[11px] font-medium tracking-widest uppercase mb-4">
-              <span className="opacity-100 uppercase-force">{hero.badge.primary}</span>
-              <span className="opacity-50 uppercase-force"> {hero.badge.secondary}</span>
-            </p>
-            
-            <h1 className="text-[42px] md:text-[64px] font-normal leading-[1.0] tracking-[-0.02em] mb-8">
-              <span 
-                className="block"
-                style={{ 
-                  opacity: showFirst ? 1 : 0.05,
-                  transition: 'opacity 4s cubic-bezier(0.4, 0, 0.2, 1)'
-                }}
-              >
-                {hero.headline[0]}
-              </span>
-              <span 
-                className="block"
-                style={{ 
-                  opacity: showSecond ? 1 : 0.03,
-                  transition: 'opacity 4s cubic-bezier(0.4, 0, 0.2, 1)'
-                }}
-              >
-                {hero.headline[1]}
-              </span>
-              <span 
-                className="block"
-                style={{ 
-                  opacity: showThird ? 1 : 0.01,
-                  transition: 'opacity 4s cubic-bezier(0.4, 0, 0.2, 1)'
-                }}
-              >
-                {hero.headline[2]}
-              </span>
-            </h1>
-            
-            <p className="text-[17px] md:text-[18px] font-normal leading-[1.15] max-w-[480px] opacity-70 mb-12">
-              {hero.subtext.map((line, index) => (
-                <span key={index} className="block">{line}</span>
-              ))}
-            </p>
-
-            {/* Scrolling Credits Card */}
-            <HeroCredits />
-
-            {/* CTA moved below card */}
-            <div className="flex items-center gap-4 mt-12 justify-end">
+        {/* CTA Section - centrato nello spazio tra hero e problem */}
+        <section className="relative py-16 md:py-24">
+          <Container>
+            <div className="flex items-center gap-4 justify-end mr-[-27.5px] md:mr-[-37.5px]">
               <span className="font-ui text-[12px] font-medium tracking-wide uppercase-force opacity-40">{hero.cta.label}</span>
-              <Link href="/contact" className="relative font-ui text-[12px] font-medium tracking-wide uppercase px-6 py-4 rounded-[4px] overflow-hidden">
-                <span className="absolute inset-0 bg-white/60 rounded-[4px]"></span>
-                <span className="relative z-10 text-[#1a1a1a] uppercase-force">{hero.cta.button}</span>
+              <Link 
+                href="/contact" 
+                className="relative flex items-center justify-center w-[55px] h-[55px] md:w-[75px] md:h-[75px] rounded-full bg-[#f5f5f5]"
+              >
+                <span className="font-ui text-[11px] md:text-[12px] font-bold tracking-wide text-[#1a1a1a] uppercase-force">TRY</span>
               </Link>
             </div>
-          </div>
-
-          <div className="absolute bottom-12 left-6 md:left-8 flex items-center gap-4">
-            <div className="w-8 h-[1px] bg-[#1a1a1a] opacity-30"></div>
-            <span className="font-ui text-[11px] tracking-wide uppercase opacity-40">{hero.scroll}</span>
-          </div>
+          </Container>
         </section>
 
-        {/* Problem */}
-        <section className="relative max-w-[1200px] mx-auto px-6 md:px-8 py-16 md:py-32">
+      </div>
+      {/* End gradient zone */}
+
+      {/* Problem */}
+      <section className="relative py-16 md:py-32 bg-white">
+        <Container>
           <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-8">{problem.section}</p>
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             
@@ -155,66 +185,67 @@ export default function HomePage() {
             </div>
             
           </div>
-        </section>
-
-      </div>
+        </Container>
+      </section>
 
       {/* Solution - white background */}
-      <section className="relative max-w-[1200px] mx-auto px-6 md:px-8 py-16 md:py-32 bg-white">
-        <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-8">{solution.section}</p>
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          
-          <div className="lg:col-span-5">
-            <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em]">
-              {Array.isArray(solution.title) ? (
-                solution.title.map((line, index) => (
-                  <span key={index} className="block">{line}</span>
-                ))
-              ) : (
-                solution.title
-              )}
-            </h2>
+      <section className="relative py-16 md:py-32 bg-white">
+        <Container>
+          <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-8">{solution.section}</p>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            
+            <div className="lg:col-span-5">
+              <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em]">
+                {Array.isArray(solution.title) ? (
+                  solution.title.map((line, index) => (
+                    <span key={index} className="block">{line}</span>
+                  ))
+                ) : (
+                  solution.title
+                )}
+              </h2>
+            </div>
+            
+            <div className="lg:col-span-6 lg:col-start-7">
+              {renderBody(solution.body)}
+            </div>
+            
           </div>
-          
-          <div className="lg:col-span-6 lg:col-start-7">
-            {renderBody(solution.body)}
-          </div>
-          
-        </div>
+        </Container>
       </section>
 
       {/* Impact - card style */}
-      <section className="relative max-w-[1200px] mx-auto px-6 md:px-8 py-16 md:py-32">
-        
-        <div className="bg-[#f7f7f7] rounded-[4px] p-6 pt-14 md:p-16 relative">
-          
-          <span className="absolute top-6 right-6 font-ui text-[10px] tracking-widest uppercase opacity-30">{impact.section}</span>
-          
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center">
+      <section className="relative py-16 md:py-32">
+        <Container>
+          <div className="bg-[#f7f7f7] rounded-[4px] p-6 pt-14 md:p-16 relative">
             
-            <div>
-              <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em]">{impact.title}</h2>
-            </div>
+            <span className="absolute top-6 right-6 font-ui text-[10px] tracking-widest uppercase opacity-30">{impact.section}</span>
             
-            <div>
-              <div className="space-y-3">
-                {impact.items.map((item, index) => (
-                  <p key={index} className="text-[16px] md:text-[18px] font-normal leading-[1.4] opacity-70">
-                    {item}
-                  </p>
-                ))}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center">
+              
+              <div>
+                <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em]">{impact.title}</h2>
               </div>
+              
+              <div>
+                <div className="space-y-3">
+                  {impact.items.map((item, index) => (
+                    <p key={index} className="text-[16px] md:text-[18px] font-normal leading-[1.4] opacity-70">
+                      {item}
+                    </p>
+                  ))}
+                </div>
+              </div>
+              
             </div>
-            
           </div>
-        </div>
+        </Container>
       </section>
 
       {/* DARK ZONE: Platforms */}
       <div className="w-full text-white" style={{ background: 'linear-gradient(to bottom, #484848 0%, #2f2f2f 100%)' }}>
-        
         <section className="py-16 md:py-32">
-          <div className="max-w-[1200px] mx-auto px-6 md:px-8">
+          <Container>
             <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-8">{platforms.section}</p>
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
               
@@ -246,25 +277,24 @@ export default function HomePage() {
               </div>
               
             </div>
-
-          </div>
+          </Container>
         </section>
-
       </div>
 
-      {/* CTA - gradient to footer */}
-      <section className="w-full text-white py-12 md:py-24" style={{ background: 'linear-gradient(to bottom, #2f2f2f 0%, #1a1a1a 100%)' }}>
-        <div className="max-w-[1200px] mx-auto px-6 md:px-8">
-          
-          <div className="flex items-center gap-4 justify-end">
+      {/* CTA - gradient to footer - cerchio scuro con animazione, centrato nello spazio */}
+      <section className="w-full text-white py-24 md:py-32" style={{ background: 'linear-gradient(to bottom, #2f2f2f 0%, #1a1a1a 100%)' }}>
+        <Container>
+          <div className="flex items-center gap-4 justify-end mr-[-27.5px] md:mr-[-37.5px]">
             <span className="font-ui text-[12px] font-medium tracking-wide uppercase-force opacity-40">{cta.label}</span>
-            <Link href="/contact" className="relative font-ui text-[12px] font-medium tracking-wide uppercase px-6 py-4 rounded-[4px] overflow-hidden">
-              <span className="absolute inset-0 bg-[#3a3a3a] animate-pulse-soft rounded-[4px]"></span>
-              <span className="relative z-10 text-white uppercase-force">{cta.button}</span>
+            <Link 
+              href="/contact" 
+              className="relative flex items-center justify-center w-[55px] h-[55px] md:w-[75px] md:h-[75px] rounded-full overflow-hidden"
+            >
+              <span className="absolute inset-0 bg-[#3a3a3a] animate-pulse-soft rounded-full"></span>
+              <span className="relative z-10 font-ui text-[11px] md:text-[12px] font-bold tracking-wide text-white uppercase-force">TRY</span>
             </Link>
           </div>
-          
-        </div>
+        </Container>
       </section>
 
     </div>

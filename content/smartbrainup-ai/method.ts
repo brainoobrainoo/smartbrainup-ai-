@@ -159,11 +159,11 @@ export const methodContent = {
     section: "08 — OUTCOMES",
     title: "What you get",
     items: [
-      "A structured context that remains stable over time.",
-      "Interactions guided by the method.",
-      "Consistent results as models evolve.",
-      "Clearer decisions with less cognitive overhead.",
-      "A reusable reasoning layer across roles and teams."
+      "A structured context that remains stable over time",
+      "Interactions guided by the method",
+      "Consistent results as models evolve",
+      "Clearer decisions with less cognitive overhead",
+      "A reusable reasoning layer across roles and teams"
     ]
   },
 

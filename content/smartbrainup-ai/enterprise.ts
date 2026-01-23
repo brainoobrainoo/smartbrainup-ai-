@@ -85,11 +85,11 @@ export const enterpriseContent = {
     section: "02 — OUTCOMES",
     title: "What you get",
     items: [
-      "Unlimited Second Brains.",
-      "PMF Dynamic™ with semantic watermarking.",
-      "Dedicated onboarding configuration.",
-      "Multi-user context modeling.",
-      "Optional API layer."
+      "Unlimited Second Brains",
+      "PMF Dynamic™ with semantic watermarking",
+      "Dedicated onboarding configuration",
+      "Multi-user context modeling",
+      "Optional API layer"
     ]
   },
 

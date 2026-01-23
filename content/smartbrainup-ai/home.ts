@@ -6,6 +6,17 @@ export const homeContent = {
       primary: "AI-UP",
       secondary: "SECOND BRAIN™"
     },
+    loopMessages: [
+      { line1: "AI answers drift over time", line2: "We keep reasoning aligned" },
+      { line1: "Same input produces different outputs", line2: "We enforce a stable logic path" },
+      { line1: "Context resets at every step", line2: "We build and preserve it" },
+      { line1: "AI reacts instead of reasoning", line2: "We guide the interaction" },
+      { line1: "Logic shifts as complexity increases", line2: "We constrain the reasoning" },
+      { line1: "Results feel unpredictable", line2: "We make behavior deterministic" },
+      { line1: "Users guess what to ask next", line2: "We control the questions" },
+      { line1: "Platforms change and workflows break", line2: "Our method stays the same" },
+      { line1: "Power without control isnt usable", line2: "We make results repeatable" },
+    ],
     headline: [
       "A promptless method",
       "that transforms statistical AI",
@@ -58,11 +69,11 @@ export const homeContent = {
     section: "03 — IMPACT",
     title: "What changes in your work",
     items: [
-      "No prompt writing.",
-      "Stable, repeatable outputs.",
-      "Faster decisions with less effort.",
-      "Clarity instead of trial and error.",
-      "Consistent results over time."
+      "No prompt writing",
+      "Stable, repeatable outputs",
+      "Faster decisions with less effort",
+      "Clarity instead of trial and error",
+      "Consistent results over time"
     ]
   },
 
@@ -73,8 +84,8 @@ export const homeContent = {
       "multiple platforms"
     ],
     body: [
-      "The value is not tied to the platform.",
-      "It's tied to the way you work."
+      "The value is not tied to the platform",
+      "It's tied to the way you work"
     ],
     list: "GPT · Claude · Gemini · Grok · Perplexity"
   },

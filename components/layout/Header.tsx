@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
+import { usePathname } from 'next/navigation'
 
 type NavLink = {
   label: string
@@ -16,15 +17,18 @@ type HeaderProps = {
 
 export default function Header({ logo, links, variant = 'dark' }: HeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false)
+  const pathname = usePathname()
 
   const bgColor = variant === 'dark' ? 'bg-[#252525]' : 'bg-white'
   const textColor = variant === 'dark' ? 'text-white' : 'text-[#1a1a1a]'
   const borderColor = variant === 'dark' ? 'border-white/10' : 'border-[#e8e8e8]'
   const lineColor = variant === 'dark' ? 'bg-white' : 'bg-[#1a1a1a]'
 
+  const isActive = (href: string) => pathname === href
+
   return (
     <header className={`fixed top-0 left-0 right-0 z-50 w-full ${bgColor}`}>
-      <div className="max-w-[1200px] mx-auto px-6 md:px-8 py-5 flex items-center justify-between">
+      <div className="max-w-[1200px] mx-auto px-14 md:px-12 py-5 flex items-center justify-between">
         <Link href="/" className={`font-editorial text-[18px] font-normal ${textColor} tracking-[-0.01em]`}>
           {logo}
         </Link>
@@ -35,9 +39,13 @@ export default function Header({ logo, links, variant = 'dark' }: HeaderProps) {
             <Link 
               key={link.href}
               href={link.href} 
-              className={`font-ui text-[13px] font-medium ${textColor} opacity-80 hover:opacity-100 transition-opacity`}
+              className={`font-ui text-[13px] ${textColor} transition-opacity ${
+                isActive(link.href) 
+                  ? 'font-medium opacity-100' 
+                  : 'font-normal opacity-50 hover:opacity-80'
+              }`}
             >
-              {link.label}
+              {link.label.toLowerCase()}
             </Link>
           ))}
         </nav>
@@ -55,16 +63,20 @@ export default function Header({ logo, links, variant = 'dark' }: HeaderProps) {
 
       {/* Mobile nav */}
       {menuOpen && (
-        <nav className={`md:hidden ${bgColor} border-t ${borderColor} px-6 py-6`}>
+        <nav className={`md:hidden ${bgColor} border-t ${borderColor} px-14 py-6`}>
           <div className="flex flex-col gap-4">
             {links.map((link) => (
               <Link 
                 key={link.href}
                 href={link.href} 
-                className={`font-ui text-[13px] font-medium ${textColor} opacity-80 hover:opacity-100 transition-opacity`}
+                className={`font-ui text-[13px] ${textColor} transition-opacity ${
+                  isActive(link.href) 
+                    ? 'font-medium opacity-100' 
+                    : 'font-normal opacity-50 hover:opacity-80'
+                }`}
                 onClick={() => setMenuOpen(false)}
               >
-                {link.label}
+                {link.label.toLowerCase()}
               </Link>
             ))}
           </div>
