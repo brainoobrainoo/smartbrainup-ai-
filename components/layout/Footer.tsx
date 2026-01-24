@@ -6,7 +6,7 @@ import { footerData } from '@/content/shared/footer'
 export default function Footer() {
   return (
     <footer className="w-full bg-[#1a1a1a] text-white py-12 md:py-16">
-      <div className="max-w-[1200px] mx-auto px-14 md:px-12">
+      <div className="max-w-[1200px] mx-auto px-10 md:px-12">
         
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12 mb-12">
           

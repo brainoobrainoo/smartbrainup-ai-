@@ -96,7 +96,7 @@ export default function AboutPage() {
         {/* Story card - grigio scuro, testo bianco, due colonne desktop allineate in alto */}
         <section className="relative z-10 pb-16 md:pb-24">
           <Container>
-            <div className="rounded-[4px] p-8 py-10 md:p-12 md:py-16" style={{ background: 'linear-gradient(to bottom, #3a3a3a 0%, #282828 100%)' }}>
+            <div className="rounded-[4px] p-8 py-10 md:p-12 md:py-16" style={{ background: 'linear-gradient(to bottom, #353535 0%, #232323 100%)' }}>
               
               {/* Due colonne desktop allineate in alto, una mobile */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-start">
@@ -115,7 +115,7 @@ export default function AboutPage() {
         {/* CTA */}
         <section className="relative z-10 py-24 md:py-32">
           <Container>
-            <div className="flex items-center gap-4 justify-end mr-[-27.5px] md:mr-[-37.5px]">
+            <div className="flex items-center gap-4 justify-end">
               <span className="font-ui text-[12px] font-medium tracking-wide uppercase-force opacity-40">{cta.label}</span>
               <Link 
                 href="/contact" 

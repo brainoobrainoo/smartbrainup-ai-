@@ -18,7 +18,7 @@ export const homeContent = {
       { line1: "Power without control isnt usable", line2: "We make results repeatable" },
     ],
     headline: [
-      "A promptless method",
+      "a promptless method",
       "that transforms statistical AI",
       "into a deterministic system"
     ],

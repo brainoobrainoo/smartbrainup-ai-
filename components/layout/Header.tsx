@@ -28,13 +28,15 @@ export default function Header({ logo, links, variant = 'dark' }: HeaderProps) {
 
   return (
     <header className={`fixed top-0 left-0 right-0 z-50 w-full ${bgColor}`}>
-      <div className="max-w-[1200px] mx-auto px-14 md:px-12 py-5 flex items-center justify-between">
+      <div className="max-w-[1200px] mx-auto px-10 md:px-12 py-5 flex items-center justify-center relative">
+        
+        {/* Logo centrato */}
         <Link href="/" className={`font-editorial text-[18px] font-normal ${textColor} tracking-[-0.01em]`}>
           {logo}
         </Link>
         
-        {/* Desktop nav */}
-        <nav className="hidden md:flex items-center gap-8">
+        {/* Desktop nav - posizione assoluta a destra */}
+        <nav className="hidden md:flex items-center gap-8 absolute right-12">
           {links.map((link) => (
             <Link 
               key={link.href}
@@ -50,9 +52,9 @@ export default function Header({ logo, links, variant = 'dark' }: HeaderProps) {
           ))}
         </nav>
 
-        {/* Burger button */}
+        {/* Burger button - posizione assoluta a destra */}
         <button 
-          className="md:hidden flex flex-col justify-center items-center w-8 h-8"
+          className="md:hidden flex flex-col justify-center items-center w-8 h-8 absolute right-10"
           onClick={() => setMenuOpen(!menuOpen)}
           aria-label="Toggle menu"
         >
@@ -63,7 +65,7 @@ export default function Header({ logo, links, variant = 'dark' }: HeaderProps) {
 
       {/* Mobile nav */}
       {menuOpen && (
-        <nav className={`md:hidden ${bgColor} border-t ${borderColor} px-14 py-6`}>
+        <nav className={`md:hidden ${bgColor} border-t ${borderColor} px-10 py-6`}>
           <div className="flex flex-col gap-4">
             {links.map((link) => (
               <Link 

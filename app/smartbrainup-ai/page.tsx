@@ -11,41 +11,33 @@ import sphereAnimation from '../../public/animations/SFERA_LOGO_B.json'
 
 export default function HomePage() {
   const { hero, problem, solution, impact, platforms, cta } = homeContent
-  const { loopMessages } = hero
 
+  // Typewriter effect
+  const fullText = hero.headline.join('\n')
+  const [displayedText, setDisplayedText] = useState('')
   const [currentIndex, setCurrentIndex] = useState(0)
-  const [showLine1, setShowLine1] = useState(false)
-  const [showLine2, setShowLine2] = useState(false)
-  const [isFadingOut, setIsFadingOut] = useState(false)
 
   useEffect(() => {
-    setIsFadingOut(false)
-    
-    // Fade-in line 1 (3s)
-    const timer1 = setTimeout(() => setShowLine1(true), 100)
-    
-    // Quando line 1 è al 100% (dopo 3s), fade-in line 2 (3s)
-    const timer2 = setTimeout(() => setShowLine2(true), 3100)
-    
-    // Entrambe al 100% a 6.1s, restano 1s, poi fade-out a 7.1s
-    const timer3 = setTimeout(() => {
-      setIsFadingOut(true)
-      setShowLine1(false)
-      setShowLine2(false)
-    }, 7100)
-    
-    // Dopo fade-out (4s), subito prossimo messaggio a 11.1s
-    const timer4 = setTimeout(() => {
-      setCurrentIndex((prev) => (prev + 1) % loopMessages.length)
-    }, 11100)
-
-    return () => {
-      clearTimeout(timer1)
-      clearTimeout(timer2)
-      clearTimeout(timer3)
-      clearTimeout(timer4)
+    if (currentIndex < fullText.length) {
+      const currentChar = fullText[currentIndex]
+      
+      // Delay variabile per effetto umano
+      let delay = 45 + Math.random() * 35 // base: 45-80ms per lettera
+      
+      if (currentChar === ' ') {
+        delay = 70 + Math.random() * 50 // spazi: 70-120ms
+      } else if (currentChar === '\n') {
+        delay = 700 + Math.random() * 400 // nuova riga: 700-1100ms
+      }
+      
+      const timer = setTimeout(() => {
+        setDisplayedText(prev => prev + currentChar)
+        setCurrentIndex(prev => prev + 1)
+      }, delay)
+      
+      return () => clearTimeout(timer)
     }
-  }, [currentIndex, loopMessages.length])
+  }, [currentIndex, fullText])
 
   // Helper to render body with proper spacing
   const renderBody = (lines: string[], opacity: string = "opacity-60") => {
@@ -79,81 +71,55 @@ export default function HomePage() {
     )
   }
 
-  const transitionDuration = isFadingOut ? '4s' : '3s'
-
   return (
     <div className="min-h-screen bg-white overflow-x-hidden">
       
       {/* Gradient zone: Hero + CTA */}
-      <div style={{ background: 'linear-gradient(to bottom, #ebebeb 0%, #ffffff calc(100% - 200px), #ffffff 100%)' }}>
+      <div style={{ background: 'linear-gradient(to bottom, #252525 0%, #252525 80px, #5a5a5a 100%)' }} className="text-white min-h-[100dvh] flex flex-col">
         
-        {/* Hero Section */}
-        <section className="relative pt-20 md:pt-32 pb-16 md:pb-24">
+        {/* Hero Section - occupa tutto lo spazio disponibile */}
+        <section className="flex-1 flex flex-col justify-center pt-16 pb-[250px] md:pb-[350px]">
           <Container>
-            <div className="relative">
-              <p className="font-ui text-[11px] font-medium tracking-widest uppercase mb-8">
-                <span className="opacity-100 uppercase-force">{hero.badge.primary}</span>
-                <span className="opacity-50 uppercase-force"> {hero.badge.secondary}</span>
-              </p>
+            <div className="flex flex-col items-center text-center">
               
-              {/* Sfera logo - centro allineato alla linea sinistra */}
-              <div className="mb-8 ml-[-27.5px] md:ml-[-37.5px]">
+              {/* Sfera logo */}
+              <div className="mb-9">
                 <Lottie 
                   animationData={sphereAnimation}
                   loop={true}
-                  className="w-[55px] h-[55px] md:w-[75px] md:h-[75px]"
+                  className="w-[65px] h-[65px] md:w-[95px] md:h-[95px]"
                 />
               </div>
               
-              {/* Loop messaggi animato */}
-              <p className="text-[17px] md:text-[18px] font-bold leading-[1.15] max-w-[480px] mb-8">
-                <span 
-                  className="block"
-                  style={{ 
-                    opacity: showLine1 ? 0.7 : 0,
-                    transition: `opacity ${transitionDuration} cubic-bezier(0.4, 0, 0.2, 1)`
-                  }}
-                >
-                  {loopMessages[currentIndex].line1}
-                </span>
-                <span 
-                  className="block"
-                  style={{ 
-                    opacity: showLine2 ? 0.7 : 0,
-                    transition: `opacity ${transitionDuration} cubic-bezier(0.4, 0, 0.2, 1)`
-                  }}
-                >
-                  {loopMessages[currentIndex].line2}
-                </span>
-              </p>
+              {/* Headline con typewriter - altezza fissa per 3 righe */}
+              <div className="h-[60px] md:h-[66px]">
+                <p className="text-[17px] md:text-[18px] font-normal leading-[1.15] opacity-70">
+                  {displayedText.split('\n').map((line, index) => (
+                    <span key={index} className="block">
+                      {line}
+                      {index === displayedText.split('\n').length - 1 && currentIndex < fullText.length && (
+                        <span className="animate-pulse">|</span>
+                      )}
+                    </span>
+                  ))}
+                </p>
+              </div>
               
-              {/* Headline statico */}
-              <p className="text-[17px] md:text-[18px] font-normal leading-[1.15] max-w-[480px] opacity-70 mb-8">
-                {hero.headline.map((line, index) => (
-                  <span key={index} className="block">{line}</span>
-                ))}
-              </p>
-              
-              {/* Subtext statico */}
-              <p className="text-[17px] md:text-[18px] font-normal leading-[1.15] max-w-[480px] opacity-70">
-                {hero.subtext.map((line, index) => (
-                  <span key={index} className="block">{line}</span>
-                ))}
-              </p>
             </div>
           </Container>
         </section>
         
-        {/* CTA Section - centrato nello spazio tra hero e problem */}
-        <section className="relative py-16 md:py-24">
+        {/* CTA Section - in basso */}
+        <section className="pb-12 md:pb-16">
           <Container>
-            <div className="flex items-center gap-4 justify-end mr-[-27.5px] md:mr-[-37.5px]">
+            <div className="flex items-center gap-4 justify-end">
               <span className="font-ui text-[12px] font-medium tracking-wide uppercase-force opacity-40">{hero.cta.label}</span>
               <Link 
                 href="/contact" 
-                className="relative flex items-center justify-center w-[55px] h-[55px] md:w-[75px] md:h-[75px] rounded-full bg-[#f5f5f5]"
+                className="relative flex items-center justify-center w-[55px] h-[55px] md:w-[75px] md:h-[75px] rounded-full overflow-hidden"
               >
-                <span className="font-ui text-[11px] md:text-[12px] font-bold tracking-wide text-[#1a1a1a] uppercase-force">TRY</span>
+                <span className="absolute inset-0 bg-[#3a3a3a] animate-pulse-soft rounded-full"></span>
+                <span className="relative z-10 font-ui text-[11px] md:text-[12px] font-bold tracking-wide text-white uppercase-force">TRY</span>
               </Link>
             </div>
           </Container>
@@ -281,10 +247,10 @@ export default function HomePage() {
         </section>
       </div>
 
-      {/* CTA - gradient to footer - cerchio scuro con animazione, centrato nello spazio */}
+      {/* CTA - gradient to footer */}
       <section className="w-full text-white py-24 md:py-32" style={{ background: 'linear-gradient(to bottom, #2f2f2f 0%, #1a1a1a 100%)' }}>
         <Container>
-          <div className="flex items-center gap-4 justify-end mr-[-27.5px] md:mr-[-37.5px]">
+          <div className="flex items-center gap-4 justify-end">
             <span className="font-ui text-[12px] font-medium tracking-wide uppercase-force opacity-40">{cta.label}</span>
             <Link 
               href="/contact" 

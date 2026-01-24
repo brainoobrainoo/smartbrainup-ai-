@@ -219,7 +219,7 @@ export default function EnterprisePage() {
       {/* CTA - gradient to footer */}
       <section className="w-full text-white py-24 md:py-32" style={{ background: 'linear-gradient(to bottom, #2f2f2f 0%, #1a1a1a 100%)' }}>
         <Container>
-          <div className="flex items-center gap-4 justify-end mr-[-27.5px] md:mr-[-37.5px]">
+          <div className="flex items-center gap-4 justify-end">
             <span className="font-ui text-[12px] font-medium tracking-wide uppercase-force opacity-40">{cta.label}</span>
             <Link 
               href="/contact" 
