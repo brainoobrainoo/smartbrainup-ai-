@@ -2,69 +2,157 @@
 
 export const ipContent = {
   hero: {
-    badge: 'Intellectual Property',
-    headline: 'A Layered Architecture of Protected Components',
-    description: 'The AI-UP Second Brain™ method is built on a structured hierarchy of intellectual property, each layer serving a distinct function within the system. This architecture ensures both legal protection and operational flexibility.'
-  },
-
-  promptGenesi: {
-    headline: 'Prompt Genesi™',
-    badge: 'Patentable Component',
-    paragraphs: [
-      'Prompt Genesi™ is the central logical formula of the AI-UP Second Brain™ method. It represents the only patentable component of the entire system and constitutes the core innovation that enables deterministic AI interaction.',
-      'The formula is non-exposed and non-replicable by design. It is never distributed directly to end users or licensees. Instead, it operates as the invisible engine that powers all derivative implementations.',
-      'Prompt Genesi™ is anchored on an immutable blockchain ledger, providing timestamped certification, tamper-proof verification, and long-term traceability for intellectual property protection.'
+    badge: {
+      primary: 'AI-UP',
+      secondary: 'SECOND BRAIN™ INTELLECTUAL PROPERTY'
+    },
+    title: [
+      'Protection is not a layer',
+      'it is part of the architecture'
+    ],
+    subtext: [
+      'Designed to preserve value',
+      'without exposing the method'
     ]
   },
 
-  pmf: {
-    headline: 'PMF™ — Portable Masked Formula',
-    badge: 'Licensed Implementation',
-    paragraphs: [
-      'PMF™ is a portable implementation that replicates the operational behavior of Prompt Genesi™ without revealing its internal structure. It serves as the standard distribution format for individual and team licensing.',
-      'The masked nature of PMF™ ensures that users benefit from the full capabilities of the method while the underlying formula remains protected. This separation between interface and implementation is fundamental to our licensing model.',
-      'PMF™ operates across all supported AI platforms — including GPT, Claude, Gemini, Grok, and Perplexity — maintaining identical behavior regardless of the execution surface.'
+  premise: {
+    section: '01 — Premise',
+    title: 'Purpose',
+    body: [
+      'AI-UP Second Brain™ is protected by design',
+      'not through secrecy',
+      'but through a layered intellectual property architecture',
+      'that separates logic',
+      'execution',
+      'and deployment',
+      '',
+      'Promptless Prompting ensures execution without disclosure',
+      'without exposing core logic'
     ]
   },
 
-  pmfDynamic: {
-    headline: 'PMF Dynamic™',
-    badge: 'Enterprise Grade',
-    paragraphs: [
-      'PMF Dynamic™ is an enterprise-grade variant that incorporates semantic watermarking for source attribution and IP protection. It is designed for organization-wide deployment with full governance and traceability requirements.',
-      'The semantic watermarking system introduces subtle logical variations that act as invisible fingerprints, enabling source attribution without affecting operational behavior. This provides an additional layer of protection against unauthorized redistribution.',
-      'PMF Dynamic™ supports multi-user environments, role-based contexts, and integration with enterprise compliance frameworks.'
-    ]
-  },
-
-  protection: {
-    headline: 'Protection Framework',
+  structure: {
+    section: '02 — Structure',
+    title: 'IP Architecture',
+    body: [
+      'The methodology is built on three distinct components',
+      'Each serves a precise function',
+      'each is protected accordingly'
+    ],
     items: [
-      {
-        name: 'Blockchain Anchoring',
-        description: 'All core components are registered on an immutable blockchain ledger, providing cryptographic proof of existence, ownership, and versioning.'
-      },
-      {
-        name: 'Patent Filing',
-        description: 'Prompt Genesi™ is subject to patent protection under applicable intellectual property laws. Filing details are maintained confidentially until publication.'
-      },
-      {
-        name: 'Licensing Control',
-        description: 'PMF™ and PMF Dynamic™ are distributed exclusively through controlled licensing agreements that prohibit reverse engineering and unauthorized redistribution.'
-      },
-      {
-        name: 'Semantic Watermarking',
-        description: 'Enterprise deployments include invisible logical markers that enable source attribution and usage tracking without affecting functionality.'
-      }
+      { name: 'Prompt Genesi™', description: 'the non-exposed patentable core' },
+      { name: 'PMF™', description: 'portable masked implementation' },
+      { name: 'PMF Dynamic™', description: 'enterprise-grade deployment with governance and attribution' }
     ]
   },
 
-  legal: {
-    headline: 'Legal Notice',
-    paragraphs: [
-      'AI-UP Second Brain™ is the official methodological designation of the system. It may not be used as a generic commercial label, product name, or standalone service outside its official context.',
-      'Prompt Genesi™ identifies the patentable technical formula at the core of the method. It is non-exposed, non-distributable, and permanently protected under applicable intellectual property laws.',
-      'PMF™ and PMF Dynamic™ are protected through licensing and controlled usage. They are not patentable independently and may not be reverse-engineered, reproduced, or redistributed without explicit authorization from SmartBrainUp S.r.l.'
+  coreLogic: {
+    section: '03 — Core Logic',
+    title: 'Prompt Genesi™',
+    body: [
+      'Central deterministic logic of AI-UP Second Brain™',
+      'governs how context is built and how reasoning is guided',
+      'maintains coherence across interactions',
+      '',
+      'Deterministic',
+      'non-exposed',
+      'non-distributable',
+      'non-replicable',
+      '',
+      'The only patentable component of the system',
+      'never delivered directly',
+      'exists as protected intellectual property',
+      'anchored on an immutable blockchain ledger for verification and integrity'
+    ]
+  },
+
+  distribution: {
+    section: '04 — Distribution',
+    title: 'PMF™ — Portable Masked Formula',
+    body: [
+      'Reproduces the operational behavior of Prompt Genesi™',
+      'without revealing its internal structure',
+      '',
+      'Used for',
+      'individual licensing',
+      'team deployment',
+      'professional use cases',
+      '',
+      'Allows the method to be executed',
+      'across supported AI platforms',
+      'while preserving identical behavior'
+    ]
+  },
+
+  enterprise: {
+    section: '05 — Enterprise Deployment',
+    title: 'PMF Dynamic™',
+    body: [
+      'Advanced implementation',
+      'designed for organization-wide use',
+      '',
+      'Incorporates',
+      'semantic watermarking for source attribution',
+      'IP protection mechanisms',
+      'governance and traceability',
+      '',
+      'Enables',
+      'multi-domain deployment',
+      'multi-role architectures',
+      'enterprise-scale consistency'
+    ]
+  },
+
+  ownership: {
+    section: '06 — Ownership',
+    title: 'Protection Model',
+    body: [
+      'Separation between',
+      'core logic',
+      'Prompt Genesi™',
+      '',
+      'Operational behavior',
+      'PMF™',
+      '',
+      'Enterprise deployment',
+      'PMF Dynamic™',
+      '',
+      'Ensures the method remains',
+      'defensible auditable non-replicable',
+      '',
+      'Allows AI-UP Second Brain™',
+      'to scale across platforms and organizations',
+      'without exposing its core'
+    ]
+  },
+
+  position: {
+    section: '07 — Position',
+    title: 'Closing Statement',
+    body: [
+      'The value of AI-UP Second Brain™',
+      'does not lie in prompts',
+      'or outputs',
+      '',
+      'It lies in a protected',
+      'cognitive structure',
+      '',
+      'Promptless Prompting',
+      'makes that structure executable',
+      'anywhere',
+      'without being copied'
+    ]
+  },
+
+  contact: {
+    section: '08 — Next Step',
+    title: 'Contact',
+    body: [
+      'Get in touch',
+      'For intellectual property',
+      'licensing',
+      'or enterprise inquiries'
     ]
   }
 }

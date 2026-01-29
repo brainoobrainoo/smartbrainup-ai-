@@ -2,28 +2,70 @@
 
 export const contactContent = {
   hero: {
-    badge: 'SmartBrainUp S.r.l. Innovativa',
-    headline: 'Get in Touch',
-    description: 'For general inquiries, press, partnerships, or any questions about SmartBrainUp and the AI-UP Second Brain™ method.'
-  },
-
-  form: {
-    fields: {
-      name: 'Name',
-      email: 'Email',
-      organization: 'Organization',
-      subject: 'Subject',
-      message: 'Message'
+    badge: {
+      primary: 'AI-UP',
+      secondary: 'SECOND BRAIN™ CONTACT'
     },
-    button: 'Send Message'
+    title: [
+      'For organizations working with AI',
+      'in complex professional environments'
+    ],
+    subtext: [
+      'This page exists',
+      'to enable direct and meaningful contact'
+    ]
   },
 
-  info: {
-    company: 'SmartBrainUp S.r.l. Innovativa',
-    address: 'Fiera del Levante — Pavilion 129, Viale Volga — 70132 Bari, Italy',
-    email: 'info@smartbrainup.com',
-    pec: 'smartbrainup@pec.it'
+  purpose: {
+    section: 'PURPOSE',
+    title: 'Direct communication',
+    body: [
+      'A professional channel',
+      'for focused conversations',
+      '',
+      'No sales funnels',
+      'no automated responses',
+      'no generic requests'
+    ]
   },
 
-  note: 'We typically respond within 2–3 business days.'
+  contact: {
+    section: 'CONTACT',
+    body: [
+      'For inquiries related to',
+      'partnerships',
+      'enterprise adoption',
+      'intellectual property',
+      'security and compliance',
+      'institutional dialogue',
+      '',
+      'Please contact us directly'
+    ]
+  },
+
+  company: {
+    section: 'COMPANY',
+    body: [
+      'SmartBrainUp S.r.l. Innovativa',
+      'VAT / Tax ID 09116330722',
+      '',
+      'Fiera del Levante',
+      'Pavilion 129',
+      'Viale Volga',
+      '70132 Bari',
+      'Italy',
+      '',
+      'Email info@smartbrainup.com',
+      'PEC smartbrainup@pec.it'
+    ]
+  },
+
+  responseTime: {
+    section: 'RESPONSE TIME',
+    body: [
+      'All requests are reviewed carefully',
+      'Responses are provided',
+      'after proper evaluation'
+    ]
+  }
 }

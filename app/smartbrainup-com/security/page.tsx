@@ -1,14 +1,13 @@
 'use client'
 
-// app/(smartbrainup-com)/ip/page.tsx
+// app/(smartbrainup-com)/security/page.tsx
 
-import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { ipContent } from '@/content/smartbrainup-com/ip'
+import { securityContent } from '@/content/smartbrainup-com/security'
 import Container from '@/components/layout/Container'
 
-export default function IPPage() {
-  const { hero, premise, structure, coreLogic, distribution, enterprise, ownership, position, contact } = ipContent
+export default function SecurityPage() {
+  const { hero, premise, structure, integrity, attribution, control, governance, data, enterprise, position, contact } = securityContent
 
   const [showFirst, setShowFirst] = useState(false)
   const [showSecond, setShowSecond] = useState(false)
@@ -45,7 +44,7 @@ export default function IPPage() {
     return (
       <div className="space-y-4">
         {blocks.map((block, blockIndex) => (
-          <p key={blockIndex} className="text-[15px] md:text-[16px] leading-[1.55] text-[#1a1a1a]/65">
+          <p key={blockIndex} className="text-[16px] leading-[1.55] text-[#1a1a1a]/65">
             {block.map((line, lineIndex) => (
               <span key={lineIndex} className="block">{line}</span>
             ))}
@@ -58,18 +57,51 @@ export default function IPPage() {
   return (
     <div className="min-h-screen bg-white text-[#1a1a1a]">
       
-      {/* Hero - sfondo bianco, posizioni e animazioni come .ai */}
-      <section className="pt-20 md:pt-32 pb-24 md:pb-32 border-b border-[#1a1a1a]/10">
+      {/* Hero - bianco */}
+      <section className="pt-20 md:pt-32 pb-24 md:pb-32 bg-white">
         <Container>
           <div className="relative">
-            <p className="font-ui text-[11px] font-medium tracking-widest uppercase mb-4">
+            {/* Badge - Mobile */}
+            <p className="md:hidden font-ui text-[11px] font-medium tracking-widest uppercase mb-4">
+              <span className="block">
+                <span className="opacity-100">{hero.badge.primary}</span>
+                <span className="opacity-50"> SECOND BRAIN™</span>
+              </span>
+              <span className="block opacity-50">SECURITY & COMPLIANCE</span>
+            </p>
+            
+            {/* Badge - Desktop */}
+            <p className="hidden md:block font-ui text-[11px] font-medium tracking-widest uppercase mb-4">
               <span className="opacity-100">{hero.badge.primary}</span>
               <span className="opacity-50"> {hero.badge.secondary}</span>
             </p>
             
             <h1 className="text-[42px] md:text-[64px] font-normal leading-[1.0] tracking-[-0.02em] mb-8">
+              {/* Mobile */}
               <span 
-                className="block"
+                className="md:hidden"
+                style={{ 
+                  opacity: showFirst ? 1 : 0.08,
+                  transition: 'opacity 4s cubic-bezier(0.4, 0, 0.2, 1)'
+                }}
+              >
+                <span className="block">Security is not</span>
+                <span className="block">an add-on</span>
+              </span>
+              <span 
+                className="md:hidden"
+                style={{ 
+                  opacity: showSecond ? 1 : 0.03,
+                  transition: 'opacity 4s cubic-bezier(0.4, 0, 0.2, 1)'
+                }}
+              >
+                <span className="block">it is part of</span>
+                <span className="block">the method</span>
+              </span>
+              
+              {/* Desktop */}
+              <span 
+                className="hidden md:block"
                 style={{ 
                   opacity: showFirst ? 1 : 0.08,
                   transition: 'opacity 4s cubic-bezier(0.4, 0, 0.2, 1)'
@@ -78,7 +110,7 @@ export default function IPPage() {
                 {hero.title[0]}
               </span>
               <span 
-                className="block"
+                className="hidden md:block"
                 style={{ 
                   opacity: showSecond ? 1 : 0.03,
                   transition: 'opacity 4s cubic-bezier(0.4, 0, 0.2, 1)'
@@ -97,8 +129,8 @@ export default function IPPage() {
         </Container>
       </section>
 
-      {/* Row 1: 01 Premise | 02 Structure */}
-      <section className="py-16 md:py-24 border-b border-[#1a1a1a]/10">
+      {/* Row 1: 01 Premise | 02 Structure - crema */}
+      <section className="py-16 md:py-24 bg-[#fdfcfb]">
         <Container>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16">
             
@@ -122,57 +154,91 @@ export default function IPPage() {
                 {structure.title}
               </h2>
               {renderBody(structure.body)}
-              <div className="space-y-3 mt-6">
-                {structure.items.map((item, index) => (
-                  <div key={index} className="flex items-baseline gap-3">
-                    <span className="text-[14px] font-medium text-[#1a1a1a]">{item.name}</span>
-                    <span className="text-[14px] text-[#1a1a1a]/50">{item.description}</span>
-                  </div>
-                ))}
-              </div>
             </div>
             
           </div>
         </Container>
       </section>
 
-      {/* Row 2: 03 Core Logic | 04 Distribution */}
-      <section className="py-16 md:py-24 border-b border-[#1a1a1a]/10">
+      {/* Row 2: 03 Integrity | 04 Attribution - freddo */}
+      <section className="py-16 md:py-24 bg-[#fcfcfb]">
         <Container>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16">
             
-            {/* 03 Core Logic */}
+            {/* 03 Integrity */}
             <div>
               <p className="font-ui text-[11px] font-medium tracking-widest uppercase text-[#1a1a1a]/40 mb-6">
-                {coreLogic.section}
+                {integrity.section}
               </p>
               <h2 className="text-[20px] md:text-[24px] font-medium leading-[1.2] tracking-[-0.01em] mb-5">
-                {coreLogic.title}
+                {integrity.title}
               </h2>
-              {renderBody(coreLogic.body)}
+              {renderBody(integrity.body)}
             </div>
             
-            {/* 04 Distribution */}
+            {/* 04 Attribution */}
             <div>
               <p className="font-ui text-[11px] font-medium tracking-widest uppercase text-[#1a1a1a]/40 mb-6">
-                {distribution.section}
+                {attribution.section}
               </p>
               <h2 className="text-[20px] md:text-[24px] font-medium leading-[1.2] tracking-[-0.01em] mb-5">
-                {distribution.title}
+                {attribution.title}
               </h2>
-              {renderBody(distribution.body)}
+              {renderBody(attribution.body)}
             </div>
             
           </div>
         </Container>
       </section>
 
-      {/* Row 3: 05 Enterprise | 06 Ownership */}
-      <section className="py-16 md:py-24 border-b border-[#1a1a1a]/10">
+      {/* Row 3: 05 Control | 06 Governance - beige */}
+      <section className="py-16 md:py-24 bg-[#fbfaf8]">
         <Container>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16">
             
-            {/* 05 Enterprise Deployment */}
+            {/* 05 Control */}
+            <div>
+              <p className="font-ui text-[11px] font-medium tracking-widest uppercase text-[#1a1a1a]/40 mb-6">
+                {control.section}
+              </p>
+              <h2 className="text-[20px] md:text-[24px] font-medium leading-[1.2] tracking-[-0.01em] mb-5">
+                {control.title}
+              </h2>
+              {renderBody(control.body)}
+            </div>
+            
+            {/* 06 Governance */}
+            <div>
+              <p className="font-ui text-[11px] font-medium tracking-widest uppercase text-[#1a1a1a]/40 mb-6">
+                {governance.section}
+              </p>
+              <h2 className="text-[20px] md:text-[24px] font-medium leading-[1.2] tracking-[-0.01em] mb-5">
+                {governance.title}
+              </h2>
+              {renderBody(governance.body)}
+            </div>
+            
+          </div>
+        </Container>
+      </section>
+
+      {/* Row 4: 07 Data | 08 Enterprise - freddo */}
+      <section className="py-16 md:py-24 bg-[#fcfcfb]">
+        <Container>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16">
+            
+            {/* 07 Data */}
+            <div>
+              <p className="font-ui text-[11px] font-medium tracking-widest uppercase text-[#1a1a1a]/40 mb-6">
+                {data.section}
+              </p>
+              <h2 className="text-[20px] md:text-[24px] font-medium leading-[1.2] tracking-[-0.01em] mb-5">
+                {data.title}
+              </h2>
+              {renderBody(data.body)}
+            </div>
+            
+            {/* 08 Enterprise */}
             <div>
               <p className="font-ui text-[11px] font-medium tracking-widest uppercase text-[#1a1a1a]/40 mb-6">
                 {enterprise.section}
@@ -183,27 +249,16 @@ export default function IPPage() {
               {renderBody(enterprise.body)}
             </div>
             
-            {/* 06 Ownership */}
-            <div>
-              <p className="font-ui text-[11px] font-medium tracking-widest uppercase text-[#1a1a1a]/40 mb-6">
-                {ownership.section}
-              </p>
-              <h2 className="text-[20px] md:text-[24px] font-medium leading-[1.2] tracking-[-0.01em] mb-5">
-                {ownership.title}
-              </h2>
-              {renderBody(ownership.body)}
-            </div>
-            
           </div>
         </Container>
       </section>
 
-      {/* Row 4: 07 Position | 08 Contact */}
-      <section className="py-16 md:py-24">
+      {/* Row 5: 09 Position | 10 Contact - bianco */}
+      <section className="py-16 md:py-24 bg-white">
         <Container>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16">
             
-            {/* 07 Position */}
+            {/* 09 Position */}
             <div>
               <p className="font-ui text-[11px] font-medium tracking-widest uppercase text-[#1a1a1a]/40 mb-6">
                 {position.section}
@@ -214,7 +269,7 @@ export default function IPPage() {
               {renderBody(position.body)}
             </div>
             
-            {/* 08 Contact */}
+            {/* 10 Contact */}
             <div>
               <p className="font-ui text-[11px] font-medium tracking-widest uppercase text-[#1a1a1a]/40 mb-6">
                 {contact.section}
@@ -222,14 +277,6 @@ export default function IPPage() {
               <h2 className="text-[20px] md:text-[24px] font-medium leading-[1.2] tracking-[-0.01em] mb-5">
                 {contact.title}
               </h2>
-              
-              <Link 
-                href={contact.cta.href}
-                className="inline-block text-[15px] font-medium text-[#1a1a1a] hover:text-[#1a1a1a]/70 transition-colors mb-6"
-              >
-                {contact.cta.label} →
-              </Link>
-              
               {renderBody(contact.body)}
             </div>
             

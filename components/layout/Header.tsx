@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
-import { usePathname } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 
 type NavLink = {
   label: string
@@ -18,6 +18,16 @@ type HeaderProps = {
 export default function Header({ logo, links, variant = 'dark' }: HeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false)
   const pathname = usePathname()
+  const searchParams = useSearchParams()
+  
+  // Preserva il query parameter surface
+  const surface = searchParams.get('surface')
+  const buildHref = (href: string) => {
+    if (surface) {
+      return `${href}?surface=${surface}`
+    }
+    return href
+  }
 
   const bgColor = variant === 'dark' ? 'bg-[#252525]' : 'bg-white'
   const textColor = variant === 'dark' ? 'text-white' : 'text-[#1a1a1a]'
@@ -31,7 +41,7 @@ export default function Header({ logo, links, variant = 'dark' }: HeaderProps) {
       <div className="max-w-[1200px] mx-auto px-10 md:px-12 py-5 flex items-center justify-center relative">
         
         {/* Logo centrato */}
-        <Link href="/" className={`font-editorial text-[18px] font-normal ${textColor} tracking-[-0.01em]`}>
+        <Link href={buildHref('/')} className={`font-editorial text-[18px] font-normal ${textColor} tracking-[-0.01em]`}>
           {logo}
         </Link>
         
@@ -40,7 +50,7 @@ export default function Header({ logo, links, variant = 'dark' }: HeaderProps) {
           {links.map((link) => (
             <Link 
               key={link.href}
-              href={link.href} 
+              href={buildHref(link.href)} 
               className={`font-ui text-[13px] ${textColor} transition-opacity ${
                 isActive(link.href) 
                   ? 'font-medium opacity-100' 
@@ -70,7 +80,7 @@ export default function Header({ logo, links, variant = 'dark' }: HeaderProps) {
             {links.map((link) => (
               <Link 
                 key={link.href}
-                href={link.href} 
+                href={buildHref(link.href)} 
                 className={`font-ui text-[13px] ${textColor} transition-opacity ${
                   isActive(link.href) 
                     ? 'font-medium opacity-100' 
