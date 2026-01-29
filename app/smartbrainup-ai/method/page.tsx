@@ -1,35 +1,38 @@
 'use client'
 
-// app/(smartbrainup-com)/ip/page.tsx
+// app/smartbrainup-ai/method/page.tsx
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { ipContent } from '@/content/smartbrainup-com/ip'
+import { methodContent } from '@/content/smartbrainup-ai/method'
 import Container from '@/components/layout/Container'
 
-export default function IPPage() {
-  const { hero, premise, structure, coreLogic, distribution, enterprise, ownership, position, contact } = ipContent
+export default function MethodPage() {
+  const { hero, core, interaction, determinism, process, execution, platforms, delivery, outcomes, cta } = methodContent
 
   const [showFirst, setShowFirst] = useState(false)
   const [showSecond, setShowSecond] = useState(false)
+  const [showCore, setShowCore] = useState(false)
 
   useEffect(() => {
     const timerFirst = setTimeout(() => setShowFirst(true), 10)
     const timerSecond = setTimeout(() => setShowSecond(true), 500)
+    const timerCore = setTimeout(() => setShowCore(true), 1000)
 
     return () => {
       clearTimeout(timerFirst)
       clearTimeout(timerSecond)
+      clearTimeout(timerCore)
     }
   }, [])
 
-  // Helper per body con blocchi separati
-  const renderBody = (lines: string[]) => {
+  // Helper to render body with proper spacing
+  const renderBody = (lines: string[], opacity: string = "opacity-60") => {
     const blocks: string[][] = []
     let currentBlock: string[] = []
     
     lines.forEach((line) => {
-      if (line === '') {
+      if (line === "") {
         if (currentBlock.length > 0) {
           blocks.push(currentBlock)
           currentBlock = []
@@ -43,9 +46,9 @@ export default function IPPage() {
     }
 
     return (
-      <div className="space-y-4">
+      <div className="space-y-5">
         {blocks.map((block, blockIndex) => (
-          <p key={blockIndex} className="text-[15px] md:text-[16px] leading-[1.55] text-[#1a1a1a]/65">
+          <p key={blockIndex} className={`text-[17px] md:text-[18px] font-normal leading-[1.15] ${opacity}`}>
             {block.map((line, lineIndex) => (
               <span key={lineIndex} className="block">{line}</span>
             ))}
@@ -56,78 +59,258 @@ export default function IPPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white text-[#1a1a1a]">
+    <div className="min-h-screen bg-white">
       
-      {/* Hero - sfondo bianco, posizioni e animazioni come .ai */}
-      <section className="pt-20 md:pt-32 pb-24 md:pb-32 border-b border-[#1a1a1a]/10">
+      {/* Hero + Core Principle - DARK zone */}
+      <div className="relative w-full overflow-hidden text-white" style={{ background: 'linear-gradient(to bottom, #252525 0%, #161616 100%)' }}>
+        
+        {/* Hero */}
+        <section className="relative z-10 pt-20 md:pt-32 pb-24">
+          <Container>
+            <div className="relative">
+              <p className="font-ui text-[11px] font-medium tracking-widest uppercase mb-4">
+                <span className="opacity-100 uppercase-force">{hero.badge.primary}</span>
+                <span className="opacity-50 uppercase-force"> {hero.badge.secondary}</span>
+              </p>
+              
+              <h1 className="text-[42px] md:text-[64px] font-normal leading-[1.0] tracking-[-0.02em] mb-8">
+                <span 
+                  className="block"
+                  style={{ 
+                    opacity: showFirst ? 1 : 0.08,
+                    transition: 'opacity 4s cubic-bezier(0.4, 0, 0.2, 1)'
+                  }}
+                >
+                  {hero.title[0]}
+                </span>
+                <span 
+                  className="block"
+                  style={{ 
+                    opacity: showSecond ? 1 : 0.03,
+                    transition: 'opacity 4s cubic-bezier(0.4, 0, 0.2, 1)'
+                  }}
+                >
+                  {hero.title[1]}
+                </span>
+              </h1>
+              
+              <p className="text-[17px] md:text-[18px] font-normal leading-[1.15] max-w-[560px] opacity-70">
+                {hero.subtext.map((line, index) => (
+                  <span key={index} className="block">{line}</span>
+                ))}
+              </p>
+            </div>
+          </Container>
+        </section>
+
+        {/* Core Principle */}
+        <section className="relative pb-24 md:pb-32">
+          <Container>
+            <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-8">{core.section}</p>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+              
+              <div className="lg:col-span-5">
+                <h2 
+                  className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em]"
+                  style={{ 
+                    opacity: showCore ? 1 : 0.03,
+                    transition: 'opacity 4s cubic-bezier(0.4, 0, 0.2, 1)'
+                  }}
+                >
+                  {core.title}
+                </h2>
+              </div>
+              
+              <div className="lg:col-span-6 lg:col-start-7">
+                {renderBody(core.body, "opacity-60")}
+              </div>
+              
+            </div>
+          </Container>
+        </section>
+
+      </div>
+
+      {/* Interaction Model */}
+      <section className="relative py-16 md:py-32">
         <Container>
-          <div className="relative">
-            <p className="font-ui text-[11px] font-medium tracking-widest uppercase mb-4">
-              <span className="opacity-100">{hero.badge.primary}</span>
-              <span className="opacity-50"> {hero.badge.secondary}</span>
-            </p>
+          <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-8">{interaction.section}</p>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             
-            <h1 className="text-[42px] md:text-[64px] font-normal leading-[1.0] tracking-[-0.02em] mb-8">
-              <span 
-                className="block"
-                style={{ 
-                  opacity: showFirst ? 1 : 0.08,
-                  transition: 'opacity 4s cubic-bezier(0.4, 0, 0.2, 1)'
-                }}
-              >
-                {hero.title[0]}
-              </span>
-              <span 
-                className="block"
-                style={{ 
-                  opacity: showSecond ? 1 : 0.03,
-                  transition: 'opacity 4s cubic-bezier(0.4, 0, 0.2, 1)'
-                }}
-              >
-                {hero.title[1]}
-              </span>
-            </h1>
+            <div className="lg:col-span-5">
+              <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em]">
+                {interaction.title}
+              </h2>
+            </div>
             
-            <p className="text-[17px] md:text-[18px] font-normal leading-[1.15] max-w-[560px] opacity-70">
-              {hero.subtext.map((line, index) => (
-                <span key={index} className="block">{line}</span>
-              ))}
-            </p>
+            <div className="lg:col-span-6 lg:col-start-7">
+              {renderBody(interaction.body)}
+            </div>
+            
           </div>
         </Container>
       </section>
 
-      {/* Row 1: 01 Premise | 02 Structure */}
-      <section className="py-16 md:py-24 border-b border-[#1a1a1a]/10">
+      {/* Determinism */}
+      <section className="relative py-16 md:py-32">
         <Container>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16">
+          <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-8">{determinism.section}</p>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             
-            {/* 01 Premise */}
-            <div>
-              <p className="font-ui text-[11px] font-medium tracking-widest uppercase text-[#1a1a1a]/40 mb-6">
-                {premise.section}
-              </p>
-              <h2 className="text-[20px] md:text-[24px] font-medium leading-[1.2] tracking-[-0.01em] mb-5">
-                {premise.title}
+            <div className="lg:col-span-5">
+              <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em]">
+                {Array.isArray(determinism.title) ? (
+                  determinism.title.map((line, index) => (
+                    <span key={index} className="block">{line}</span>
+                  ))
+                ) : (
+                  determinism.title
+                )}
               </h2>
-              {renderBody(premise.body)}
             </div>
             
-            {/* 02 Structure */}
-            <div>
-              <p className="font-ui text-[11px] font-medium tracking-widest uppercase text-[#1a1a1a]/40 mb-6">
-                {structure.section}
-              </p>
-              <h2 className="text-[20px] md:text-[24px] font-medium leading-[1.2] tracking-[-0.01em] mb-5">
-                {structure.title}
+            <div className="lg:col-span-6 lg:col-start-7">
+              {renderBody(determinism.body)}
+            </div>
+            
+          </div>
+        </Container>
+      </section>
+
+      {/* DARK ZONE: Process */}
+      <div className="w-full text-white" style={{ background: 'linear-gradient(to bottom, #484848 0%, #2a2a2a 100%)' }}>
+        
+        <section className="py-16 md:py-32">
+          <Container>
+            <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-8">{process.section}</p>
+            <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em] mb-12">{process.title}</h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {process.steps.map((step, index) => (
+                <div key={index} className="rounded-[4px] p-8" style={{ background: 'linear-gradient(to bottom, #383838 0%, #3a3a3a 100%)' }}>
+                  <h3 className="text-[17px] md:text-[18px] font-normal leading-[1.3] mb-3">{step.label}</h3>
+                  <p className="text-[15px] md:text-[16px] font-normal leading-[1.15] opacity-60">
+                    {step.body.map((line, lineIndex) => (
+                      <span key={lineIndex} className="block">{line}</span>
+                    ))}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </Container>
+        </section>
+
+      </div>
+
+      {/* Execution */}
+      <section className="relative py-16 md:py-32">
+        <Container>
+          <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-8">{execution.section}</p>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            
+            <div className="lg:col-span-5">
+              <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em]">
+                {execution.title}
               </h2>
-              {renderBody(structure.body)}
-              <div className="space-y-3 mt-6">
-                {structure.items.map((item, index) => (
-                  <div key={index} className="flex items-baseline gap-3">
-                    <span className="text-[14px] font-medium text-[#1a1a1a]">{item.name}</span>
-                    <span className="text-[14px] text-[#1a1a1a]/50">{item.description}</span>
+            </div>
+            
+            <div className="lg:col-span-6 lg:col-start-7">
+              {renderBody(execution.body)}
+            </div>
+            
+          </div>
+        </Container>
+      </section>
+
+      {/* Platforms - card style */}
+      <section className="relative py-16 md:py-32">
+        <Container>
+          <div className="bg-[#f7f7f7] rounded-[4px] p-6 pt-14 md:p-16 relative">
+            
+            <span className="absolute top-6 right-6 font-ui text-[10px] tracking-widest uppercase opacity-30">{platforms.section}</span>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center">
+              
+              <div>
+                <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em]">
+                  {Array.isArray(platforms.title) ? (
+                    platforms.title.map((line, index) => (
+                      <span key={index} className="block">{line}</span>
+                    ))
+                  ) : (
+                    platforms.title
+                  )}
+                </h2>
+              </div>
+              
+              <div>
+                <div className="space-y-5">
+                  {renderBody(platforms.body, "opacity-70")}
+                  <p className="text-[17px] md:text-[18px] font-normal leading-[1.15] opacity-70">
+                    {platforms.list}
+                  </p>
+                </div>
+              </div>
+              
+            </div>
+          </div>
+        </Container>
+      </section>
+
+      {/* Delivery */}
+      <section className="relative py-16 md:py-32">
+        <Container>
+          <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-8">{delivery.section}</p>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            
+            <div className="lg:col-span-5">
+              <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em]">
+                {delivery.title}
+              </h2>
+            </div>
+            
+            <div className="lg:col-span-6 lg:col-start-7">
+              <div className="space-y-8">
+                {delivery.items.map((item, index) => (
+                  <div key={index}>
+                    <h3 className="text-[17px] md:text-[18px] font-normal leading-[1.3] mb-3">{item.label}</h3>
+                    <p className="text-[15px] md:text-[16px] font-normal leading-[1.15] opacity-60">
+                      {item.body.map((line, lineIndex) => (
+                        <span key={lineIndex} className="block">{line}</span>
+                      ))}
+                    </p>
                   </div>
+                ))}
+                <p className="text-[15px] md:text-[16px] font-normal leading-[1.15] opacity-40 pt-4">
+                  {delivery.note.map((line, index) => (
+                    <span key={index} className="block">{line}</span>
+                  ))}
+                </p>
+              </div>
+            </div>
+            
+          </div>
+        </Container>
+      </section>
+
+      {/* Outcomes */}
+      <section className="relative py-16 md:py-32">
+        <Container>
+          <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-8">{outcomes.section}</p>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            
+            <div className="lg:col-span-5">
+              <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em]">
+                {outcomes.title}
+              </h2>
+            </div>
+            
+            <div className="lg:col-span-6 lg:col-start-7">
+              <div className="space-y-3">
+                {outcomes.items.map((item, index) => (
+                  <p key={index} className="text-[16px] md:text-[18px] font-normal leading-[1.4] opacity-70">
+                    {item}
+                  </p>
                 ))}
               </div>
             </div>
@@ -136,109 +319,21 @@ export default function IPPage() {
         </Container>
       </section>
 
-      {/* Row 2: 03 Core Logic | 04 Distribution */}
-      <section className="py-16 md:py-24 border-b border-[#1a1a1a]/10">
+      {/* CTA - gradient to footer */}
+      <section className="w-full text-white py-24 md:py-32" style={{ background: 'linear-gradient(to bottom, #2f2f2f 0%, #1a1a1a 100%)' }}>
         <Container>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16">
-            
-            {/* 03 Core Logic */}
-            <div>
-              <p className="font-ui text-[11px] font-medium tracking-widest uppercase text-[#1a1a1a]/40 mb-6">
-                {coreLogic.section}
-              </p>
-              <h2 className="text-[20px] md:text-[24px] font-medium leading-[1.2] tracking-[-0.01em] mb-5">
-                {coreLogic.title}
-              </h2>
-              {renderBody(coreLogic.body)}
-            </div>
-            
-            {/* 04 Distribution */}
-            <div>
-              <p className="font-ui text-[11px] font-medium tracking-widest uppercase text-[#1a1a1a]/40 mb-6">
-                {distribution.section}
-              </p>
-              <h2 className="text-[20px] md:text-[24px] font-medium leading-[1.2] tracking-[-0.01em] mb-5">
-                {distribution.title}
-              </h2>
-              {renderBody(distribution.body)}
-            </div>
-            
+          <div className="flex items-center gap-4 justify-end">
+            <span className="font-ui text-[12px] font-medium tracking-wide uppercase-force opacity-40">{cta.label}</span>
+            <Link 
+              href="/contact" 
+              className="relative flex items-center justify-center w-[55px] h-[55px] md:w-[75px] md:h-[75px] rounded-full overflow-hidden"
+            >
+              <span className="absolute inset-0 bg-[#3a3a3a] animate-pulse-soft rounded-full"></span>
+              <span className="relative z-10 font-ui text-[11px] md:text-[12px] font-bold tracking-wide text-white uppercase-force">TRY</span>
+            </Link>
           </div>
         </Container>
       </section>
-
-      {/* Row 3: 05 Enterprise | 06 Ownership */}
-      <section className="py-16 md:py-24 border-b border-[#1a1a1a]/10">
-        <Container>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16">
-            
-            {/* 05 Enterprise Deployment */}
-            <div>
-              <p className="font-ui text-[11px] font-medium tracking-widest uppercase text-[#1a1a1a]/40 mb-6">
-                {enterprise.section}
-              </p>
-              <h2 className="text-[20px] md:text-[24px] font-medium leading-[1.2] tracking-[-0.01em] mb-5">
-                {enterprise.title}
-              </h2>
-              {renderBody(enterprise.body)}
-            </div>
-            
-            {/* 06 Ownership */}
-            <div>
-              <p className="font-ui text-[11px] font-medium tracking-widest uppercase text-[#1a1a1a]/40 mb-6">
-                {ownership.section}
-              </p>
-              <h2 className="text-[20px] md:text-[24px] font-medium leading-[1.2] tracking-[-0.01em] mb-5">
-                {ownership.title}
-              </h2>
-              {renderBody(ownership.body)}
-            </div>
-            
-          </div>
-        </Container>
-      </section>
-
-      {/* Row 4: 07 Position | 08 Contact */}
-      <section className="py-16 md:py-24">
-        <Container>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16">
-            
-            {/* 07 Position */}
-            <div>
-              <p className="font-ui text-[11px] font-medium tracking-widest uppercase text-[#1a1a1a]/40 mb-6">
-                {position.section}
-              </p>
-              <h2 className="text-[20px] md:text-[24px] font-medium leading-[1.2] tracking-[-0.01em] mb-5">
-                {position.title}
-              </h2>
-              {renderBody(position.body)}
-            </div>
-            
-            {/* 08 Contact */}
-            <div>
-              <p className="font-ui text-[11px] font-medium tracking-widest uppercase text-[#1a1a1a]/40 mb-6">
-                {contact.section}
-              </p>
-              <h2 className="text-[20px] md:text-[24px] font-medium leading-[1.2] tracking-[-0.01em] mb-5">
-                {contact.title}
-              </h2>
-              
-              <Link 
-                href={contact.cta.href}
-                className="inline-block text-[15px] font-medium text-[#1a1a1a] hover:text-[#1a1a1a]/70 transition-colors mb-6"
-              >
-                {contact.cta.label} →
-              </Link>
-              
-              {renderBody(contact.body)}
-            </div>
-            
-          </div>
-        </Container>
-      </section>
-
-      {/* Bottom spacing before footer */}
-      <div className="h-12 md:h-20"></div>
 
     </div>
   )
