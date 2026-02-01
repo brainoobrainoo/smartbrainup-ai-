@@ -23,22 +23,12 @@ export default function StartPage() {
   const question = questionsMap[currentQuestionId]
   const { hero, complete } = assessmentContent
 
-  // Get current strato index for progress dots
+  // Get current strato index for progress
   const currentStratoIndex = strati.indexOf(question?.strato || '')
   
-  // Get visited strati from history
-  const getVisitedStrati = () => {
-    const visited = new Set<number>()
-    history.forEach(qId => {
-      const q = questionsMap[qId]
-      if (q) {
-        visited.add(strati.indexOf(q.strato))
-      }
-    })
-    visited.add(currentStratoIndex)
-    return visited
-  }
-
+  // Fixed total questions in linear path
+  const totalQuestions = 39
+  
   const handleOptionClick = (option: AdaptiveOption) => {
     // Save data
     setCollectedData(prev => ({
@@ -66,56 +56,6 @@ export default function StartPage() {
         setIsTransitioning(false)
       }, 50)
     }, 300)
-  }
-
-  const handleDotClick = (stratoIndex: number) => {
-    const visitedStrati = getVisitedStrati()
-    
-    // Can only go to visited strati (going back)
-    if (visitedStrati.has(stratoIndex) && stratoIndex < currentStratoIndex) {
-      setIsTransitioning(true)
-      
-      setTimeout(() => {
-        // Find the first question in history from that strato
-        const targetStrato = strati[stratoIndex]
-        let targetIndex = -1
-        
-        for (let i = 0; i < history.length; i++) {
-          const q = questionsMap[history[i]]
-          if (q && q.strato === targetStrato) {
-            targetIndex = i
-            break
-          }
-        }
-        
-        if (targetIndex >= 0) {
-          // Get questions to remove from collected data (from targetIndex onwards + current)
-          const questionsToRemove = history.slice(targetIndex)
-          questionsToRemove.push(currentQuestionId)
-          
-          // Clear data for removed questions
-          setCollectedData(prev => {
-            const newData = { ...prev }
-            questionsToRemove.forEach(qId => {
-              const q = questionsMap[qId]
-              if (q) {
-                delete newData[q.collectAs]
-              }
-            })
-            return newData
-          })
-          
-          // Go back to that point
-          const newHistory = history.slice(0, targetIndex)
-          setHistory(newHistory)
-          setCurrentQuestionId(history[targetIndex])
-        }
-        
-        setTimeout(() => {
-          setIsTransitioning(false)
-        }, 50)
-      }, 300)
-    }
   }
 
   // Prevent body scroll
@@ -188,18 +128,8 @@ export default function StartPage() {
                 
               </div>
 
-              {/* Progress dots - above counter */}
-              <div className="flex justify-center gap-2 mt-10 md:mt-14 mb-4">
-                {strati.map((_, index) => (
-                  <div
-                    key={index}
-                    className="w-2 h-2 rounded-full bg-white/40"
-                  />
-                ))}
-              </div>
-
               {/* Step counter */}
-              <p className="text-center font-ui text-[11px] font-medium tracking-widest uppercase text-white/40">
+              <p className="mt-10 md:mt-14 text-center font-ui text-[11px] font-medium tracking-widest uppercase text-white/40">
                 {complete.section}
               </p>
               
@@ -209,8 +139,6 @@ export default function StartPage() {
       </div>
     )
   }
-
-  const visitedStrati = getVisitedStrati()
 
   return (
     <div 
@@ -247,11 +175,11 @@ export default function StartPage() {
       <div className="py-8 md:py-12">
         <Container>
           <div 
-            className="rounded-[4px] p-8 py-10 md:p-12 md:py-16 relative"
+            className="rounded-[4px] p-8 pt-8 pb-10 md:p-12 md:pt-10 md:pb-16 relative"
             style={{ background: 'linear-gradient(to bottom, #353535 0%, #232323 100%)' }}
           >
             {/* Strato label - top */}
-            <p className="text-center font-ui text-[11px] font-medium tracking-widest uppercase text-white/[0.55] mb-10 md:mb-14">
+            <p className="text-center font-ui text-[11px] font-medium tracking-widest uppercase text-white/[0.45]" style={{ marginBottom: '40px' }}>
               {question.strato}
             </p>
 
@@ -261,21 +189,21 @@ export default function StartPage() {
                 isTransitioning ? 'opacity-0' : 'opacity-100'
               }`}
             >
-              {/* Single column - centered horizontally */}
-              <div className="flex flex-col items-center min-h-[300px] text-center">
+              {/* Center content */}
+              <div className="flex flex-col items-center text-center">
                 
                 {/* Question */}
-                <h2 className="text-[24px] md:text-[32px] font-normal leading-[1.1] text-white mb-10 md:mb-12">
+                <h2 className="text-[24px] md:text-[32px] font-normal leading-[1.1] text-white" style={{ marginBottom: '40px' }}>
                   {question.question}
                 </h2>
                 
-                {/* Options */}
-                <div className="space-y-3 w-full">
+                {/* Options - full width, key resets hover on question change */}
+                <div className="space-y-3 w-full" key={currentQuestionId}>
                   {question.options.map((option, index) => (
                     <button
                       key={index}
                       onClick={() => handleOptionClick(option)}
-                      className="w-full px-6 py-4 bg-white/[0.02] hover:bg-white/10 rounded-[4px] text-white text-[17px] md:text-[18px] font-normal text-center transition-all"
+                      className="w-full px-8 py-5 bg-white/[0.02] hover:bg-white/10 active:bg-white/10 rounded-[4px] text-white text-[17px] md:text-[18px] font-normal text-center transition-all touch-manipulation"
                     >
                       {option.label}
                     </button>
@@ -285,27 +213,53 @@ export default function StartPage() {
               </div>
             </div>
 
-            {/* Progress dots - above page numbers */}
-            <div className="flex justify-center gap-2 mt-10 md:mt-14 mb-4">
-              {strati.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleDotClick(index)}
-                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                    index === currentStratoIndex 
-                      ? 'bg-white/90' 
-                      : visitedStrati.has(index) && index < currentStratoIndex
-                        ? 'bg-white/40 hover:bg-white/60 cursor-pointer' 
-                        : 'bg-white/20 cursor-not-allowed'
-                  }`}
-                />
-              ))}
-            </div>
+            {/* Navigation: arrows + page number - below answers */}
+            <div className="flex justify-center items-center gap-6 mt-10 md:mt-14">
+              {/* Left arrow */}
+              <button
+                onClick={() => {
+                  if (history.length > 0) {
+                    setIsTransitioning(true)
+                    setTimeout(() => {
+                      const prevQuestionId = history[history.length - 1]
+                      setCollectedData(prev => {
+                        const newData = { ...prev }
+                        delete newData[question.collectAs]
+                        return newData
+                      })
+                      setHistory(prev => prev.slice(0, -1))
+                      setCurrentQuestionId(prevQuestionId)
+                      setTimeout(() => {
+                        setIsTransitioning(false)
+                      }, 50)
+                    }, 300)
+                  }
+                }}
+                className={`w-12 h-12 flex items-center justify-center transition-opacity ${
+                  history.length > 0 ? 'opacity-80 hover:opacity-100 cursor-pointer' : 'opacity-20 cursor-not-allowed'
+                }`}
+                disabled={history.length === 0}
+              >
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+              </button>
 
-            {/* Strato counter - centered bottom */}
-            <p className="text-center font-ui text-[11px] font-medium tracking-widest uppercase text-white/40">
-              {currentStratoIndex + 1} / {strati.length}
-            </p>
+              {/* Page number */}
+              <p className="font-ui text-[11px] font-medium tracking-widest uppercase text-white/40 min-w-[60px] text-center">
+                {history.length + 1} / {totalQuestions}
+              </p>
+
+              {/* Right arrow - disabled */}
+              <button
+                className="w-12 h-12 flex items-center justify-center opacity-20 cursor-not-allowed"
+                disabled={true}
+              >
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+              </button>
+            </div>
             
           </div>
         </Container>
