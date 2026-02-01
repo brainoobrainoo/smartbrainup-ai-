@@ -3,7 +3,7 @@
 export const navigationAi = {
   logo: 'SmartBrainUp.ai',
   links: [
-    { label: 'Chat', href: '/chat' },
+    { label: 'Start', href: '/start' },
     { label: 'About', href: '/about' },
     { label: 'Method', href: '/method' },
     { label: 'Licensing', href: '/licensing' },
