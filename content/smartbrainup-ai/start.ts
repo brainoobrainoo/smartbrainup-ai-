@@ -713,7 +713,7 @@ export const assessmentContent = {
   hero: {
     badge: {
       primary: 'AI-UP',
-      secondary: 'SECOND BRAIN™',
+      secondary: 'SECOND BRAIN™ YOUR STARTING POINT',
     },
     intro: {
       blocks: [

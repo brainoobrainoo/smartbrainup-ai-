@@ -325,7 +325,7 @@ export default function MethodPage() {
           <div className="flex items-center gap-4 justify-end">
             <span className="font-ui text-[12px] font-medium tracking-wide uppercase-force opacity-40">{cta.label}</span>
             <Link 
-              href="/contact" 
+              href="/start" 
               className="relative flex items-center justify-center w-[55px] h-[55px] md:w-[75px] md:h-[75px] rounded-full overflow-hidden"
             >
               <span className="absolute inset-0 bg-[#3a3a3a] animate-pulse-soft rounded-full"></span>
