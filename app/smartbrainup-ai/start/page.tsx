@@ -3,7 +3,9 @@
 // app/(smartbrainup-ai)/start/page.tsx
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Container from '@/components/layout/Container'
+import { supabase } from '@/lib/supabase'
 import { 
   questionsMap,
   strati,
@@ -14,11 +16,18 @@ import {
 } from '@/content/smartbrainup-ai/start'
 
 export default function StartPage() {
+  const router = useRouter()
   const [currentQuestionId, setCurrentQuestionId] = useState(startQuestionId)
   const [history, setHistory] = useState<string[]>([])
   const [collectedData, setCollectedData] = useState<CollectedData>({})
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [isComplete, setIsComplete] = useState(false)
+  
+  // Form state
+  const [userName, setUserName] = useState('')
+  const [userEmail, setUserEmail] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState('')
 
   const question = questionsMap[currentQuestionId]
   const { hero, complete } = assessmentContent
@@ -58,6 +67,51 @@ export default function StartPage() {
     }, 300)
   }
 
+  const handleSubmit = async () => {
+    // Validation
+    if (!userName.trim()) {
+      setError('Please enter your name')
+      return
+    }
+    if (!userEmail.trim() || !userEmail.includes('@')) {
+      setError('Please enter a valid email')
+      return
+    }
+
+    setError('')
+    setIsSubmitting(true)
+
+    try {
+      const { data, error: supabaseError } = await supabase
+        .from('assessments')
+        .insert([
+          {
+            user_name: userName.trim(),
+            user_email: userEmail.trim().toLowerCase(),
+            responses: collectedData
+          }
+        ])
+        .select()
+
+      if (supabaseError) {
+        console.error('Supabase error:', supabaseError)
+        setError('Something went wrong. Please try again.')
+        setIsSubmitting(false)
+        return
+      }
+
+      console.log('Saved to Supabase:', data)
+      
+      // Redirect to client area
+      router.push('/account?welcome=true')
+      
+    } catch (err) {
+      console.error('Error:', err)
+      setError('Something went wrong. Please try again.')
+      setIsSubmitting(false)
+    }
+  }
+
   if (isComplete) {
     return (
       <div className="min-h-screen">
@@ -85,16 +139,42 @@ export default function StartPage() {
                       <span key={index} className="block">{line}</span>
                     ))}
                   </h2>
-                  <p className="text-[17px] md:text-[18px] font-normal leading-[1.15] text-white opacity-70 mb-11">
+                  <p className="text-[17px] md:text-[18px] font-normal leading-[1.15] text-white opacity-70 mb-8">
                     {complete.body}
                   </p>
                   
+                  {/* Form fields */}
+                  <div className="w-full max-w-[400px] space-y-4 mb-8">
+                    <input
+                      type="text"
+                      placeholder="Your name"
+                      value={userName}
+                      onChange={(e) => setUserName(e.target.value)}
+                      className="w-full px-6 py-4 bg-white/[0.05] border border-white/10 rounded-[4px] text-white text-[17px] placeholder-white/40 focus:outline-none focus:border-white/30 transition-all"
+                    />
+                    <input
+                      type="email"
+                      placeholder="Your email"
+                      value={userEmail}
+                      onChange={(e) => setUserEmail(e.target.value)}
+                      className="w-full px-6 py-4 bg-white/[0.05] border border-white/10 rounded-[4px] text-white text-[17px] placeholder-white/40 focus:outline-none focus:border-white/30 transition-all"
+                    />
+                  </div>
+
+                  {/* Error message */}
+                  {error && (
+                    <p className="text-red-400 text-[15px] mb-4">{error}</p>
+                  )}
+                  
                   {/* CTA Button */}
                   <button 
-                    onClick={() => console.log('Go to login', collectedData)}
-                    className="px-8 py-4 bg-white/10 hover:bg-white/20 rounded-[4px] text-white text-[17px] md:text-[18px] font-medium transition-all"
+                    onClick={handleSubmit}
+                    disabled={isSubmitting}
+                    className={`px-8 py-4 bg-white/10 hover:bg-white/20 rounded-[4px] text-white text-[17px] md:text-[18px] font-medium transition-all ${
+                      isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
                   >
-                    {complete.cta}
+                    {isSubmitting ? 'Creating...' : complete.cta}
                   </button>
                   
                 </div>
