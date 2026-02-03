@@ -46,7 +46,7 @@ export default function StartPage() {
     while (id && !visited.has(id)) {
       visited.add(id)
       remaining++
-      const q = questionsMap[id]
+      const q: any = questionsMap[id]
       if (!q) break
       id = q.options[0].nextId
     }
