@@ -2,7 +2,7 @@
 
 // app/(smartbrainup-ai)/start/page.tsx
 
-import { useState } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import Container from '@/components/layout/Container'
 import { supabase } from '@/lib/supabase'
@@ -23,6 +23,9 @@ export default function StartPage() {
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [isComplete, setIsComplete] = useState(false)
   
+  // Multi-select state
+  const [multiSelected, setMultiSelected] = useState<string[]>([])
+  
   // Form state
   const [userName, setUserName] = useState('')
   const [userEmail, setUserEmail] = useState('')
@@ -35,10 +38,40 @@ export default function StartPage() {
   // Get current strato index for progress
   const currentStratoIndex = strati.indexOf(question?.strato || '')
   
-  // Fixed total questions in linear path
-  const totalQuestions = 39
-  
+  // Dynamic total: history + remaining path from current question
+  const totalQuestions = useMemo(() => {
+    let remaining = 0
+    let id: string | null = currentQuestionId
+    const visited = new Set<string>()
+    while (id && !visited.has(id)) {
+      visited.add(id)
+      remaining++
+      const q = questionsMap[id]
+      if (!q) break
+      id = q.options[0].nextId
+    }
+    return history.length + remaining
+  }, [currentQuestionId, history.length])
+
+  // Restore multi-select state when navigating back to a multi question
+  useEffect(() => {
+    if (question?.type === 'multi') {
+      const existing = collectedData[question.collectAs]
+      if (existing && Array.isArray(existing)) {
+        setMultiSelected(existing)
+      } else {
+        setMultiSelected([])
+      }
+    } else {
+      setMultiSelected([])
+    }
+  }, [currentQuestionId])
+
+  // ── Single-select handler (unchanged logic) ──
   const handleOptionClick = (option: AdaptiveOption) => {
+    // Only for single-select questions
+    if (question.type === 'multi') return
+
     // Save data
     setCollectedData(prev => ({
       ...prev,
@@ -61,6 +94,54 @@ export default function StartPage() {
       }
       
       // Small delay then fade in
+      setTimeout(() => {
+        setIsTransitioning(false)
+      }, 50)
+    }, 300)
+  }
+
+  // ── Multi-select toggle ──
+  const handleMultiToggle = (value: string) => {
+    const max = question.maxSelect || 2
+    setMultiSelected(prev => {
+      if (prev.includes(value)) {
+        // Deselect
+        return prev.filter(v => v !== value)
+      }
+      if (prev.length >= max) {
+        // At max — replace last
+        return [...prev.slice(0, max - 1), value]
+      }
+      // Add
+      return [...prev, value]
+    })
+  }
+
+  // ── Multi-select confirm ──
+  const handleMultiConfirm = () => {
+    if (multiSelected.length === 0) return
+
+    // Save as array
+    setCollectedData(prev => ({
+      ...prev,
+      [question.collectAs]: multiSelected,
+    }))
+
+    // Get nextId from first option (all point to same destination)
+    const nextId = question.options[0].nextId
+
+    // Fade out
+    setIsTransitioning(true)
+
+    setTimeout(() => {
+      if (nextId === null) {
+        setIsComplete(true)
+        console.log('Assessment complete:', { ...collectedData, [question.collectAs]: multiSelected })
+      } else {
+        setHistory(prev => [...prev, currentQuestionId])
+        setCurrentQuestionId(nextId)
+      }
+
       setTimeout(() => {
         setIsTransitioning(false)
       }, 50)
@@ -103,7 +184,7 @@ export default function StartPage() {
       console.log('Saved to Supabase:', data)
       
       // Redirect to client area
-      router.push('/account?welcome=true')
+      router.push(`/account?welcome=true&aid=${data[0].id}`)
       
     } catch (err) {
       console.error('Error:', err)
@@ -247,15 +328,48 @@ export default function StartPage() {
                   {/* Options - full width, key resets hover on question change */}
                   <div className="space-y-3 w-full" key={currentQuestionId}>
                     {question.options.map((option, index) => (
-                      <button
-                        key={index}
-                        onClick={() => handleOptionClick(option)}
-                        className="w-full px-8 py-5 bg-white/[0.02] [@media(hover:hover)]:hover:bg-white/10 active:bg-white/10 rounded-[4px] text-white text-[17px] md:text-[18px] font-normal text-center transition-all touch-manipulation"
-                      >
-                        {option.label}
-                      </button>
+
+                      question.type === 'multi' ? (
+                        // ── Multi-select: toggleable ──
+                        <button
+                          key={index}
+                          onClick={() => handleMultiToggle(option.value)}
+                          className={`w-full px-8 py-5 rounded-[4px] text-white text-[17px] md:text-[18px] font-normal text-center transition-all touch-manipulation ${
+                            multiSelected.includes(option.value)
+                              ? 'bg-white/10 ring-1 ring-white/20'
+                              : 'bg-white/[0.02] [@media(hover:hover)]:hover:bg-white/10 active:bg-white/10'
+                          }`}
+                        >
+                          {option.label}
+                        </button>
+                      ) : (
+                        // ── Single-select: instant advance ──
+                        <button
+                          key={index}
+                          onClick={() => handleOptionClick(option)}
+                          className="w-full px-8 py-5 bg-white/[0.02] [@media(hover:hover)]:hover:bg-white/10 active:bg-white/10 rounded-[4px] text-white text-[17px] md:text-[18px] font-normal text-center transition-all touch-manipulation"
+                        >
+                          {option.label}
+                        </button>
+                      )
+
                     ))}
                   </div>
+
+                  {/* Multi-select confirm button */}
+                  {question.type === 'multi' && (
+                    <button
+                      onClick={handleMultiConfirm}
+                      disabled={multiSelected.length === 0}
+                      className={`mt-6 px-8 py-5 rounded-[4px] text-white text-[17px] md:text-[18px] font-medium text-center transition-all touch-manipulation ${
+                        multiSelected.length > 0
+                          ? 'bg-white/10 [@media(hover:hover)]:hover:bg-white/20 active:bg-white/20'
+                          : 'bg-white/[0.02] opacity-30 cursor-not-allowed'
+                      }`}
+                    >
+                      Continue
+                    </button>
+                  )}
                   
                 </div>
               </div>

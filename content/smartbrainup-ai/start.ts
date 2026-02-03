@@ -1,9 +1,30 @@
 // content/smartbrainup-ai/start.ts
+// ═══════════════════════════════════════════════════════════
+// CONTEXT INTAKE — AI-UP SECOND BRAIN™
+// ═══════════════════════════════════════════════════════════
+//
+// Phase 1: Select-only (pre-account) — fast clic-clic-clic
+// Phase 2: Text input (post-account) — contextualised follow-ups
+//
+// 8 Layers · English · Adaptive routing
+// Source: CONTEXT_INTAKE_AI-UP_SECOND_BRAIN.pdf
+//
+// page.tsx changes required:
+//   1. strato field kept as 'strato' (no rename needed)
+//   2. handle type === 'multi' for Q7 (multi-select + confirm)
+//   3. CollectedData values can be string | string[]
+//   4. totalQuestions is dynamic (count from routing path)
+// ═══════════════════════════════════════════════════════════
+
+
+// ══════════════════════════
+// INTERFACES
+// ══════════════════════════
 
 export interface AdaptiveOption {
   label: string
   value: string
-  nextId: string | null  // null = fine assessment
+  nextId: string | null  // null = end of Phase 1
 }
 
 export interface AdaptiveQuestion {
@@ -11,703 +32,675 @@ export interface AdaptiveQuestion {
   strato: string
   question: string
   collectAs: string
+  type: 'single' | 'multi'
+  maxSelect?: number       // only for type: 'multi'
   options: AdaptiveOption[]
 }
 
+export interface Phase2Question {
+  id: string
+  strato: string
+  dependsOn: string            // collectAs key from Phase 1
+  dependsOnValue: string | null // specific value trigger, null = always show
+  question: string             // self-contained, contextualised
+  collectAs: string
+}
+
 export interface CollectedData {
-  [key: string]: string
+  [key: string]: string | string[]
 }
 
-// Mappa di tutte le domande
+
+// ══════════════════════════════════════════════════════════
+// PHASE 1 — SELECT QUESTIONS (pre-account)
+// ══════════════════════════════════════════════════════════
+//
+// ~18–21 questions depending on path
+// All single-select except Q7 (multi, max 2)
+//
+// ROUTING:
+// q1 → q2 → q3
+// → q4 → q5 → q6
+// → q7(multi) → q8 → [q8b if <10] → q9 → q11
+// → q12 → q13 → [q13b_checklists | q13b_examples] → q14 → q15
+// → q16 → q18
+// → q20
+// → d1 → d2 → d3 → d4 → END
+// ══════════════════════════════════════════════════════════
+
 export const questionsMap: Record<string, AdaptiveQuestion> = {
-  
+
   // ============================================
-  // STRATO 1 — IDENTITÀ & DIREZIONE
+  // LAYER 1 — IDENTITY & DIRECTION
   // ============================================
-  
-  'identity': {
-    id: 'identity',
-    strato: 'STRATO 1 — IDENTITÀ & DIREZIONE',
-    question: 'In una frase: oggi, chi sei operativamente?',
-    collectAs: 'identity',
+
+  'q1_position': {
+    id: 'q1_position',
+    strato: 'LAYER 1 — IDENTITY & DIRECTION',
+    question: 'Right now, you operate mainly as',
+    collectAs: 'operating_position',
+    type: 'single',
     options: [
-      { label: 'Professionista', value: 'professionista', nextId: 'clienti_tipo' },
-      { label: 'Azienda', value: 'azienda', nextId: 'team_size' },
+      { label: 'An independent professional', value: 'independent', nextId: 'q2_objective' },
+      { label: 'A company or structured team', value: 'company', nextId: 'q2_objective' },
     ],
   },
-  
-  // Figlie di identity
-  'clienti_tipo': {
-    id: 'clienti_tipo',
-    strato: 'STRATO 1 — IDENTITÀ & DIREZIONE',
-    question: 'Che tipo di clienti segui?',
-    collectAs: 'clienti_tipo',
+
+  'q2_objective': {
+    id: 'q2_objective',
+    strato: 'LAYER 1 — IDENTITY & DIRECTION',
+    question: 'The main reason you are using this system is',
+    collectAs: 'primary_objective',
+    type: 'single',
     options: [
-      { label: 'Diretti', value: 'diretti', nextId: 'goal' },
-      { label: 'Intermediati', value: 'intermediati', nextId: 'goal' },
-      { label: 'Entrambi', value: 'entrambi', nextId: 'goal' },
+      { label: 'To regain time', value: 'time', nextId: 'q3_current_state' },
+      { label: 'To achieve concrete results', value: 'results', nextId: 'q3_current_state' },
+      { label: 'To make decisions with clarity', value: 'clarity', nextId: 'q3_current_state' },
     ],
   },
-  
-  'team_size': {
-    id: 'team_size',
-    strato: 'STRATO 1 — IDENTITÀ & DIREZIONE',
-    question: 'Quanti siete e in che area lavori tu?',
-    collectAs: 'team_size',
+
+  'q3_current_state': {
+    id: 'q3_current_state',
+    strato: 'LAYER 1 — IDENTITY & DIRECTION',
+    question: 'At this moment, the dominant condition is',
+    collectAs: 'current_state',
+    type: 'single',
     options: [
-      { label: '1-5 persone', value: '1-5', nextId: 'goal' },
-      { label: '6-20 persone', value: '6-20', nextId: 'goal' },
-      { label: '20+ persone', value: '20+', nextId: 'goal' },
+      { label: 'Overload', value: 'overload', nextId: 'q4_daily_work' },
+      { label: 'Blockage', value: 'blockage', nextId: 'q4_daily_work' },
     ],
   },
-  
-  'goal': {
-    id: 'goal',
-    strato: 'STRATO 1 — IDENTITÀ & DIREZIONE',
-    question: 'Cosa vuoi che l\'AI ti aiuti a ottenere prima di tutto?',
-    collectAs: 'goal',
-    options: [
-      { label: 'Tempo', value: 'tempo', nextId: 'tempo_perso' },
-      { label: 'Risultati', value: 'risultati', nextId: 'risultati_30g' },
-    ],
-  },
-  
-  // Figlie di goal
-  'tempo_perso': {
-    id: 'tempo_perso',
-    strato: 'STRATO 1 — IDENTITÀ & DIREZIONE',
-    question: 'In cosa lo perdi di più?',
-    collectAs: 'tempo_perso',
-    options: [
-      { label: 'Email e comunicazioni', value: 'email', nextId: 'feeling' },
-      { label: 'Ricerca informazioni', value: 'ricerca', nextId: 'feeling' },
-      { label: 'Task ripetitivi', value: 'task_ripetitivi', nextId: 'feeling' },
-      { label: 'Decisioni operative', value: 'decisioni', nextId: 'feeling' },
-    ],
-  },
-  
-  'risultati_30g': {
-    id: 'risultati_30g',
-    strato: 'STRATO 1 — IDENTITÀ & DIREZIONE',
-    question: 'Quali risultati misureresti tra 30 giorni?',
-    collectAs: 'risultati_30g',
-    options: [
-      { label: 'Più clienti', value: 'clienti', nextId: 'feeling' },
-      { label: 'Più fatturato', value: 'fatturato', nextId: 'feeling' },
-      { label: 'Più efficienza', value: 'efficienza', nextId: 'feeling' },
-      { label: 'Più chiarezza', value: 'chiarezza', nextId: 'feeling' },
-    ],
-  },
-  
-  'feeling': {
-    id: 'feeling',
-    strato: 'STRATO 1 — IDENTITÀ & DIREZIONE',
-    question: 'In questo momento ti senti più:',
-    collectAs: 'feeling',
-    options: [
-      { label: 'Sovraccarico', value: 'sovraccarico', nextId: 'sovraccarico_da' },
-      { label: 'Bloccato', value: 'bloccato', nextId: 'bloccato_su' },
-    ],
-  },
-  
-  // Figlie di feeling
-  'sovraccarico_da': {
-    id: 'sovraccarico_da',
-    strato: 'STRATO 1 — IDENTITÀ & DIREZIONE',
-    question: 'Da cosa?',
-    collectAs: 'sovraccarico_da',
-    options: [
-      { label: 'Troppe cose da fare', value: 'troppe_cose', nextId: 'lavoro_quotidiano' },
-      { label: 'Troppe decisioni', value: 'troppe_decisioni', nextId: 'lavoro_quotidiano' },
-      { label: 'Troppe interruzioni', value: 'troppe_interruzioni', nextId: 'lavoro_quotidiano' },
-    ],
-  },
-  
-  'bloccato_su': {
-    id: 'bloccato_su',
-    strato: 'STRATO 1 — IDENTITÀ & DIREZIONE',
-    question: 'Su quale decisione?',
-    collectAs: 'bloccato_su',
-    options: [
-      { label: 'Strategica', value: 'strategica', nextId: 'lavoro_quotidiano' },
-      { label: 'Operativa', value: 'operativa', nextId: 'lavoro_quotidiano' },
-      { label: 'Personale', value: 'personale', nextId: 'lavoro_quotidiano' },
-    ],
-  },
-  
+
   // ============================================
-  // STRATO 2 — CONTESTO REALE
+  // LAYER 2 — OPERATIONAL CONTEXT
   // ============================================
-  
-  'lavoro_quotidiano': {
-    id: 'lavoro_quotidiano',
-    strato: 'STRATO 2 — CONTESTO REALE',
-    question: 'Su cosa lavori ogni giorno?',
-    collectAs: 'lavoro_quotidiano',
+
+  'q4_daily_work': {
+    id: 'q4_daily_work',
+    strato: 'LAYER 2 — OPERATIONAL CONTEXT',
+    question: 'Most of your daily work revolves around',
+    collectAs: 'daily_work',
+    type: 'single',
     options: [
-      { label: 'Documenti', value: 'documenti', nextId: 'formati_doc' },
-      { label: 'Clienti', value: 'clienti', nextId: 'clienti_diretti' },
-      { label: 'Idee e progetti', value: 'idee', nextId: 'uso_ai' },
-      { label: 'Numeri e dati', value: 'numeri', nextId: 'uso_ai' },
+      { label: 'Documents', value: 'documents', nextId: 'q5_usage' },
+      { label: 'Clients', value: 'clients', nextId: 'q5_usage' },
+      { label: 'Ideas', value: 'ideas', nextId: 'q5_usage' },
+      { label: 'Numbers', value: 'numbers', nextId: 'q5_usage' },
     ],
   },
-  
-  'formati_doc': {
-    id: 'formati_doc',
-    strato: 'STRATO 2 — CONTESTO REALE',
-    question: 'Quali formati?',
-    collectAs: 'formati_doc',
+
+  'q5_usage': {
+    id: 'q5_usage',
+    strato: 'LAYER 2 — OPERATIONAL CONTEXT',
+    question: 'You will mostly use this system',
+    collectAs: 'usage_environment',
+    type: 'single',
     options: [
-      { label: 'Testi e report', value: 'testi', nextId: 'uso_ai' },
-      { label: 'Fogli di calcolo', value: 'fogli', nextId: 'uso_ai' },
-      { label: 'Presentazioni', value: 'presentazioni', nextId: 'uso_ai' },
-      { label: 'Mix di tutto', value: 'mix', nextId: 'uso_ai' },
+      { label: 'On desktop', value: 'desktop', nextId: 'q6_time_pressure' },
+      { label: 'On mobile', value: 'mobile', nextId: 'q6_time_pressure' },
     ],
   },
-  
-  'clienti_diretti': {
-    id: 'clienti_diretti',
-    strato: 'STRATO 2 — CONTESTO REALE',
-    question: 'Diretti o intermediati?',
-    collectAs: 'clienti_diretti',
+
+  'q6_time_pressure': {
+    id: 'q6_time_pressure',
+    strato: 'LAYER 2 — OPERATIONAL CONTEXT',
+    question: 'The closest mental deadline is',
+    collectAs: 'time_pressure',
+    type: 'single',
     options: [
-      { label: 'Diretti', value: 'diretti', nextId: 'uso_ai' },
-      { label: 'Intermediati', value: 'intermediati', nextId: 'uso_ai' },
-      { label: 'Entrambi', value: 'entrambi', nextId: 'uso_ai' },
+      { label: 'Within the next 7 days', value: 'within_7_days', nextId: 'q7_limits' },
+      { label: 'Not defined, but unresolved', value: 'unresolved', nextId: 'q7_limits' },
     ],
   },
-  
-  'uso_ai': {
-    id: 'uso_ai',
-    strato: 'STRATO 2 — CONTESTO REALE',
-    question: 'Dove userai l\'AI più spesso?',
-    collectAs: 'uso_ai',
-    options: [
-      { label: 'PC', value: 'pc', nextId: 'pc_contesto' },
-      { label: 'Mobile', value: 'mobile', nextId: 'mobile_contesto' },
-      { label: 'Entrambi', value: 'entrambi', nextId: 'scadenza' },
-    ],
-  },
-  
-  'pc_contesto': {
-    id: 'pc_contesto',
-    strato: 'STRATO 2 — CONTESTO REALE',
-    question: 'Solo o con altri strumenti aperti?',
-    collectAs: 'pc_contesto',
-    options: [
-      { label: 'Solo, focus totale', value: 'solo', nextId: 'scadenza' },
-      { label: 'Con altri strumenti', value: 'multi', nextId: 'scadenza' },
-    ],
-  },
-  
-  'mobile_contesto': {
-    id: 'mobile_contesto',
-    strato: 'STRATO 2 — CONTESTO REALE',
-    question: 'In movimento o in momenti fissi?',
-    collectAs: 'mobile_contesto',
-    options: [
-      { label: 'In movimento', value: 'movimento', nextId: 'scadenza' },
-      { label: 'Momenti fissi', value: 'fissi', nextId: 'scadenza' },
-    ],
-  },
-  
-  'scadenza': {
-    id: 'scadenza',
-    strato: 'STRATO 2 — CONTESTO REALE',
-    question: 'Qual è la tua scadenza mentale più vicina?',
-    collectAs: 'scadenza',
-    options: [
-      { label: 'Entro 7 giorni', value: '7giorni', nextId: 'scadenza_7g' },
-      { label: 'Senza scadenza urgente', value: 'nessuna', nextId: 'rimandato' },
-    ],
-  },
-  
-  'scadenza_7g': {
-    id: 'scadenza_7g',
-    strato: 'STRATO 2 — CONTESTO REALE',
-    question: 'Cosa deve essere pronto?',
-    collectAs: 'scadenza_7g',
-    options: [
-      { label: 'Un documento', value: 'documento', nextId: 'vincoli_no' },
-      { label: 'Una decisione', value: 'decisione', nextId: 'vincoli_no' },
-      { label: 'Una consegna', value: 'consegna', nextId: 'vincoli_no' },
-    ],
-  },
-  
-  'rimandato': {
-    id: 'rimandato',
-    strato: 'STRATO 2 — CONTESTO REALE',
-    question: 'Cosa stai rimandando?',
-    collectAs: 'rimandato',
-    options: [
-      { label: 'Un progetto importante', value: 'progetto', nextId: 'vincoli_no' },
-      { label: 'Una riorganizzazione', value: 'riorganizzazione', nextId: 'vincoli_no' },
-      { label: 'Niente di specifico', value: 'niente', nextId: 'vincoli_no' },
-    ],
-  },
-  
+
   // ============================================
-  // STRATO 3 — VINCOLI
+  // LAYER 3 — CONSTRAINTS & LIMITS
   // ============================================
-  
-  'vincoli_no': {
-    id: 'vincoli_no',
-    strato: 'STRATO 3 — VINCOLI',
-    question: 'Cosa NON deve fare l\'AI per te?',
-    collectAs: 'vincoli_no',
+
+  'q7_limits': {
+    id: 'q7_limits',
+    strato: 'LAYER 3 — CONSTRAINTS & LIMITS',
+    question: 'This system must NOT — select up to two',
+    collectAs: 'non_negotiable_limits',
+    type: 'multi',
+    maxSelect: 2,
     options: [
-      { label: 'Toccare dati sensibili', value: 'privacy', nextId: 'privacy_limiti' },
-      { label: 'Scrivere in modo artificiale', value: 'stile', nextId: 'stile_fastidio' },
-      { label: 'Nessun vincolo particolare', value: 'nessuno', nextId: 'tempo_ai' },
+      { label: 'Handle sensitive data', value: 'sensitive_data', nextId: 'q8_available_time' },
+      { label: 'Explain theory', value: 'theory', nextId: 'q8_available_time' },
+      { label: 'Be verbose', value: 'verbose', nextId: 'q8_available_time' },
+      { label: 'Offer too many alternatives', value: 'too_many_options', nextId: 'q8_available_time' },
+      { label: 'Use motivational language', value: 'motivational', nextId: 'q8_available_time' },
     ],
   },
-  
-  'privacy_limiti': {
-    id: 'privacy_limiti',
-    strato: 'STRATO 3 — VINCOLI',
-    question: 'Quali dati sono off-limits?',
-    collectAs: 'privacy_limiti',
+
+  'q8_available_time': {
+    id: 'q8_available_time',
+    strato: 'LAYER 3 — CONSTRAINTS & LIMITS',
+    question: 'On a normal day, you realistically have',
+    collectAs: 'available_time',
+    type: 'single',
     options: [
-      { label: 'Dati clienti', value: 'clienti', nextId: 'tempo_ai' },
-      { label: 'Dati finanziari', value: 'finanziari', nextId: 'tempo_ai' },
-      { label: 'Dati personali', value: 'personali', nextId: 'tempo_ai' },
+      { label: 'Less than 10 minutes', value: 'less_10', nextId: 'q8b_micro' },
+      { label: '10–30 minutes', value: '10_30', nextId: 'q9_execution_mode' },
+      { label: 'More than 30 minutes', value: 'more_30', nextId: 'q9_execution_mode' },
     ],
   },
-  
-  'stile_fastidio': {
-    id: 'stile_fastidio',
-    strato: 'STRATO 3 — VINCOLI',
-    question: 'Cosa ti infastidisce nelle risposte AI?',
-    collectAs: 'stile_fastidio',
+
+  'q8b_micro': {
+    id: 'q8b_micro',
+    strato: 'LAYER 3 — CONSTRAINTS & LIMITS',
+    question: 'With less than 10 minutes, you prefer',
+    collectAs: 'micro_preference',
+    type: 'single',
     options: [
-      { label: 'Troppo lunghe', value: 'lunghe', nextId: 'tempo_ai' },
-      { label: 'Troppo generiche', value: 'generiche', nextId: 'tempo_ai' },
-      { label: 'Tono artificiale', value: 'artificiale', nextId: 'tempo_ai' },
+      { label: 'Micro-actions', value: 'micro_actions', nextId: 'q9_execution_mode' },
+      { label: 'Micro-decisions', value: 'micro_decisions', nextId: 'q9_execution_mode' },
     ],
   },
-  
-  'tempo_ai': {
-    id: 'tempo_ai',
-    strato: 'STRATO 3 — VINCOLI',
-    question: 'Quanto tempo puoi dedicarle ogni giorno?',
-    collectAs: 'tempo_ai',
-    options: [
-      { label: 'Meno di 10 minuti', value: 'sotto10', nextId: 'micro_azioni' },
-      { label: '10-30 minuti', value: '10-30', nextId: 'ai_modo' },
-      { label: 'Più di 30 minuti', value: 'sopra30', nextId: 'analisi_produzione' },
-    ],
-  },
-  
-  'micro_azioni': {
-    id: 'micro_azioni',
-    strato: 'STRATO 3 — VINCOLI',
-    question: 'Solo micro-azioni o decisioni?',
-    collectAs: 'micro_azioni',
-    options: [
-      { label: 'Micro-azioni', value: 'micro', nextId: 'ai_modo' },
-      { label: 'Decisioni rapide', value: 'decisioni', nextId: 'ai_modo' },
-      { label: 'Entrambe', value: 'entrambe', nextId: 'ai_modo' },
-    ],
-  },
-  
-  'analisi_produzione': {
-    id: 'analisi_produzione',
-    strato: 'STRATO 3 — VINCOLI',
-    question: 'Analisi o produzione?',
-    collectAs: 'analisi_produzione',
-    options: [
-      { label: 'Più analisi', value: 'analisi', nextId: 'ai_modo' },
-      { label: 'Più produzione', value: 'produzione', nextId: 'ai_modo' },
-      { label: 'Entrambe', value: 'entrambe', nextId: 'ai_modo' },
-    ],
-  },
-  
-  'ai_modo': {
-    id: 'ai_modo',
-    strato: 'STRATO 3 — VINCOLI',
-    question: 'Preferisci che l\'AI:',
-    collectAs: 'ai_modo',
-    options: [
-      { label: 'Proponga soluzioni', value: 'proponga', nextId: 'proponga_alt' },
-      { label: 'Esegua istruzioni', value: 'esegua', nextId: 'strumenti_attuali' },
-    ],
-  },
-  
-  'proponga_alt': {
-    id: 'proponga_alt',
-    strato: 'STRATO 3 — VINCOLI',
-    question: 'Anche alternative?',
-    collectAs: 'proponga_alt',
-    options: [
-      { label: 'Sì, sempre', value: 'sempre', nextId: 'strumenti_attuali' },
-      { label: 'Solo se rilevanti', value: 'rilevanti', nextId: 'strumenti_attuali' },
-      { label: 'No, una sola proposta', value: 'una', nextId: 'strumenti_attuali' },
-    ],
-  },
-  
+
   // ============================================
-  // STRATO 4 — RISORSE DISPONIBILI
+  // LAYER 4 — EXECUTION PREFERENCES
   // ============================================
-  
-  'strumenti_attuali': {
-    id: 'strumenti_attuali',
-    strato: 'STRATO 4 — RISORSE DISPONIBILI',
-    question: 'Che strumenti usi già?',
-    collectAs: 'strumenti_attuali',
+  // Q10 (Existing Tools) → entirely Phase 2
+
+  'q9_execution_mode': {
+    id: 'q9_execution_mode',
+    strato: 'LAYER 4 — EXECUTION PREFERENCES',
+    question: 'You want the system to mainly',
+    collectAs: 'execution_mode',
+    type: 'single',
     options: [
-      { label: 'AI (ChatGPT, Claude...)', value: 'ai', nextId: 'ai_uso' },
-      { label: 'Solo strumenti tradizionali', value: 'tradizionali', nextId: 'strumenti_funziona' },
-      { label: 'Mix di entrambi', value: 'mix', nextId: 'ai_uso' },
+      { label: 'Propose options', value: 'propose', nextId: 'q11_starting_material' },
+      { label: 'Execute clear instructions', value: 'execute', nextId: 'q11_starting_material' },
     ],
   },
-  
-  'ai_uso': {
-    id: 'ai_uso',
-    strato: 'STRATO 4 — RISORSE DISPONIBILI',
-    question: 'Quali AI e come le usi?',
-    collectAs: 'ai_uso',
+
+  'q11_starting_material': {
+    id: 'q11_starting_material',
+    strato: 'LAYER 4 — EXECUTION PREFERENCES',
+    question: 'You currently have material to work from',
+    collectAs: 'starting_material',
+    type: 'single',
     options: [
-      { label: 'ChatGPT, spesso', value: 'chatgpt_spesso', nextId: 'materiali' },
-      { label: 'ChatGPT, raramente', value: 'chatgpt_raro', nextId: 'materiali' },
-      { label: 'Claude', value: 'claude', nextId: 'materiali' },
-      { label: 'Altre', value: 'altre', nextId: 'materiali' },
+      { label: 'Yes', value: 'yes', nextId: 'q12_decision_authority' },
+      { label: 'No', value: 'no', nextId: 'q12_decision_authority' },
     ],
   },
-  
-  'strumenti_funziona': {
-    id: 'strumenti_funziona',
-    strato: 'STRATO 4 — RISORSE DISPONIBILI',
-    question: 'Cosa funziona meglio oggi?',
-    collectAs: 'strumenti_funziona',
-    options: [
-      { label: 'Excel/Fogli', value: 'excel', nextId: 'materiali' },
-      { label: 'Email', value: 'email', nextId: 'materiali' },
-      { label: 'Note/Documenti', value: 'note', nextId: 'materiali' },
-      { label: 'Altro', value: 'altro', nextId: 'materiali' },
-    ],
-  },
-  
-  'materiali': {
-    id: 'materiali',
-    strato: 'STRATO 4 — RISORSE DISPONIBILI',
-    question: 'Hai materiali da cui partire?',
-    collectAs: 'materiali',
-    options: [
-      { label: 'Sì', value: 'si', nextId: 'materiali_tipo' },
-      { label: 'No, parto da zero', value: 'no', nextId: 'chi_decide' },
-    ],
-  },
-  
-  'materiali_tipo': {
-    id: 'materiali_tipo',
-    strato: 'STRATO 4 — RISORSE DISPONIBILI',
-    question: 'Quali?',
-    collectAs: 'materiali_tipo',
-    options: [
-      { label: 'Testi e documenti', value: 'testi', nextId: 'chi_decide' },
-      { label: 'Note sparse', value: 'note', nextId: 'chi_decide' },
-      { label: 'Audio/registrazioni', value: 'audio', nextId: 'chi_decide' },
-      { label: 'Mix', value: 'mix', nextId: 'chi_decide' },
-    ],
-  },
-  
-  'chi_decide': {
-    id: 'chi_decide',
-    strato: 'STRATO 4 — RISORSE DISPONIBILI',
-    question: 'Chi decide davvero quando usi l\'AI?',
-    collectAs: 'chi_decide',
-    options: [
-      { label: 'Io', value: 'io', nextId: 'risposta_ideale' },
-      { label: 'Altri influenzano', value: 'altri', nextId: 'chi_influenza' },
-    ],
-  },
-  
-  'chi_influenza': {
-    id: 'chi_influenza',
-    strato: 'STRATO 4 — RISORSE DISPONIBILI',
-    question: 'Chi influenza le scelte?',
-    collectAs: 'chi_influenza',
-    options: [
-      { label: 'Team/colleghi', value: 'team', nextId: 'risposta_ideale' },
-      { label: 'Manager/titolare', value: 'manager', nextId: 'risposta_ideale' },
-      { label: 'Clienti', value: 'clienti', nextId: 'risposta_ideale' },
-    ],
-  },
-  
+
   // ============================================
-  // STRATO 5 — STILE COGNITIVO
+  // LAYER 5 — DECISION & INTERACTION STYLE
   // ============================================
-  
-  'risposta_ideale': {
-    id: 'risposta_ideale',
-    strato: 'STRATO 5 — STILE COGNITIVO',
-    question: 'Quando leggi una risposta ideale, deve essere:',
-    collectAs: 'risposta_ideale',
+
+  'q12_decision_authority': {
+    id: 'q12_decision_authority',
+    strato: 'LAYER 5 — DECISION & INTERACTION STYLE',
+    question: 'Who ultimately decides when this system is used',
+    collectAs: 'decision_authority',
+    type: 'single',
     options: [
-      { label: 'Breve', value: 'breve', nextId: 'breve_tipo' },
-      { label: 'Strutturata', value: 'strutturata', nextId: 'strutturata_tipo' },
+      { label: 'You', value: 'you', nextId: 'q13_response_format' },
+      { label: 'Other people', value: 'others', nextId: 'q13_response_format' },
     ],
   },
-  
-  'breve_tipo': {
-    id: 'breve_tipo',
-    strato: 'STRATO 5 — STILE COGNITIVO',
-    question: 'Con checklist?',
-    collectAs: 'breve_tipo',
+
+  'q13_response_format': {
+    id: 'q13_response_format',
+    strato: 'LAYER 5 — DECISION & INTERACTION STYLE',
+    question: 'An answer works best for you when it is',
+    collectAs: 'response_format',
+    type: 'single',
     options: [
-      { label: 'Sì, con checklist', value: 'checklist', nextId: 'sfida_supporta' },
-      { label: 'No, solo testo breve', value: 'testo', nextId: 'sfida_supporta' },
+      { label: 'Short', value: 'short', nextId: 'q13b_checklists' },
+      { label: 'Structured', value: 'structured', nextId: 'q13b_examples' },
     ],
   },
-  
-  'strutturata_tipo': {
-    id: 'strutturata_tipo',
-    strato: 'STRATO 5 — STILE COGNITIVO',
-    question: 'Con esempi?',
-    collectAs: 'strutturata_tipo',
+
+  'q13b_checklists': {
+    id: 'q13b_checklists',
+    strato: 'LAYER 5 — DECISION & INTERACTION STYLE',
+    question: 'Are checklists useful for you?',
+    collectAs: 'checklists_useful',
+    type: 'single',
     options: [
-      { label: 'Sì, con esempi', value: 'esempi', nextId: 'sfida_supporta' },
-      { label: 'No, solo struttura', value: 'struttura', nextId: 'sfida_supporta' },
+      { label: 'Yes', value: 'yes', nextId: 'q14_interaction_style' },
+      { label: 'No', value: 'no', nextId: 'q14_interaction_style' },
     ],
   },
-  
-  'sfida_supporta': {
-    id: 'sfida_supporta',
-    strato: 'STRATO 5 — STILE COGNITIVO',
-    question: 'Vuoi che l\'AI ti sfidi o ti supporti?',
-    collectAs: 'sfida_supporta',
+
+  'q13b_examples': {
+    id: 'q13b_examples',
+    strato: 'LAYER 5 — DECISION & INTERACTION STYLE',
+    question: 'Are examples useful for you?',
+    collectAs: 'examples_useful',
+    type: 'single',
     options: [
-      { label: 'Sfidi', value: 'sfidi', nextId: 'sfida_modo' },
-      { label: 'Supporti', value: 'supporti', nextId: 'supporta_tono' },
+      { label: 'Yes', value: 'yes', nextId: 'q14_interaction_style' },
+      { label: 'No', value: 'no', nextId: 'q14_interaction_style' },
     ],
   },
-  
-  'sfida_modo': {
-    id: 'sfida_modo',
-    strato: 'STRATO 5 — STILE COGNITIVO',
-    question: 'In che modo?',
-    collectAs: 'sfida_modo',
+
+  'q14_interaction_style': {
+    id: 'q14_interaction_style',
+    strato: 'LAYER 5 — DECISION & INTERACTION STYLE',
+    question: 'You want the system to',
+    collectAs: 'interaction_style',
+    type: 'single',
     options: [
-      { label: 'Facendo domande scomode', value: 'domande', nextId: 'ai_persona' },
-      { label: 'Proponendo alternative', value: 'alternative', nextId: 'ai_persona' },
-      { label: 'Evidenziando rischi', value: 'rischi', nextId: 'ai_persona' },
+      { label: 'Challenge your thinking', value: 'challenge', nextId: 'q15_cognitive_bias' },
+      { label: 'Support your thinking', value: 'support', nextId: 'q15_cognitive_bias' },
     ],
   },
-  
-  'supporta_tono': {
-    id: 'supporta_tono',
-    strato: 'STRATO 5 — STILE COGNITIVO',
-    question: 'Con che tono?',
-    collectAs: 'supporta_tono',
+
+  'q15_cognitive_bias': {
+    id: 'q15_cognitive_bias',
+    strato: 'LAYER 5 — DECISION & INTERACTION STYLE',
+    question: 'If the system had a dominant trait, it would be',
+    collectAs: 'cognitive_bias',
+    type: 'single',
     options: [
-      { label: 'Neutro e professionale', value: 'neutro', nextId: 'ai_persona' },
-      { label: 'Caldo e incoraggiante', value: 'caldo', nextId: 'ai_persona' },
-      { label: 'Diretto e pratico', value: 'diretto', nextId: 'ai_persona' },
+      { label: 'Analytical', value: 'analytical', nextId: 'q16_primary_output' },
+      { label: 'Creative', value: 'creative', nextId: 'q16_primary_output' },
     ],
   },
-  
-  'ai_persona': {
-    id: 'ai_persona',
-    strato: 'STRATO 5 — STILE COGNITIVO',
-    question: 'Se l\'AI fosse una persona, sarebbe più:',
-    collectAs: 'ai_persona',
-    options: [
-      { label: 'Analitica', value: 'analitica', nextId: 'analitica_quanto' },
-      { label: 'Creativa', value: 'creativa', nextId: 'creativa_quanto' },
-    ],
-  },
-  
-  'analitica_quanto': {
-    id: 'analitica_quanto',
-    strato: 'STRATO 5 — STILE COGNITIVO',
-    question: 'Molto o quanto basta?',
-    collectAs: 'analitica_quanto',
-    options: [
-      { label: 'Molto analitica', value: 'molto', nextId: 'output_tipo' },
-      { label: 'Quanto basta', value: 'basta', nextId: 'output_tipo' },
-    ],
-  },
-  
-  'creativa_quanto': {
-    id: 'creativa_quanto',
-    strato: 'STRATO 5 — STILE COGNITIVO',
-    question: 'Libera o guidata?',
-    collectAs: 'creativa_quanto',
-    options: [
-      { label: 'Libera', value: 'libera', nextId: 'output_tipo' },
-      { label: 'Guidata', value: 'guidata', nextId: 'output_tipo' },
-    ],
-  },
-  
+
   // ============================================
-  // STRATO 6 — OUTPUT DESIDERATO
+  // LAYER 6 — OUTPUT & VALIDATION
   // ============================================
-  
-  'output_tipo': {
-    id: 'output_tipo',
-    strato: 'STRATO 6 — OUTPUT DESIDERATO',
-    question: 'Che tipo di output vuoi più spesso?',
-    collectAs: 'output_tipo',
+  // Q17 (Answer Validation) → entirely Phase 2
+
+  'q16_primary_output': {
+    id: 'q16_primary_output',
+    strato: 'LAYER 6 — OUTPUT & VALIDATION',
+    question: 'Most of the time, you expect',
+    collectAs: 'primary_output',
+    type: 'single',
     options: [
-      { label: 'Testi', value: 'testi', nextId: 'testi_uso' },
-      { label: 'Decisioni', value: 'decisioni', nextId: 'decisioni_tipo' },
+      { label: 'Written output', value: 'written', nextId: 'q18_next_step' },
+      { label: 'A decision', value: 'decision', nextId: 'q18_next_step' },
     ],
   },
-  
-  'testi_uso': {
-    id: 'testi_uso',
-    strato: 'STRATO 6 — OUTPUT DESIDERATO',
-    question: 'Per uso interno o esterno?',
-    collectAs: 'testi_uso',
+
+  'q18_next_step': {
+    id: 'q18_next_step',
+    strato: 'LAYER 6 — OUTPUT & VALIDATION',
+    question: 'After a good answer, you expect',
+    collectAs: 'next_step',
+    type: 'single',
     options: [
-      { label: 'Interno', value: 'interno', nextId: 'risposta_giusta' },
-      { label: 'Esterno', value: 'esterno', nextId: 'risposta_giusta' },
-      { label: 'Entrambi', value: 'entrambi', nextId: 'risposta_giusta' },
+      { label: 'A clear next step', value: 'clear_step', nextId: 'q20_missing_factor' },
+      { label: 'A follow-up question', value: 'follow_up', nextId: 'q20_missing_factor' },
+      { label: 'Both', value: 'both', nextId: 'q20_missing_factor' },
     ],
   },
-  
-  'decisioni_tipo': {
-    id: 'decisioni_tipo',
-    strato: 'STRATO 6 — OUTPUT DESIDERATO',
-    question: 'Strategiche o operative?',
-    collectAs: 'decisioni_tipo',
-    options: [
-      { label: 'Strategiche', value: 'strategiche', nextId: 'risposta_giusta' },
-      { label: 'Operative', value: 'operative', nextId: 'risposta_giusta' },
-      { label: 'Entrambe', value: 'entrambe', nextId: 'risposta_giusta' },
-    ],
-  },
-  
-  'risposta_giusta': {
-    id: 'risposta_giusta',
-    strato: 'STRATO 6 — OUTPUT DESIDERATO',
-    question: 'Come capisci che una risposta è "giusta"?',
-    collectAs: 'risposta_giusta',
-    options: [
-      { label: 'Ti sblocca', value: 'sblocca', nextId: 'sblocca_da' },
-      { label: 'Ti fa agire', value: 'agire', nextId: 'agire_su' },
-    ],
-  },
-  
-  'sblocca_da': {
-    id: 'sblocca_da',
-    strato: 'STRATO 6 — OUTPUT DESIDERATO',
-    question: 'Da cosa?',
-    collectAs: 'sblocca_da',
-    options: [
-      { label: 'Dubbi', value: 'dubbi', nextId: 'dopo_risposta' },
-      { label: 'Confusione', value: 'confusione', nextId: 'dopo_risposta' },
-      { label: 'Procrastinazione', value: 'procrastinazione', nextId: 'dopo_risposta' },
-    ],
-  },
-  
-  'agire_su': {
-    id: 'agire_su',
-    strato: 'STRATO 6 — OUTPUT DESIDERATO',
-    question: 'Su quale azione?',
-    collectAs: 'agire_su',
-    options: [
-      { label: 'Immediata', value: 'immediata', nextId: 'dopo_risposta' },
-      { label: 'Pianificata', value: 'pianificata', nextId: 'dopo_risposta' },
-    ],
-  },
-  
-  'dopo_risposta': {
-    id: 'dopo_risposta',
-    strato: 'STRATO 6 — OUTPUT DESIDERATO',
-    question: 'Cosa dovrebbe succedere dopo ogni risposta?',
-    collectAs: 'dopo_risposta',
-    options: [
-      { label: 'Prossimo passo chiaro', value: 'passo', nextId: 'passo_auto' },
-      { label: 'Una domanda di follow-up', value: 'domanda', nextId: 'domanda_sempre' },
-    ],
-  },
-  
-  'passo_auto': {
-    id: 'passo_auto',
-    strato: 'STRATO 6 — OUTPUT DESIDERATO',
-    question: 'Automatico?',
-    collectAs: 'passo_auto',
-    options: [
-      { label: 'Sì, automatico', value: 'auto', nextId: 'visione_30g' },
-      { label: 'No, su richiesta', value: 'richiesta', nextId: 'visione_30g' },
-    ],
-  },
-  
-  'domanda_sempre': {
-    id: 'domanda_sempre',
-    strato: 'STRATO 6 — OUTPUT DESIDERATO',
-    question: 'Sempre o solo a volte?',
-    collectAs: 'domanda_sempre',
-    options: [
-      { label: 'Sempre', value: 'sempre', nextId: 'visione_30g' },
-      { label: 'Solo a volte', value: 'volte', nextId: 'visione_30g' },
-    ],
-  },
-  
+
   // ============================================
-  // STRATO 7 — ANCORAGGIO FINALE
+  // LAYER 7 — FUTURE STATE
   // ============================================
-  
-  'visione_30g': {
-    id: 'visione_30g',
-    strato: 'STRATO 7 — ANCORAGGIO FINALE',
-    question: 'Se tra 30 giorni l\'AI avesse funzionato perfettamente, cosa sarebbe cambiato?',
-    collectAs: 'visione_30g',
+  // Q19 (Future State) → entirely Phase 2
+
+  'q20_missing_factor': {
+    id: 'q20_missing_factor',
+    strato: 'LAYER 7 — FUTURE STATE',
+    question: 'Is there anything important that was not addressed',
+    collectAs: 'missing_factor',
+    type: 'single',
     options: [
-      { label: 'Nel lavoro', value: 'lavoro', nextId: 'lavoro_cambiato' },
-      { label: 'Nella testa', value: 'testa', nextId: 'testa_cambiata' },
+      { label: 'No', value: 'no', nextId: 'd1_success_criterion' },
+      { label: 'Yes', value: 'yes', nextId: 'd1_success_criterion' },
     ],
   },
-  
-  'lavoro_cambiato': {
-    id: 'lavoro_cambiato',
-    strato: 'STRATO 7 — ANCORAGGIO FINALE',
-    question: 'In che modo concreto?',
-    collectAs: 'lavoro_cambiato',
+
+  // ============================================
+  // LAYER 8 — DETERMINISTIC CORE
+  // ============================================
+
+  'd1_success_criterion': {
+    id: 'd1_success_criterion',
+    strato: 'LAYER 8 — DETERMINISTIC CORE',
+    question: 'An answer is successful when it',
+    collectAs: 'success_criterion',
+    type: 'single',
     options: [
-      { label: 'Più veloce', value: 'veloce', nextId: 'altro' },
-      { label: 'Più organizzato', value: 'organizzato', nextId: 'altro' },
-      { label: 'Più efficace', value: 'efficace', nextId: 'altro' },
+      { label: 'Forces a decision', value: 'forces_decision', nextId: 'd2_approximation' },
+      { label: 'Triggers action', value: 'triggers_action', nextId: 'd2_approximation' },
+      { label: 'Creates control', value: 'creates_control', nextId: 'd2_approximation' },
+      { label: 'Reduces mental noise', value: 'reduces_noise', nextId: 'd2_approximation' },
+      { label: 'Produces a reusable asset', value: 'reusable_asset', nextId: 'd2_approximation' },
     ],
   },
-  
-  'testa_cambiata': {
-    id: 'testa_cambiata',
-    strato: 'STRATO 7 — ANCORAGGIO FINALE',
-    question: 'Meno stress o più chiarezza?',
-    collectAs: 'testa_cambiata',
+
+  'd2_approximation': {
+    id: 'd2_approximation',
+    strato: 'LAYER 8 — DETERMINISTIC CORE',
+    question: 'You prefer answers that are',
+    collectAs: 'approximation_tolerance',
+    type: 'single',
     options: [
-      { label: 'Meno stress', value: 'stress', nextId: 'altro' },
-      { label: 'Più chiarezza', value: 'chiarezza', nextId: 'altro' },
-      { label: 'Entrambi', value: 'entrambi', nextId: 'altro' },
+      { label: 'Imperfect but immediately usable', value: 'imperfect_usable', nextId: 'd3_guidance' },
+      { label: 'More precise, even if slower', value: 'precise_slower', nextId: 'd3_guidance' },
+      { label: 'Context-dependent (default fast)', value: 'context_default_fast', nextId: 'd3_guidance' },
     ],
   },
-  
-  'altro': {
-    id: 'altro',
-    strato: 'STRATO 7 — ANCORAGGIO FINALE',
-    question: 'C\'è qualcosa che non ti ho chiesto ma che conta molto?',
-    collectAs: 'altro',
+
+  'd3_guidance': {
+    id: 'd3_guidance',
+    strato: 'LAYER 8 — DETERMINISTIC CORE',
+    question: 'When progress slows, the system should',
+    collectAs: 'guidance_threshold',
+    type: 'single',
     options: [
-      { label: 'No, tutto chiaro', value: 'no', nextId: null },
-      { label: 'Sì, voglio aggiungere qualcosa', value: 'si', nextId: null },
+      { label: 'Force a choice', value: 'force_choice', nextId: 'd4_hard_failure' },
+      { label: 'Reduce options', value: 'reduce_options', nextId: 'd4_hard_failure' },
+      { label: 'Ask a sharper question', value: 'sharper_question', nextId: 'd4_hard_failure' },
+      { label: 'Allow one more step', value: 'one_more_step', nextId: 'd4_hard_failure' },
+    ],
+  },
+
+  'd4_hard_failure': {
+    id: 'd4_hard_failure',
+    strato: 'LAYER 8 — DETERMINISTIC CORE',
+    question: 'An answer fails immediately if it',
+    collectAs: 'hard_failure',
+    type: 'single',
+    options: [
+      { label: 'Is too long', value: 'too_long', nextId: null },
+      { label: 'Is too theoretical', value: 'too_theoretical', nextId: null },
+      { label: 'Is too vague', value: 'too_vague', nextId: null },
+      { label: 'Creates too many alternatives', value: 'too_many_alternatives', nextId: null },
+      { label: 'Does not lead to action', value: 'no_action', nextId: null },
     ],
   },
 }
 
-// Strati per i progress dots
-export const strati = [
-  'STRATO 1 — IDENTITÀ & DIREZIONE',
-  'STRATO 2 — CONTESTO REALE',
-  'STRATO 3 — VINCOLI',
-  'STRATO 4 — RISORSE DISPONIBILI',
-  'STRATO 5 — STILE COGNITIVO',
-  'STRATO 6 — OUTPUT DESIDERATO',
-  'STRATO 7 — ANCORAGGIO FINALE',
+
+// ══════════════════════════════════════════════════════════
+// PHASE 2 — CONTEXTUAL TEXT QUESTIONS (post-account)
+// ══════════════════════════════════════════════════════════
+//
+// Every question embeds the Phase 1 answer in its text.
+// No naked follow-ups. Fully self-contained.
+//
+// dependsOn: the collectAs key from Phase 1
+// dependsOnValue: the specific value that triggers this question
+//                 null = always show regardless of Phase 1 answer
+//
+// Yields ~10–17 questions depending on Phase 1 path
+// ══════════════════════════════════════════════════════════
+
+export const phase2Questions: Phase2Question[] = [
+
+  // ── LAYER 1 — IDENTITY & DIRECTION ──
+
+  // Q1 follow-ups
+  {
+    id: 'p2_clients_type',
+    strato: 'LAYER 1 — IDENTITY & DIRECTION',
+    dependsOn: 'operating_position',
+    dependsOnValue: 'independent',
+    question: 'As an independent professional, what type of clients do you primarily work with?',
+    collectAs: 'clients_type',
+  },
+  {
+    id: 'p2_team_size',
+    strato: 'LAYER 1 — IDENTITY & DIRECTION',
+    dependsOn: 'operating_position',
+    dependsOnValue: 'company',
+    question: 'You operate within a structured team. How many people are involved?',
+    collectAs: 'team_size',
+  },
+  {
+    id: 'p2_team_area',
+    strato: 'LAYER 1 — IDENTITY & DIRECTION',
+    dependsOn: 'operating_position',
+    dependsOnValue: 'company',
+    question: 'What is your personal area of responsibility within the team?',
+    collectAs: 'personal_area',
+  },
+
+  // Q2 follow-ups
+  {
+    id: 'p2_time_lost',
+    strato: 'LAYER 1 — IDENTITY & DIRECTION',
+    dependsOn: 'primary_objective',
+    dependsOnValue: 'time',
+    question: 'You want to regain time. Where is it currently lost the most?',
+    collectAs: 'time_lost_where',
+  },
+  {
+    id: 'p2_result_30days',
+    strato: 'LAYER 1 — IDENTITY & DIRECTION',
+    dependsOn: 'primary_objective',
+    dependsOnValue: 'results',
+    question: 'You want concrete results. What result would matter within the next 30 days?',
+    collectAs: 'result_30_days',
+  },
+
+  // Q3 follow-ups
+  {
+    id: 'p2_overload_source',
+    strato: 'LAYER 1 — IDENTITY & DIRECTION',
+    dependsOn: 'current_state',
+    dependsOnValue: 'overload',
+    question: 'You are experiencing overload. What is generating it?',
+    collectAs: 'overload_source',
+  },
+  {
+    id: 'p2_blockage_decision',
+    strato: 'LAYER 1 — IDENTITY & DIRECTION',
+    dependsOn: 'current_state',
+    dependsOnValue: 'blockage',
+    question: 'You are experiencing blockage. Which decision is not moving?',
+    collectAs: 'blockage_decision',
+  },
+
+  // ── LAYER 2 — OPERATIONAL CONTEXT ──
+
+  // Q4 follow-up
+  {
+    id: 'p2_document_formats',
+    strato: 'LAYER 2 — OPERATIONAL CONTEXT',
+    dependsOn: 'daily_work',
+    dependsOnValue: 'documents',
+    question: 'Your work revolves around documents. Which formats are most frequent?',
+    collectAs: 'document_formats',
+  },
+
+  // Q5 follow-ups
+  {
+    id: 'p2_desktop_context',
+    strato: 'LAYER 2 — OPERATIONAL CONTEXT',
+    dependsOn: 'usage_environment',
+    dependsOnValue: 'desktop',
+    question: 'You will use this on desktop. Alone or alongside other tools?',
+    collectAs: 'desktop_context',
+  },
+  {
+    id: 'p2_mobile_context',
+    strato: 'LAYER 2 — OPERATIONAL CONTEXT',
+    dependsOn: 'usage_environment',
+    dependsOnValue: 'mobile',
+    question: 'You will use this on mobile. On the move or in fixed moments?',
+    collectAs: 'mobile_context',
+  },
+
+  // Q6 follow-ups
+  {
+    id: 'p2_deadline_ready',
+    strato: 'LAYER 2 — OPERATIONAL CONTEXT',
+    dependsOn: 'time_pressure',
+    dependsOnValue: 'within_7_days',
+    question: 'Your deadline is within 7 days. What must be ready?',
+    collectAs: 'deadline_what_ready',
+  },
+  {
+    id: 'p2_postponed',
+    strato: 'LAYER 2 — OPERATIONAL CONTEXT',
+    dependsOn: 'time_pressure',
+    dependsOnValue: 'unresolved',
+    question: 'Your priorities remain unresolved. What keeps being postponed?',
+    collectAs: 'what_postponed',
+  },
+
+  // ── LAYER 4 — EXECUTION PREFERENCES ──
+
+  // Q10 — always shown (no Phase 1 select exists for tools)
+  {
+    id: 'p2_ai_tools',
+    strato: 'LAYER 4 — EXECUTION PREFERENCES',
+    dependsOn: '_always',
+    dependsOnValue: null,
+    question: 'What AI tools do you currently use, if any?',
+    collectAs: 'ai_tools_used',
+  },
+  {
+    id: 'p2_non_ai_tools',
+    strato: 'LAYER 4 — EXECUTION PREFERENCES',
+    dependsOn: '_always',
+    dependsOnValue: null,
+    question: 'What non-AI tools do you currently use in your daily work?',
+    collectAs: 'non_ai_tools_used',
+  },
+
+  // Q11 follow-up
+  {
+    id: 'p2_material_kind',
+    strato: 'LAYER 4 — EXECUTION PREFERENCES',
+    dependsOn: 'starting_material',
+    dependsOnValue: 'yes',
+    question: 'You have existing material to work from. What kind of material is it?',
+    collectAs: 'material_kind',
+  },
+
+  // ── LAYER 5 — DECISION & INTERACTION STYLE ──
+
+  // Q12 follow-up
+  {
+    id: 'p2_who_influences',
+    strato: 'LAYER 5 — DECISION & INTERACTION STYLE',
+    dependsOn: 'decision_authority',
+    dependsOnValue: 'others',
+    question: 'Other people influence the decision. Who are they?',
+    collectAs: 'who_influences',
+  },
+
+  // Q14 follow-ups
+  {
+    id: 'p2_challenge_how',
+    strato: 'LAYER 5 — DECISION & INTERACTION STYLE',
+    dependsOn: 'interaction_style',
+    dependsOnValue: 'challenge',
+    question: 'You want the system to challenge your thinking. In what way?',
+    collectAs: 'challenge_how',
+  },
+  {
+    id: 'p2_support_tone',
+    strato: 'LAYER 5 — DECISION & INTERACTION STYLE',
+    dependsOn: 'interaction_style',
+    dependsOnValue: 'support',
+    question: 'You want the system to support your thinking. With what tone?',
+    collectAs: 'support_tone',
+  },
+
+  // ── LAYER 6 — OUTPUT & VALIDATION ──
+
+  // Q16 follow-ups
+  {
+    id: 'p2_written_use',
+    strato: 'LAYER 6 — OUTPUT & VALIDATION',
+    dependsOn: 'primary_output',
+    dependsOnValue: 'written',
+    question: 'You expect written output. For internal or external use?',
+    collectAs: 'written_use',
+  },
+  {
+    id: 'p2_decision_type',
+    strato: 'LAYER 6 — OUTPUT & VALIDATION',
+    dependsOn: 'primary_output',
+    dependsOnValue: 'decision',
+    question: 'You expect decisions. Strategic or operational?',
+    collectAs: 'decision_type',
+  },
+
+  // Q17 — always shown
+  {
+    id: 'p2_answer_validation',
+    strato: 'LAYER 6 — OUTPUT & VALIDATION',
+    dependsOn: '_always',
+    dependsOnValue: null,
+    question: 'You recognise a good answer when — describe briefly.',
+    collectAs: 'answer_validation',
+  },
+
+  // ── LAYER 7 — FUTURE STATE ──
+
+  // Q19 — always shown (two separate questions)
+  {
+    id: 'p2_future_work',
+    strato: 'LAYER 7 — FUTURE STATE',
+    dependsOn: '_always',
+    dependsOnValue: null,
+    question: 'If this system worked perfectly, 30 days from now — what would be different in your work?',
+    collectAs: 'future_work',
+  },
+  {
+    id: 'p2_future_head',
+    strato: 'LAYER 7 — FUTURE STATE',
+    dependsOn: '_always',
+    dependsOnValue: null,
+    question: 'If this system worked perfectly, 30 days from now — what would be different in your head?',
+    collectAs: 'future_head',
+  },
+
+  // Q20 follow-up
+  {
+    id: 'p2_missing_specify',
+    strato: 'LAYER 7 — FUTURE STATE',
+    dependsOn: 'missing_factor',
+    dependsOnValue: 'yes',
+    question: 'You said something important was not addressed. What is it?',
+    collectAs: 'missing_specify',
+  },
 ]
 
-export const startQuestionId = 'identity'
+
+// ══════════════════════════════════════════════════════════
+// HELPER — Generate Phase 2 questions from Phase 1 data
+// ══════════════════════════════════════════════════════════
+
+export function getPhase2Questions(phase1Data: CollectedData): Phase2Question[] {
+  return phase2Questions.filter(q => {
+    if (q.dependsOn === '_always') return true
+    const answer = phase1Data[q.dependsOn]
+    if (!answer) return false
+    if (Array.isArray(answer)) {
+      return answer.includes(q.dependsOnValue || '')
+    }
+    return answer === q.dependsOnValue
+  })
+}
+
+
+// ══════════════════════════════════════════════════════════
+// LAYERS (progress dots)
+// ══════════════════════════════════════════════════════════
+
+export const strati = [
+  'LAYER 1 — IDENTITY & DIRECTION',
+  'LAYER 2 — OPERATIONAL CONTEXT',
+  'LAYER 3 — CONSTRAINTS & LIMITS',
+  'LAYER 4 — EXECUTION PREFERENCES',
+  'LAYER 5 — DECISION & INTERACTION STYLE',
+  'LAYER 6 — OUTPUT & VALIDATION',
+  'LAYER 7 — FUTURE STATE',
+  'LAYER 8 — DETERMINISTIC CORE',
+]
+
+export const startQuestionId = 'q1_position'
+
+
+// ══════════════════════════════════════════════════════════
+// ASSESSMENT CONTENT (copy)
+// ══════════════════════════════════════════════════════════
 
 export const assessmentContent = {
   hero: {
@@ -717,15 +710,15 @@ export const assessmentContent = {
     },
     intro: {
       blocks: [
-        ['This is Phase 1', 'building the general framework', 'of your Second Brain'],
-        ['After sign-up,', "we'll shape it around", 'your specific context and goals'],
+        ['This is where your Second Brain begins.', 'Everything starts here.'],
+        ['From this foundation,', 'it takes shape around your work', 'and your goals.'],
       ],
     },
   },
   complete: {
     section: 'PHASE 1 COMPLETE',
     title: ['Done.', 'Phase 1 is complete.'],
-    body: 'Create your account to personalize your Second Brain.',
+    body: 'Create your account to continue building your Second Brain.',
     cta: 'Create account',
   },
 }
