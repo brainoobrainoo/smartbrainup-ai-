@@ -195,7 +195,7 @@ export default function StartPage() {
 
   if (isComplete) {
     return (
-      <div className="min-h-screen">
+      <div className="min-h-screen" style={{ background: '#1a1a1a' }}>
         {/* Hero - DARK zone */}
         <div className="relative w-full overflow-hidden text-white" style={{ background: 'linear-gradient(to bottom, #252525 0%, #1a1a1a 100%)' }}>
           <section className="relative z-10 pt-20 md:pt-32 pb-16 md:pb-24">
@@ -208,50 +208,50 @@ export default function StartPage() {
 
               {/* Complete Card */}
               <div 
-                className="rounded-[4px] p-8 py-10 md:p-12 md:py-16 mb-11"
+                className="rounded-[4px] p-8 py-10 md:p-12 md:py-14 mb-11"
                 style={{ background: 'linear-gradient(to bottom, #353535 0%, #232323 100%)' }}
               >
                 {/* Single column - centered */}
-                <div className="flex flex-col items-center justify-center min-h-[300px] text-center">
+                <div className="flex flex-col items-center justify-center text-center">
                   
                   {/* Complete message */}
-                  <h2 className="text-[24px] md:text-[32px] font-normal leading-[1.1] text-white mb-4">
+                  <h2 className="text-[24px] md:text-[32px] font-normal leading-[1.1] text-white mb-3">
                     {complete.title.map((line, index) => (
                       <span key={index} className="block">{line}</span>
                     ))}
                   </h2>
-                  <p className="text-[17px] md:text-[18px] font-normal leading-[1.15] text-white opacity-70 mb-8">
+                  <p className="text-[16px] md:text-[17px] font-normal leading-[1.3] text-white/50 mb-10">
                     {complete.body}
                   </p>
                   
                   {/* Form fields */}
-                  <div className="w-full max-w-[400px] space-y-4 mb-8">
+                  <div className="w-full max-w-[360px] md:max-w-[560px] space-y-3 mb-8">
                     <input
                       type="text"
                       placeholder="Your name"
                       value={userName}
                       onChange={(e) => setUserName(e.target.value)}
-                      className="w-full px-6 py-4 bg-white/[0.05] border border-white/10 rounded-[4px] text-white text-[17px] placeholder-white/40 focus:outline-none focus:border-white/30 transition-all"
+                      className="w-full px-5 py-3.5 bg-white/[0.04] border-0 rounded-[4px] text-white text-[16px] placeholder-white/30 focus:outline-none focus:bg-white/[0.07] transition-all"
                     />
                     <input
                       type="email"
                       placeholder="Your email"
                       value={userEmail}
                       onChange={(e) => setUserEmail(e.target.value)}
-                      className="w-full px-6 py-4 bg-white/[0.05] border border-white/10 rounded-[4px] text-white text-[17px] placeholder-white/40 focus:outline-none focus:border-white/30 transition-all"
+                      className="w-full px-5 py-3.5 bg-white/[0.04] border-0 rounded-[4px] text-white text-[16px] placeholder-white/30 focus:outline-none focus:bg-white/[0.07] transition-all"
                     />
                   </div>
 
                   {/* Error message */}
                   {error && (
-                    <p className="text-red-400 text-[15px] mb-4">{error}</p>
+                    <p className="text-red-400 text-[14px] mb-4">{error}</p>
                   )}
                   
                   {/* CTA Button */}
                   <button 
                     onClick={handleSubmit}
                     disabled={isSubmitting}
-                    className={`px-8 py-4 bg-white/10 hover:bg-white/20 rounded-[4px] text-white text-[17px] md:text-[18px] font-medium transition-all ${
+                    className={`px-8 py-3.5 bg-white/[0.08] hover:bg-white/[0.14] rounded-[4px] text-white text-[16px] font-medium tracking-wide transition-all ${
                       isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
                     }`}
                   >
@@ -259,28 +259,45 @@ export default function StartPage() {
                   </button>
                   
                 </div>
-
-                {/* Step counter */}
-                <p className="mt-10 md:mt-14 text-center font-ui text-[11px] font-medium tracking-widest uppercase text-white/40">
-                  {complete.section}
-                </p>
-                
               </div>
 
-              {/* Intro text */}
-              <div className="text-[17px] md:text-[18px] font-normal leading-[1.15] text-white max-w-[560px] space-y-5">
-                {hero.intro.blocks.map((block, blockIndex) => (
-                  <p key={blockIndex} className="opacity-70">
-                    {block.map((line, lineIndex) => (
-                      <span 
-                        key={lineIndex} 
-                        className={`block ${blockIndex === 0 && lineIndex === 0 ? 'font-medium' : ''}`}
-                      >
-                        {line}
-                      </span>
-                    ))}
-                  </p>
-                ))}
+              {/* Intro text — two columns desktop, one mobile */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
+                {/* Column 1 */}
+                <div className="text-[17px] md:text-[18px] font-normal leading-[1.15] text-white space-y-5">
+                  {hero.intro.col1.map((block, blockIndex) => (
+                    <p key={blockIndex}>
+                      {block.map((line, lineIndex) => (
+                        <span 
+                          key={lineIndex} 
+                          className={`block ${
+                            line.startsWith('Phase 1') 
+                              ? '' 
+                              : 'opacity-50'
+                          }`}
+                        >
+                          {line.startsWith('Phase 1') ? (
+                            <><span className="font-semibold text-white">Phase 1</span><span className="opacity-50">{line.slice(7)}</span></>
+                          ) : line}
+                        </span>
+                      ))}
+                    </p>
+                  ))}
+                </div>
+                {/* Column 2 */}
+                <div className="text-[17px] md:text-[18px] font-normal leading-[1.15] text-white space-y-5">
+                  {hero.intro.col2.map((block, blockIndex) => (
+                    <p key={blockIndex}>
+                      {block.map((line, lineIndex) => (
+                        <span key={lineIndex} className={`block ${line.startsWith('Phase 2') ? '' : 'opacity-50'}`}>
+                          {line.startsWith('Phase 2') ? (
+                            <><span className="font-semibold text-white">Phase 2</span><span className="opacity-50">{line.slice(7)}</span></>
+                          ) : line}
+                        </span>
+                      ))}
+                    </p>
+                  ))}
+                </div>
               </div>
             </Container>
           </section>
@@ -290,7 +307,7 @@ export default function StartPage() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen" style={{ background: '#1a1a1a' }}>
       {/* Hero - DARK zone */}
       <div className="relative w-full overflow-hidden text-white" style={{ background: 'linear-gradient(to bottom, #252525 0%, #1a1a1a 100%)' }}>
         <section className="relative z-10 pt-20 md:pt-32 pb-16 md:pb-24">
@@ -307,8 +324,12 @@ export default function StartPage() {
               style={{ background: 'linear-gradient(to bottom, #353535 0%, #232323 100%)' }}
             >
               {/* Strato label - top */}
-              <p className="text-center font-ui text-[11px] font-medium tracking-widest uppercase text-white/[0.45]" style={{ marginBottom: '40px' }}>
+              <p className="text-center font-ui text-[11px] font-medium tracking-widest uppercase text-white/[0.45]" style={{ marginBottom: '4px' }}>
                 {question.strato}
+              </p>
+              {/* Topic label */}
+              <p className="text-center font-ui text-[11px] font-medium tracking-widest uppercase text-white/[0.45]" style={{ marginBottom: '40px' }}>
+                {question.topic}
               </p>
 
               {/* Content with transition */}
@@ -424,20 +445,43 @@ export default function StartPage() {
               
             </div>
 
-            {/* Intro text */}
-            <div className="text-[17px] md:text-[18px] font-normal leading-[1.15] text-white max-w-[560px] space-y-5">
-              {hero.intro.blocks.map((block, blockIndex) => (
-                <p key={blockIndex} className="opacity-70">
-                  {block.map((line, lineIndex) => (
-                    <span 
-                      key={lineIndex} 
-                      className={`block ${blockIndex === 0 && lineIndex === 0 ? 'font-medium' : ''}`}
-                    >
-                      {line}
-                    </span>
-                  ))}
-                </p>
-              ))}
+            {/* Intro text — two columns desktop, one mobile */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
+              {/* Column 1 */}
+              <div className="text-[17px] md:text-[18px] font-normal leading-[1.15] text-white space-y-5">
+                {hero.intro.col1.map((block, blockIndex) => (
+                  <p key={blockIndex}>
+                    {block.map((line, lineIndex) => (
+                      <span 
+                        key={lineIndex} 
+                        className={`block ${
+                          line.startsWith('Phase 1') 
+                            ? '' 
+                            : 'opacity-50'
+                        }`}
+                      >
+                        {line.startsWith('Phase 1') ? (
+                          <><span className="font-semibold text-white">Phase 1</span><span className="opacity-50">{line.slice(7)}</span></>
+                        ) : line}
+                      </span>
+                    ))}
+                  </p>
+                ))}
+              </div>
+              {/* Column 2 */}
+              <div className="text-[17px] md:text-[18px] font-normal leading-[1.15] text-white space-y-5">
+                {hero.intro.col2.map((block, blockIndex) => (
+                  <p key={blockIndex}>
+                    {block.map((line, lineIndex) => (
+                      <span key={lineIndex} className={`block ${line.startsWith('Phase 2') ? '' : 'opacity-50'}`}>
+                        {line.startsWith('Phase 2') ? (
+                          <><span className="font-semibold text-white">Phase 2</span><span className="opacity-50">{line.slice(7)}</span></>
+                        ) : line}
+                      </span>
+                    ))}
+                  </p>
+                ))}
+              </div>
             </div>
           </Container>
         </section>
