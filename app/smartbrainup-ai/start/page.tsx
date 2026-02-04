@@ -15,6 +15,19 @@ import {
   CollectedData 
 } from '@/content/smartbrainup-ai/start'
 
+// ── Render label with mobile-only line breaks ──
+// Labels containing \n will break on mobile, flow on desktop
+const renderLabel = (label: string) => {
+  if (!label.includes('\n')) return label
+  return label.split('\n').map((part, i) => (
+    <span key={i}>
+      {i > 0 && <br className="md:hidden" />}
+      {i > 0 && <span className="hidden md:inline"> </span>}
+      {part}
+    </span>
+  ))
+}
+
 export default function StartPage() {
   const router = useRouter()
   const [currentQuestionId, setCurrentQuestionId] = useState(startQuestionId)
@@ -361,7 +374,7 @@ export default function StartPage() {
                               : 'bg-white/[0.02] [@media(hover:hover)]:hover:bg-white/10 active:bg-white/10'
                           }`}
                         >
-                          {option.label}
+                          {renderLabel(option.label)}
                         </button>
                       ) : (
                         // ── Single-select: instant advance ──
@@ -370,7 +383,7 @@ export default function StartPage() {
                           onClick={() => handleOptionClick(option)}
                           className="w-full px-8 py-5 bg-white/[0.02] [@media(hover:hover)]:hover:bg-white/10 active:bg-white/10 rounded-[4px] text-white text-[17px] md:text-[18px] font-normal text-center transition-all touch-manipulation"
                         >
-                          {option.label}
+                          {renderLabel(option.label)}
                         </button>
                       )
 

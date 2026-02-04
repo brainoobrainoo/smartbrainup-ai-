@@ -9,6 +9,10 @@
 // ROUTING (Q1):
 // q1 → independent → q1_sub_independent → null
 // q1 → company → q1_sub_company → q1_role → null
+//
+// LABEL LINE BREAKS:
+// Use \n in label strings to control mobile line breaks.
+// page.tsx renders \n as <br> on mobile only.
 // ═══════════════════════════════════════════════════════════
 
 
@@ -58,7 +62,7 @@ export const questionsMap: Record<string, AdaptiveQuestion> = {
     type: 'single',
     options: [
       { label: 'An independent professional', value: 'independent', nextId: 'q1_sub_independent' },
-      { label: 'A company or structured team', value: 'company', nextId: 'q1_sub_company' },
+      { label: 'A company or\nstructured team', value: 'company', nextId: 'q1_sub_company' },
     ],
   },
 
@@ -89,9 +93,9 @@ export const questionsMap: Record<string, AdaptiveQuestion> = {
     type: 'single',
     options: [
       { label: 'Solo founder', value: 'solo_founder', nextId: 'q1_role' },
-      { label: 'Small team (2–5 people)', value: 'small_team', nextId: 'q1_role' },
-      { label: 'Medium team (6–20 people)', value: 'medium_team', nextId: 'q1_role' },
-      { label: 'Larger organisation (20+ people)', value: 'larger_org', nextId: 'q1_role' },
+      { label: 'Small team\n(2–5 people)', value: 'small_team', nextId: 'q1_role' },
+      { label: 'Medium team\n(6–20 people)', value: 'medium_team', nextId: 'q1_role' },
+      { label: 'Larger organisation\n(20+ people)', value: 'larger_org', nextId: 'q1_role' },
     ],
   },
 
@@ -133,7 +137,7 @@ export const assessmentContent = {
   hero: {
     badge: {
       primary: 'AI-UP',
-      secondary: 'SECOND BRAIN™ YOUR STARTING POINT',
+      secondary: 'SECOND BRAIN™ STARTING POINT',
     },
     intro: {
       col1: [
