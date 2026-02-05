@@ -1,948 +1,340 @@
 'use client'
 
-import { useState } from 'react'
+// app/smartbrainup-ai/method/page.tsx
+
+import Link from 'next/link'
+import { useEffect, useState } from 'react'
+import { methodContent } from '@/content/smartbrainup-ai/method'
 import Container from '@/components/layout/Container'
 
-// ────────────────────────────────────────────
-// Types
-// ────────────────────────────────────────────
+export default function MethodPage() {
+  const { hero, core, interaction, determinism, process, execution, platforms, delivery, outcomes, cta } = methodContent
 
-type Section = 'dashboard' | 'detail' | 'new' | 'billing' | 'support' | 'account'
+  const [showFirst, setShowFirst] = useState(false)
+  const [showSecond, setShowSecond] = useState(false)
+  const [showCore, setShowCore] = useState(false)
 
-type SecondBrain = {
-  id: number
-  num: string
-  name: string
-  context: string
-  status: 'active' | 'setup'
-  platforms: string[]
-  created: string
-  lastActive: string
-  pmf: string
-  interactions: number
-}
+  useEffect(() => {
+    const timerFirst = setTimeout(() => setShowFirst(true), 10)
+    const timerSecond = setTimeout(() => setShowSecond(true), 500)
+    const timerCore = setTimeout(() => setShowCore(true), 1000)
 
-type BillingItem = {
-  id: number
-  date: string
-  item: string
-  amount: string
-  status: string
-}
+    return () => {
+      clearTimeout(timerFirst)
+      clearTimeout(timerSecond)
+      clearTimeout(timerCore)
+    }
+  }, [])
 
-type PricingPlan = {
-  name: string
-  brains: string
-  price: string
-  lines: string[]
-}
+  // Helper to render body with proper spacing
+  const renderBody = (lines: string[], opacity: string = "opacity-60") => {
+    const blocks: string[][] = []
+    let currentBlock: string[] = []
+    
+    lines.forEach((line) => {
+      if (line === "") {
+        if (currentBlock.length > 0) {
+          blocks.push(currentBlock)
+          currentBlock = []
+        }
+      } else {
+        currentBlock.push(line)
+      }
+    })
+    if (currentBlock.length > 0) {
+      blocks.push(currentBlock)
+    }
 
-// ────────────────────────────────────────────
-// Mock data (→ Supabase in production)
-// ────────────────────────────────────────────
-
-const user = {
-  name: 'Marco Rossi',
-  email: 'marco.rossi@company.com',
-  method: 'Google OAuth',
-  since: 'Jan 2026',
-}
-
-const brains: SecondBrain[] = [
-  {
-    id: 1,
-    num: '01',
-    name: 'Strategic Planning',
-    context:
-      'Corporate strategy and decision-making for Q1–Q2 2026. Focus on market expansion in DACH region and partnership development.',
-    status: 'active',
-    platforms: ['Claude', 'GPT', 'Gemini'],
-    created: '15 Jan 2026',
-    lastActive: '3 Feb 2026',
-    pmf: 'PMF™ v2.1',
-    interactions: 47,
-  },
-  {
-    id: 2,
-    num: '02',
-    name: 'Legal Compliance',
-    context:
-      'GDPR compliance review and contract analysis for B2B partnerships across EU markets.',
-    status: 'active',
-    platforms: ['Claude', 'GPT'],
-    created: '22 Jan 2026',
-    lastActive: '2 Feb 2026',
-    pmf: 'PMF™ v2.1',
-    interactions: 23,
-  },
-  {
-    id: 3,
-    num: '03',
-    name: 'Team Onboarding',
-    context:
-      'New hire integration process for technical roles. Knowledge transfer acceleration.',
-    status: 'setup',
-    platforms: ['Claude'],
-    created: '1 Feb 2026',
-    lastActive: '1 Feb 2026',
-    pmf: 'Pending',
-    interactions: 3,
-  },
-]
-
-const billing: BillingItem[] = [
-  {
-    id: 1,
-    date: '15 Jan 2026',
-    item: 'AI-UP Second Brain™ — 3 Second Brains',
-    amount: '€4,997.00',
-    status: 'Paid',
-  },
-  {
-    id: 2,
-    date: '1 Feb 2026',
-    item: 'AI-UP Second Brain™ — Single Second Brain',
-    amount: '€1,997.00',
-    status: 'Paid',
-  },
-]
-
-const plans: PricingPlan[] = [
-  {
-    name: 'Single',
-    brains: '1 Second Brain',
-    price: '€1,997',
-    lines: [
-      'One personal Second Brain.',
-      'Persistent context.',
-      'Execution across five AI platforms.',
-    ],
-  },
-  {
-    name: 'Team',
-    brains: '3 Second Brains',
-    price: '€4,997',
-    lines: [
-      'Three Second Brains',
-      'with separated contexts.',
-      'Suitable for small teams.',
-    ],
-  },
-  {
-    name: 'Department',
-    brains: '5 Second Brains',
-    price: '€7,997',
-    lines: [
-      'Five Second Brains',
-      'with separated contexts.',
-      'Suitable for roles and functions.',
-    ],
-  },
-  {
-    name: 'Organization',
-    brains: '10 Second Brains',
-    price: '€14,997',
-    lines: [
-      'Ten Second Brains',
-      'with separated contexts.',
-      'Suitable for cross-team operations.',
-    ],
-  },
-]
-
-const enterprise = {
-  name: 'Enterprise',
-  brains: 'Unlimited Second Brains',
-  price: 'Custom',
-  lines: [
-    'Organization-wide deployment.',
-    'Multiple users and domains.',
-    'Governance, compliance and integration.',
-  ],
-}
-
-const navItems = [
-  { key: 'dashboard' as const, label: 'Dashboard' },
-  { key: 'billing' as const, label: 'Billing' },
-  { key: 'support' as const, label: 'Support' },
-  { key: 'account' as const, label: 'Account' },
-]
-
-// ────────────────────────────────────────────
-// Component
-// ────────────────────────────────────────────
-
-export default function ClientArea() {
-  const [section, setSection] = useState<Section>('dashboard')
-  const [brain, setBrain] = useState<SecondBrain | null>(null)
-  const [editName, setEditName] = useState(false)
-  const [editEmail, setEditEmail] = useState(false)
-  const [userName, setUserName] = useState(user.name)
-  const [userEmail, setUserEmail] = useState(user.email)
-
-  function go(s: Section) {
-    setSection(s)
-    setBrain(null)
-    window.scrollTo(0, 0)
+    return (
+      <div className="space-y-5">
+        {blocks.map((block, blockIndex) => (
+          <p key={blockIndex} className={`text-[17px] md:text-[18px] font-normal leading-[1.15] ${opacity}`}>
+            {block.map((line, lineIndex) => (
+              <span key={lineIndex} className="block">{line}</span>
+            ))}
+          </p>
+        ))}
+      </div>
+    )
   }
-
-  function openBrain(b: SecondBrain) {
-    setBrain(b)
-    setSection('detail')
-    window.scrollTo(0, 0)
-  }
-
-  // detail / new → highlight dashboard in nav
-  const activeNav = section === 'detail' || section === 'new' ? 'dashboard' : section
 
   return (
-    <div className="min-h-[100dvh] bg-white">
-      {/* ═══════════════════════════════════════════ */}
-      {/* TOP DARK ZONE                               */}
-      {/* ═══════════════════════════════════════════ */}
-      <div
-        className="text-white"
-        style={{
-          background: 'linear-gradient(to bottom, #252525 0%, #161616 100%)',
-        }}
-      >
-        {/* ── Identity ── */}
-        <div className="border-b border-white/[0.06]">
+    <div className="min-h-screen bg-white">
+      
+      {/* Hero + Core Principle - DARK zone */}
+      <div className="relative w-full overflow-hidden text-white" style={{ background: 'linear-gradient(to bottom, #252525 0%, #161616 100%)' }}>
+        
+        {/* Hero */}
+        <section className="relative z-10 pt-20 md:pt-32 pb-24">
           <Container>
-            <div className="flex items-end justify-between pt-24 pb-6 md:pt-36 md:pb-8">
-              <div>
-                <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-40 mb-2">
-                  AI-UP Second Brain™
-                </p>
-                <h1 className="text-[28px] md:text-[32px] font-normal leading-[1.05] tracking-[-0.01em]">
-                  {userName}
-                </h1>
-              </div>
-              <div className="text-right hidden md:block">
-                <p className="text-[13px] opacity-40 mb-1">
-                  {brains.length} Second Brain{brains.length !== 1 ? 's' : ''}
-                </p>
-                <p className="text-[11px] opacity-25">Since {user.since}</p>
-              </div>
-            </div>
-          </Container>
-        </div>
-
-        {/* ── Desktop nav ── */}
-        <div className="hidden md:block">
-          <Container>
-            <nav className="flex gap-8 py-4">
-              {navItems.map((item) => (
-                <button
-                  key={item.key}
-                  onClick={() => go(item.key)}
-                  className={`
-                    font-ui text-[11px] font-medium tracking-widest uppercase
-                    text-white pb-2 border-b bg-transparent cursor-pointer
-                    transition-all duration-300
-                    ${
-                      activeNav === item.key
-                        ? 'opacity-90 border-white/50'
-                        : 'opacity-30 border-transparent hover:opacity-60'
-                    }
-                  `}
+            <div className="relative">
+              <p className="font-ui text-[11px] font-medium tracking-widest uppercase mb-4">
+                <span className="opacity-100 uppercase-force">{hero.badge.primary}</span>
+                <span className="opacity-50 uppercase-force"> {hero.badge.secondary}</span>
+              </p>
+              
+              <h1 className="text-[42px] md:text-[64px] font-normal leading-[1.0] tracking-[-0.02em] mb-8">
+                <span 
+                  className="block"
+                  style={{ 
+                    opacity: showFirst ? 1 : 0.08,
+                    transition: 'opacity 4s cubic-bezier(0.4, 0, 0.2, 1)'
+                  }}
                 >
-                  {item.label}
-                </button>
-              ))}
-            </nav>
-          </Container>
-        </div>
-      </div>
-
-      {/* ═══════════════════════════════════════════ */}
-      {/* DASHBOARD                                   */}
-      {/* ═══════════════════════════════════════════ */}
-      {section === 'dashboard' && (
-        <section className="py-16 md:py-20">
-          <Container>
-            <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-8">
-              Your Second Brains
-            </p>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {/* ── Brain cards ── */}
-              {brains.map((b) => (
-                <button
-                  key={b.id}
-                  onClick={() => openBrain(b)}
-                  className="bg-[#f7f7f7] hover:bg-[#f0f0f0] rounded-[4px] p-8 text-left
-                             cursor-pointer transition-colors duration-300 relative border-0"
+                  {hero.title[0]}
+                </span>
+                <span 
+                  className="block"
+                  style={{ 
+                    opacity: showSecond ? 1 : 0.03,
+                    transition: 'opacity 4s cubic-bezier(0.4, 0, 0.2, 1)'
+                  }}
                 >
-                  <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-30 mb-4">
-                    Second Brain {b.num}
-                  </p>
-
-                  <div className="flex items-center gap-2.5 mb-3">
-                    <span
-                      className={`inline-block w-2 h-2 rounded-full ${
-                        b.status === 'active'
-                          ? 'bg-emerald-500 opacity-80'
-                          : 'bg-neutral-400 opacity-40'
-                      }`}
-                    />
-                    <span className="font-ui text-[10px] font-medium tracking-widest uppercase opacity-40">
-                      {b.status === 'active' ? 'Active' : 'Setup'}
-                    </span>
-                  </div>
-
-                  <h3 className="text-[22px] font-normal leading-[1.15] mb-3">
-                    {b.name}
-                  </h3>
-
-                  <p className="text-[15px] font-normal leading-[1.3] opacity-50 mb-5">
-                    {b.context.length > 90
-                      ? b.context.slice(0, 90) + '…'
-                      : b.context}
-                  </p>
-
-                  <div className="flex gap-2 flex-wrap">
-                    {b.platforms.map((p) => (
-                      <span
-                        key={p}
-                        className="font-ui text-[10px] font-medium tracking-[0.08em] uppercase
-                                   opacity-30 px-2.5 py-1 border border-black/10 rounded-[4px]"
-                      >
-                        {p}
-                      </span>
-                    ))}
-                  </div>
-
-                  <span className="absolute top-6 right-6 text-[14px] opacity-20">
-                    →
-                  </span>
-                </button>
-              ))}
-
-              {/* ── New brain card ── */}
-              <button
-                onClick={() => {
-                  setSection('new')
-                  window.scrollTo(0, 0)
-                }}
-                className="rounded-[4px] p-8 border-2 border-dashed border-black/10
-                           hover:border-black/25 transition-colors duration-300
-                           flex flex-col items-center justify-center min-h-[220px]
-                           cursor-pointer bg-transparent"
-              >
-                <span className="text-[32px] opacity-20 mb-3 font-light">
-                  +
+                  {hero.title[1]}
                 </span>
-                <span className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-30">
-                  New Second Brain
-                </span>
-              </button>
+              </h1>
+              
+              <p className="text-[17px] md:text-[18px] font-normal leading-[1.15] max-w-[560px] opacity-70">
+                {hero.subtext.map((line, index) => (
+                  <span key={index} className="block">{line}</span>
+                ))}
+              </p>
             </div>
           </Container>
         </section>
-      )}
 
-      {/* ═══════════════════════════════════════════ */}
-      {/* SECOND BRAIN DETAIL                         */}
-      {/* ═══════════════════════════════════════════ */}
-      {section === 'detail' && brain && (
-        <div>
-          {/* Header */}
-          <section className="pt-12 md:pt-16">
-            <Container>
-              <button
-                onClick={() => go('dashboard')}
-                className="font-ui text-[11px] font-medium tracking-widest uppercase
-                           opacity-40 hover:opacity-70 transition-opacity cursor-pointer
-                           bg-transparent border-0 p-0 mb-8 block"
-              >
-                ← Dashboard
-              </button>
-
-              <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-30 mb-3">
-                Second Brain {brain.num}
-              </p>
-
-              <div className="flex items-center gap-3 mb-2">
-                <span
-                  className={`inline-block w-2 h-2 rounded-full ${
-                    brain.status === 'active'
-                      ? 'bg-emerald-500 opacity-80'
-                      : 'bg-neutral-400 opacity-40'
-                  }`}
-                />
-                <span className="font-ui text-[10px] font-medium tracking-widest uppercase opacity-40">
-                  {brain.status === 'active' ? 'Active' : 'Setup in progress'}
-                </span>
-              </div>
-
-              <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em]">
-                {brain.name}
-              </h2>
-            </Container>
-          </section>
-
-          {/* Context — 12 col grid */}
-          <section className="py-16 md:py-20">
-            <Container>
-              <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-8">
-                Context
-              </p>
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-                <div className="lg:col-span-5">
-                  <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em]">
-                    Project context
-                  </h2>
-                </div>
-                <div className="lg:col-span-6 lg:col-start-7">
-                  <p className="text-[17px] md:text-[18px] font-normal leading-[1.4] opacity-60">
-                    {brain.context}
-                  </p>
-                </div>
-              </div>
-            </Container>
-          </section>
-
-          {/* Execution card */}
-          <section className="pb-16 md:pb-20">
-            <Container>
-              <div className="bg-[#f7f7f7] rounded-[4px] p-6 pt-14 md:p-12 relative">
-                <span className="absolute top-6 right-6 font-ui text-[10px] tracking-widest uppercase opacity-25">
-                  Execution
-                </span>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
-                  {/* Platforms */}
-                  <div>
-                    <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-40 mb-4">
-                      Platforms
-                    </p>
-                    <div className="flex gap-2 flex-wrap">
-                      {brain.platforms.map((p) => (
-                        <span
-                          key={p}
-                          className="text-[15px] font-normal opacity-70 px-4 py-2
-                                     border border-black/10 rounded-[4px]"
-                        >
-                          {p}
-                        </span>
-                      ))}
-                      {brain.platforms.length < 5 && (
-                        <button
-                          className="text-[15px] font-normal opacity-25 px-4 py-2
-                                     border border-dashed border-black/15 rounded-[4px]
-                                     bg-transparent cursor-pointer hover:opacity-40
-                                     transition-opacity"
-                        >
-                          + Add
-                        </button>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* PMF delivery */}
-                  <div>
-                    <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-40 mb-4">
-                      Method Delivery
-                    </p>
-                    <p className="text-[17px] md:text-[18px] font-normal leading-[1.15] opacity-70">
-                      {brain.pmf}
-                    </p>
-                    {brain.pmf !== 'Pending' && (
-                      <button
-                        className="mt-3 bg-transparent border border-black/15 rounded-[4px]
-                                   px-5 py-2 font-ui text-[10px] font-medium tracking-[0.08em]
-                                   uppercase opacity-50 hover:opacity-80 transition-opacity
-                                   cursor-pointer"
-                      >
-                        Access PMF™
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </Container>
-          </section>
-
-          {/* Activity */}
-          <section className="pb-16 md:pb-20">
-            <Container>
-              <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-8">
-                Activity
-              </p>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-                {[
-                  { label: 'Created', value: brain.created },
-                  { label: 'Last active', value: brain.lastActive },
-                  { label: 'Interactions', value: String(brain.interactions) },
-                  {
-                    label: 'Platforms',
-                    value: `${brain.platforms.length} / 5`,
-                  },
-                ].map((stat) => (
-                  <div key={stat.label}>
-                    <p className="text-[22px] font-normal leading-[1.15] mb-1">
-                      {stat.value}
-                    </p>
-                    <p className="font-ui text-[10px] font-medium tracking-widest uppercase opacity-40">
-                      {stat.label}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </Container>
-          </section>
-        </div>
-      )}
-
-      {/* ═══════════════════════════════════════════ */}
-      {/* NEW SECOND BRAIN                            */}
-      {/* ═══════════════════════════════════════════ */}
-      {section === 'new' && (
-        <div>
-          <section className="pt-12 md:pt-16">
-            <Container>
-              <button
-                onClick={() => go('dashboard')}
-                className="font-ui text-[11px] font-medium tracking-widest uppercase
-                           opacity-40 hover:opacity-70 transition-opacity cursor-pointer
-                           bg-transparent border-0 p-0 mb-8 block"
-              >
-                ← Dashboard
-              </button>
-            </Container>
-          </section>
-
-          <section className="pb-16 md:pb-20">
-            <Container>
-              <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-12">
-                Add Second Brain
-              </p>
-
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6">
-                {/* 2 × 2 plans */}
-                <div className="lg:col-span-7 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                  {plans.map((plan) => (
-                    <div
-                      key={plan.name}
-                      className="rounded-[4px] p-8 min-h-[260px] flex flex-col"
-                      style={{
-                        background:
-                          'linear-gradient(to bottom, #f7f7f7 0%, #efefef 100%)',
-                      }}
-                    >
-                      <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-1">
-                        {plan.name}
-                      </p>
-                      <p className="text-[14px] font-normal opacity-50 mb-5">
-                        {plan.brains}
-                      </p>
-                      <p className="text-[28px] md:text-[32px] font-normal leading-[1.1] tracking-[-0.01em] mb-4">
-                        {plan.price}
-                      </p>
-                      <div className="mb-auto">
-                        {plan.lines.map((line, i) => (
-                          <p
-                            key={i}
-                            className="text-[15px] md:text-[16px] font-normal leading-[1.4] opacity-50"
-                          >
-                            {line}
-                          </p>
-                        ))}
-                      </div>
-                      <div className="pt-6">
-                        <button
-                          className="bg-[#252525] text-white border-0 rounded-[4px]
-                                     px-6 py-2.5 font-ui text-[11px] font-medium
-                                     tracking-widest uppercase cursor-pointer
-                                     opacity-90 hover:opacity-100 transition-opacity"
-                        >
-                          Start
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Enterprise */}
-                <div
-                  className="lg:col-span-5 rounded-[4px] p-8 text-white
-                             flex flex-col justify-center min-h-[260px]"
-                  style={{
-                    background:
-                      'linear-gradient(to bottom, #484848 0%, #2f2f2f 100%)',
+        {/* Core Principle */}
+        <section className="relative pb-24 md:pb-32">
+          <Container>
+            <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-8">{core.section}</p>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+              
+              <div className="lg:col-span-5">
+                <h2 
+                  className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em]"
+                  style={{ 
+                    opacity: showCore ? 1 : 0.03,
+                    transition: 'opacity 4s cubic-bezier(0.4, 0, 0.2, 1)'
                   }}
                 >
-                  <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-1">
-                    {enterprise.name}
-                  </p>
-                  <p className="text-[14px] font-normal opacity-40 mb-5">
-                    {enterprise.brains}
-                  </p>
-                  <p className="text-[28px] md:text-[32px] font-normal leading-[1.1] tracking-[-0.01em] mb-6">
-                    {enterprise.price}
-                  </p>
-                  <div className="mb-6">
-                    {enterprise.lines.map((line, i) => (
-                      <p
-                        key={i}
-                        className="text-[15px] font-normal leading-[1.4] opacity-50"
-                      >
-                        {line}
-                      </p>
+                  {core.title}
+                </h2>
+              </div>
+              
+              <div className="lg:col-span-6 lg:col-start-7">
+                {renderBody(core.body, "opacity-60")}
+              </div>
+              
+            </div>
+          </Container>
+        </section>
+
+      </div>
+
+      {/* Interaction Model */}
+      <section className="relative py-16 md:py-32">
+        <Container>
+          <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-8">{interaction.section}</p>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            
+            <div className="lg:col-span-5">
+              <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em]">
+                {interaction.title}
+              </h2>
+            </div>
+            
+            <div className="lg:col-span-6 lg:col-start-7">
+              {renderBody(interaction.body)}
+            </div>
+            
+          </div>
+        </Container>
+      </section>
+
+      {/* Determinism */}
+      <section className="relative py-16 md:py-32">
+        <Container>
+          <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-8">{determinism.section}</p>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            
+            <div className="lg:col-span-5">
+              <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em]">
+                {Array.isArray(determinism.title) ? (
+                  determinism.title.map((line, index) => (
+                    <span key={index} className="block">{line}</span>
+                  ))
+                ) : (
+                  determinism.title
+                )}
+              </h2>
+            </div>
+            
+            <div className="lg:col-span-6 lg:col-start-7">
+              {renderBody(determinism.body)}
+            </div>
+            
+          </div>
+        </Container>
+      </section>
+
+      {/* DARK ZONE: Process */}
+      <div className="w-full text-white" style={{ background: 'linear-gradient(to bottom, #484848 0%, #2a2a2a 100%)' }}>
+        
+        <section className="py-16 md:py-32">
+          <Container>
+            <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-8">{process.section}</p>
+            <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em] mb-12">{process.title}</h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {process.steps.map((step, index) => (
+                <div key={index} className="rounded-[4px] p-8" style={{ background: 'linear-gradient(to bottom, #383838 0%, #3a3a3a 100%)' }}>
+                  <h3 className="text-[17px] md:text-[18px] font-normal leading-[1.3] mb-3">{step.label}</h3>
+                  <p className="text-[15px] md:text-[16px] font-normal leading-[1.15] opacity-60">
+                    {step.body.map((line, lineIndex) => (
+                      <span key={lineIndex} className="block">{line}</span>
                     ))}
-                  </div>
-                  <div>
-                    <button
-                      className="bg-white/10 text-white border border-white/20
-                                 rounded-[4px] px-6 py-2.5 font-ui text-[11px]
-                                 font-medium tracking-widest uppercase cursor-pointer
-                                 hover:bg-white/15 transition-colors"
-                    >
-                      Contact
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </Container>
-          </section>
-        </div>
-      )}
-
-      {/* ═══════════════════════════════════════════ */}
-      {/* BILLING                                     */}
-      {/* ═══════════════════════════════════════════ */}
-      {section === 'billing' && (
-        <div>
-          {/* Intro — 12 col */}
-          <section className="py-16 md:py-20">
-            <Container>
-              <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-8">
-                Billing
-              </p>
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-                <div className="lg:col-span-5">
-                  <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em]">
-                    Licenses &amp; Invoices
-                  </h2>
-                </div>
-                <div className="lg:col-span-6 lg:col-start-7">
-                  <p className="text-[17px] md:text-[18px] font-normal leading-[1.4] opacity-60">
-                    All purchases related to the AI-UP Second Brain™ method.
-                    <br />
-                    Each license is tied to one or more Second Brains.
                   </p>
-                </div>
-              </div>
-            </Container>
-          </section>
-
-          {/* Desktop table */}
-          <section className="pb-16 md:pb-20 hidden md:block">
-            <Container>
-              {/* Header */}
-              <div className="grid grid-cols-[120px_1fr_140px_80px_80px] gap-4 px-6 py-3 bg-[#f7f7f7] rounded-t-[4px]">
-                {['Date', 'Item', 'Amount', 'Status', ''].map((h) => (
-                  <span
-                    key={h}
-                    className="font-ui text-[10px] font-medium tracking-widest uppercase opacity-40"
-                  >
-                    {h}
-                  </span>
-                ))}
-              </div>
-              {/* Rows */}
-              {billing.map((row, i) => (
-                <div
-                  key={row.id}
-                  className={`grid grid-cols-[120px_1fr_140px_80px_80px] gap-4 px-6 py-4 bg-[#f7f7f7]
-                    ${i === billing.length - 1 ? 'rounded-b-[4px]' : ''}`}
-                >
-                  <span className="text-[15px] opacity-50">{row.date}</span>
-                  <span className="text-[15px] opacity-70">{row.item}</span>
-                  <span className="text-[15px] font-normal">{row.amount}</span>
-                  <span className="text-[13px] opacity-50">{row.status}</span>
-                  <button
-                    className="font-ui text-[10px] font-medium tracking-[0.08em] uppercase
-                               opacity-40 hover:opacity-70 transition-opacity cursor-pointer
-                               bg-transparent border-0 p-0 text-right"
-                  >
-                    Invoice
-                  </button>
                 </div>
               ))}
-            </Container>
-          </section>
+            </div>
+          </Container>
+        </section>
 
-          {/* Mobile cards */}
-          <section className="pb-16 md:hidden">
-            <Container>
-              <div className="flex flex-col gap-3">
-                {billing.map((row) => (
-                  <div
-                    key={row.id}
-                    className="bg-[#f7f7f7] rounded-[4px] p-6"
-                  >
-                    <p className="font-ui text-[10px] font-medium tracking-widest uppercase opacity-40 mb-3">
-                      {row.date}
+      </div>
+
+      {/* Execution */}
+      <section className="relative py-16 md:py-32">
+        <Container>
+          <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-8">{execution.section}</p>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            
+            <div className="lg:col-span-5">
+              <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em]">
+                {execution.title}
+              </h2>
+            </div>
+            
+            <div className="lg:col-span-6 lg:col-start-7">
+              {renderBody(execution.body)}
+            </div>
+            
+          </div>
+        </Container>
+      </section>
+
+      {/* Platforms - card style */}
+      <section className="relative py-16 md:py-32">
+        <Container>
+          <div className="bg-[#f7f7f7] rounded-[4px] p-6 pt-14 md:p-16 relative">
+            
+            <span className="absolute top-6 right-6 font-ui text-[10px] tracking-widest uppercase opacity-30">{platforms.section}</span>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center">
+              
+              <div>
+                <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em]">
+                  {Array.isArray(platforms.title) ? (
+                    platforms.title.map((line, index) => (
+                      <span key={index} className="block">{line}</span>
+                    ))
+                  ) : (
+                    platforms.title
+                  )}
+                </h2>
+              </div>
+              
+              <div>
+                <div className="space-y-5">
+                  {renderBody(platforms.body, "opacity-70")}
+                  <p className="text-[17px] md:text-[18px] font-normal leading-[1.15] opacity-70">
+                    {platforms.list}
+                  </p>
+                </div>
+              </div>
+              
+            </div>
+          </div>
+        </Container>
+      </section>
+
+      {/* Delivery */}
+      <section className="relative py-16 md:py-32">
+        <Container>
+          <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-8">{delivery.section}</p>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            
+            <div className="lg:col-span-5">
+              <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em]">
+                {delivery.title}
+              </h2>
+            </div>
+            
+            <div className="lg:col-span-6 lg:col-start-7">
+              <div className="space-y-8">
+                {delivery.items.map((item, index) => (
+                  <div key={index}>
+                    <h3 className="text-[17px] md:text-[18px] font-normal leading-[1.3] mb-3">{item.label}</h3>
+                    <p className="text-[15px] md:text-[16px] font-normal leading-[1.15] opacity-60">
+                      {item.body.map((line, lineIndex) => (
+                        <span key={lineIndex} className="block">{line}</span>
+                      ))}
                     </p>
-                    <p className="text-[16px] font-normal opacity-70 mb-2">
-                      {row.item}
-                    </p>
-                    <div className="flex justify-between items-end">
-                      <p className="text-[22px] font-normal">{row.amount}</p>
-                      <div className="flex items-center gap-4">
-                        <span className="font-ui text-[10px] font-medium tracking-widest uppercase opacity-40">
-                          {row.status}
-                        </span>
-                        <button
-                          className="font-ui text-[10px] font-medium tracking-[0.08em] uppercase
-                                     opacity-40 underline bg-transparent border-0 p-0
-                                     cursor-pointer"
-                        >
-                          Invoice
-                        </button>
-                      </div>
-                    </div>
                   </div>
                 ))}
+                <p className="text-[15px] md:text-[16px] font-normal leading-[1.15] opacity-40 pt-4">
+                  {delivery.note.map((line, index) => (
+                    <span key={index} className="block">{line}</span>
+                  ))}
+                </p>
               </div>
-            </Container>
-          </section>
-        </div>
-      )}
+            </div>
+            
+          </div>
+        </Container>
+      </section>
 
-      {/* ═══════════════════════════════════════════ */}
-      {/* SUPPORT                                     */}
-      {/* ═══════════════════════════════════════════ */}
-      {section === 'support' && (
-        <div>
-          {/* Intro — 12 col */}
-          <section className="py-16 md:py-20">
-            <Container>
-              <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-8">
-                Support
-              </p>
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-                <div className="lg:col-span-5">
-                  <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em]">
-                    Technical assistance
-                  </h2>
-                </div>
-                <div className="lg:col-span-6 lg:col-start-7">
-                  <p className="text-[17px] md:text-[18px] font-normal leading-[1.4] opacity-60">
-                    AI-guided support for your Second Brain setup,
-                    <br />
-                    platform execution and method-related questions.
+      {/* Outcomes */}
+      <section className="relative py-16 md:py-32">
+        <Container>
+          <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-8">{outcomes.section}</p>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            
+            <div className="lg:col-span-5">
+              <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em]">
+                {outcomes.title}
+              </h2>
+            </div>
+            
+            <div className="lg:col-span-6 lg:col-start-7">
+              <div className="space-y-3">
+                {outcomes.items.map((item, index) => (
+                  <p key={index} className="text-[16px] md:text-[18px] font-normal leading-[1.4] opacity-70">
+                    {item}
                   </p>
-                </div>
+                ))}
               </div>
-            </Container>
-          </section>
+            </div>
+            
+          </div>
+        </Container>
+      </section>
 
-          {/* Chat placeholder */}
-          <section className="pb-16 md:pb-20">
-            <Container>
-              <div className="bg-[#f7f7f7] rounded-[4px] relative overflow-hidden">
-                <span className="absolute top-6 right-6 font-ui text-[10px] tracking-widest uppercase opacity-25">
-                  Chat
-                </span>
+      {/* CTA - gradient to footer */}
+      <section className="w-full text-white py-24 md:py-32" style={{ background: 'linear-gradient(to bottom, #2f2f2f 0%, #1a1a1a 100%)' }}>
+        <Container>
+          <div className="flex items-center gap-4 justify-end">
+            <span className="font-ui text-[12px] font-medium tracking-wide uppercase-force opacity-40">{cta.label}</span>
+            <Link 
+              href="/start" 
+              className="relative flex items-center justify-center w-[55px] h-[55px] md:w-[75px] md:h-[75px] rounded-full overflow-hidden"
+            >
+              <span className="absolute inset-0 bg-[#3a3a3a] animate-pulse-soft rounded-full"></span>
+              <span className="relative z-10 font-ui text-[11px] md:text-[12px] font-bold tracking-wide text-white uppercase-force">TRY</span>
+            </Link>
+          </div>
+        </Container>
+      </section>
 
-                {/* Welcome */}
-                <div className="p-6 md:p-8 min-h-[280px] flex flex-col gap-5">
-                  <div className="flex flex-col items-start">
-                    <span className="font-ui text-[10px] font-medium tracking-widest uppercase opacity-25 mb-1.5">
-                      AI-UP Support
-                    </span>
-                    <div className="bg-white rounded-[4px] px-5 py-3.5 max-w-[75%]">
-                      <p className="text-[15px] leading-[1.4] opacity-70">
-                        Welcome to AI-UP Second Brain™ support. How can I help
-                        you today?
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Input bar */}
-                <div className="border-t border-black/[0.06] px-6 md:px-8 py-4 flex gap-3 items-center">
-                  <p className="flex-1 text-[15px] opacity-30">Coming soon</p>
-                  <button
-                    className="bg-[#252525] text-white border-0 rounded-[4px]
-                               px-5 py-2.5 font-ui text-[11px] font-medium
-                               tracking-widest uppercase cursor-default opacity-25"
-                  >
-                    Send
-                  </button>
-                </div>
-              </div>
-            </Container>
-          </section>
-        </div>
-      )}
-
-      {/* ═══════════════════════════════════════════ */}
-      {/* ACCOUNT                                     */}
-      {/* ═══════════════════════════════════════════ */}
-      {section === 'account' && (
-        <div>
-          {/* Intro — 12 col */}
-          <section className="py-16 md:py-20">
-            <Container>
-              <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-8">
-                Account
-              </p>
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-                <div className="lg:col-span-5">
-                  <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em]">
-                    Your information
-                  </h2>
-                </div>
-                <div className="lg:col-span-6 lg:col-start-7">
-                  <p className="text-[17px] md:text-[18px] font-normal leading-[1.4] opacity-60">
-                    Manage your identity and access method.
-                    <br />
-                    Authentication is handled via Magic Link or OAuth provider.
-                  </p>
-                </div>
-              </div>
-            </Container>
-          </section>
-
-          {/* Fields */}
-          <section className="pb-16 md:pb-20">
-            <Container>
-              <div className="flex flex-col">
-                {/* Name */}
-                <div
-                  className="bg-[#f7f7f7] rounded-t-[4px] px-6 md:px-8 py-6
-                             flex justify-between items-center border-b border-black/[0.04]"
-                >
-                  <div className="flex-1">
-                    <p className="font-ui text-[10px] font-medium tracking-widest uppercase opacity-40 mb-2">
-                      Name
-                    </p>
-                    {editName ? (
-                      <input
-                        type="text"
-                        value={userName}
-                        onChange={(e) => setUserName(e.target.value)}
-                        autoFocus
-                        className="text-[17px] font-editorial font-normal border-0
-                                   border-b border-black/20 bg-transparent outline-none
-                                   w-full md:w-[300px] rounded-none"
-                      />
-                    ) : (
-                      <p className="text-[17px] font-normal opacity-70">
-                        {userName}
-                      </p>
-                    )}
-                  </div>
-                  <button
-                    onClick={() => setEditName(!editName)}
-                    className="font-ui text-[10px] font-medium tracking-[0.08em] uppercase
-                               opacity-40 hover:opacity-70 transition-opacity cursor-pointer
-                               bg-transparent border-0 flex-shrink-0 ml-4"
-                  >
-                    {editName ? 'Save' : 'Edit'}
-                  </button>
-                </div>
-
-                {/* Email */}
-                <div
-                  className="bg-[#f7f7f7] px-6 md:px-8 py-6
-                             flex justify-between items-center border-b border-black/[0.04]"
-                >
-                  <div className="flex-1">
-                    <p className="font-ui text-[10px] font-medium tracking-widest uppercase opacity-40 mb-2">
-                      Email
-                    </p>
-                    {editEmail ? (
-                      <input
-                        type="email"
-                        value={userEmail}
-                        onChange={(e) => setUserEmail(e.target.value)}
-                        autoFocus
-                        className="text-[17px] font-editorial font-normal border-0
-                                   border-b border-black/20 bg-transparent outline-none
-                                   w-full md:w-[300px] rounded-none"
-                      />
-                    ) : (
-                      <p className="text-[17px] font-normal opacity-70">
-                        {userEmail}
-                      </p>
-                    )}
-                  </div>
-                  <button
-                    onClick={() => setEditEmail(!editEmail)}
-                    className="font-ui text-[10px] font-medium tracking-[0.08em] uppercase
-                               opacity-40 hover:opacity-70 transition-opacity cursor-pointer
-                               bg-transparent border-0 flex-shrink-0 ml-4"
-                  >
-                    {editEmail ? 'Save' : 'Edit'}
-                  </button>
-                </div>
-
-                {/* Access method */}
-                <div className="bg-[#f7f7f7] px-6 md:px-8 py-6 border-b border-black/[0.04]">
-                  <p className="font-ui text-[10px] font-medium tracking-widest uppercase opacity-40 mb-2">
-                    Access method
-                  </p>
-                  <p className="text-[17px] font-normal opacity-70">
-                    {user.method} + Magic Link
-                  </p>
-                </div>
-
-                {/* Session */}
-                <div
-                  className="bg-[#f7f7f7] rounded-b-[4px] px-6 md:px-8 py-6
-                             flex justify-between items-center"
-                >
-                  <div>
-                    <p className="font-ui text-[10px] font-medium tracking-widest uppercase opacity-40 mb-2">
-                      Session
-                    </p>
-                    <p className="text-[17px] font-normal opacity-70">Active</p>
-                  </div>
-                  <button
-                    className="bg-transparent border border-black/[0.12] rounded-[4px]
-                               px-5 py-2 font-ui text-[10px] font-medium tracking-[0.08em]
-                               uppercase opacity-50 hover:opacity-80 transition-opacity
-                               cursor-pointer"
-                  >
-                    Sign out
-                  </button>
-                </div>
-              </div>
-            </Container>
-          </section>
-        </div>
-      )}
-
-      {/* Spacer for mobile tab bar (Footer comes from parent layout) */}
-      <div className="h-[72px] md:h-0" />
-
-      {/* ═══════════════════════════════════════════ */}
-      {/* MOBILE TAB BAR                              */}
-      {/* ═══════════════════════════════════════════ */}
-      <nav
-        className="fixed bottom-0 left-0 right-0 bg-[#252525]
-                   border-t border-white/[0.08] grid grid-cols-4 md:hidden z-50"
-      >
-        {navItems.map((item) => (
-          <button
-            key={item.key}
-            onClick={() => go(item.key)}
-            className={`
-              py-3.5 flex items-center justify-center cursor-pointer
-              bg-transparent border-0 font-ui text-[9px] font-medium
-              tracking-widest uppercase text-white transition-opacity duration-300
-              ${activeNav === item.key ? 'opacity-80' : 'opacity-25'}
-            `}
-          >
-            {item.label}
-          </button>
-        ))}
-      </nav>
     </div>
   )
 }
