@@ -14,7 +14,7 @@ export default function SmartBrainUpAILayout({
   children: React.ReactNode
 }) {
   const pathname = usePathname()
-  const isChat = pathname === '/chat'
+  const isChat = pathname.endsWith('/chat')
 
   return (
     <div className={`min-h-screen flex flex-col ${isChat ? 'bg-[#252525]' : ''}`}>

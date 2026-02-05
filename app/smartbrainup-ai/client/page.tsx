@@ -1,176 +1,13 @@
 'use client'
 
+// app/(smartbrainup-ai)/client/page.tsx
+
 import { useState } from 'react'
+import Link from 'next/link'
 import Container from '@/components/layout/Container'
+import { clientContent, Section, SecondBrain } from '@/content/smartbrainup-ai/client'
 
-// ────────────────────────────────────────────
-// Types
-// ────────────────────────────────────────────
-
-type Section = 'dashboard' | 'detail' | 'new' | 'billing' | 'support' | 'account'
-
-type SecondBrain = {
-  id: number
-  num: string
-  name: string
-  context: string
-  status: 'active' | 'setup'
-  platforms: string[]
-  created: string
-  lastActive: string
-  pmf: string
-  interactions: number
-}
-
-type BillingItem = {
-  id: number
-  date: string
-  item: string
-  amount: string
-  status: string
-}
-
-type PricingPlan = {
-  name: string
-  brains: string
-  price: string
-  lines: string[]
-}
-
-// ────────────────────────────────────────────
-// Mock data (→ Supabase in production)
-// ────────────────────────────────────────────
-
-const user = {
-  name: 'Marco Rossi',
-  email: 'marco.rossi@company.com',
-  method: 'Google OAuth',
-  since: 'Jan 2026',
-}
-
-const brains: SecondBrain[] = [
-  {
-    id: 1,
-    num: '01',
-    name: 'Strategic Planning',
-    context:
-      'Corporate strategy and decision-making for Q1–Q2 2026. Focus on market expansion in DACH region and partnership development.',
-    status: 'active',
-    platforms: ['Claude', 'GPT', 'Gemini'],
-    created: '15 Jan 2026',
-    lastActive: '3 Feb 2026',
-    pmf: 'PMF™ v2.1',
-    interactions: 47,
-  },
-  {
-    id: 2,
-    num: '02',
-    name: 'Legal Compliance',
-    context:
-      'GDPR compliance review and contract analysis for B2B partnerships across EU markets.',
-    status: 'active',
-    platforms: ['Claude', 'GPT'],
-    created: '22 Jan 2026',
-    lastActive: '2 Feb 2026',
-    pmf: 'PMF™ v2.1',
-    interactions: 23,
-  },
-  {
-    id: 3,
-    num: '03',
-    name: 'Team Onboarding',
-    context:
-      'New hire integration process for technical roles. Knowledge transfer acceleration.',
-    status: 'setup',
-    platforms: ['Claude'],
-    created: '1 Feb 2026',
-    lastActive: '1 Feb 2026',
-    pmf: 'Pending',
-    interactions: 3,
-  },
-]
-
-const billing: BillingItem[] = [
-  {
-    id: 1,
-    date: '15 Jan 2026',
-    item: 'AI-UP Second Brain™ — 3 Second Brains',
-    amount: '€4,997.00',
-    status: 'Paid',
-  },
-  {
-    id: 2,
-    date: '1 Feb 2026',
-    item: 'AI-UP Second Brain™ — Single Second Brain',
-    amount: '€1,997.00',
-    status: 'Paid',
-  },
-]
-
-const plans: PricingPlan[] = [
-  {
-    name: 'Single',
-    brains: '1 Second Brain',
-    price: '€1,997',
-    lines: [
-      'One personal Second Brain.',
-      'Persistent context.',
-      'Execution across five AI platforms.',
-    ],
-  },
-  {
-    name: 'Team',
-    brains: '3 Second Brains',
-    price: '€4,997',
-    lines: [
-      'Three Second Brains',
-      'with separated contexts.',
-      'Suitable for small teams.',
-    ],
-  },
-  {
-    name: 'Department',
-    brains: '5 Second Brains',
-    price: '€7,997',
-    lines: [
-      'Five Second Brains',
-      'with separated contexts.',
-      'Suitable for roles and functions.',
-    ],
-  },
-  {
-    name: 'Organization',
-    brains: '10 Second Brains',
-    price: '€14,997',
-    lines: [
-      'Ten Second Brains',
-      'with separated contexts.',
-      'Suitable for cross-team operations.',
-    ],
-  },
-]
-
-const enterprise = {
-  name: 'Enterprise',
-  brains: 'Unlimited Second Brains',
-  price: 'Custom',
-  lines: [
-    'Organization-wide deployment.',
-    'Multiple users and domains.',
-    'Governance, compliance and integration.',
-  ],
-}
-
-const navItems = [
-  { key: 'dashboard' as const, label: 'Dashboard' },
-  { key: 'billing' as const, label: 'Billing' },
-  { key: 'support' as const, label: 'Support' },
-  { key: 'account' as const, label: 'Account' },
-]
-
-// ────────────────────────────────────────────
-// Component
-// ────────────────────────────────────────────
+const { user, brains, billing, plans, enterprise, nav, sections } = clientContent
 
 export default function ClientArea() {
   const [section, setSection] = useState<Section>('dashboard')
@@ -196,7 +33,7 @@ export default function ClientArea() {
   const activeNav = section === 'detail' || section === 'new' ? 'dashboard' : section
 
   return (
-    <div className="min-h-[100dvh] bg-white">
+    <div className="bg-white">
       {/* ═══════════════════════════════════════════ */}
       {/* TOP DARK ZONE                               */}
       {/* ═══════════════════════════════════════════ */}
@@ -209,7 +46,7 @@ export default function ClientArea() {
         {/* ── Identity ── */}
         <div className="border-b border-white/[0.06]">
           <Container>
-            <div className="flex items-end justify-between pt-24 pb-6 md:pt-36 md:pb-8">
+            <div className="flex items-end justify-between pt-20 pb-6 md:pt-32 md:pb-8">
               <div>
                 <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-40 mb-2">
                   AI-UP Second Brain™
@@ -232,7 +69,7 @@ export default function ClientArea() {
         <div className="hidden md:block">
           <Container>
             <nav className="flex gap-8 py-4">
-              {navItems.map((item) => (
+              {nav.map((item) => (
                 <button
                   key={item.key}
                   onClick={() => go(item.key)}
@@ -262,7 +99,7 @@ export default function ClientArea() {
         <section className="py-16 md:py-20">
           <Container>
             <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-8">
-              Your Second Brains
+              {sections.dashboard.label}
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -386,12 +223,12 @@ export default function ClientArea() {
           <section className="py-16 md:py-20">
             <Container>
               <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-8">
-                Context
+                {sections.detail.context.label}
               </p>
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
                 <div className="lg:col-span-5">
                   <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em]">
-                    Project context
+                    {sections.detail.context.title}
                   </h2>
                 </div>
                 <div className="lg:col-span-6 lg:col-start-7">
@@ -408,7 +245,7 @@ export default function ClientArea() {
             <Container>
               <div className="bg-[#f7f7f7] rounded-[4px] p-6 pt-14 md:p-12 relative">
                 <span className="absolute top-6 right-6 font-ui text-[10px] tracking-widest uppercase opacity-25">
-                  Execution
+                  {sections.detail.execution}
                 </span>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
@@ -468,7 +305,7 @@ export default function ClientArea() {
           <section className="pb-16 md:pb-20">
             <Container>
               <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-8">
-                Activity
+                {sections.detail.activity}
               </p>
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
                 {[
@@ -516,7 +353,7 @@ export default function ClientArea() {
           <section className="pb-16 md:pb-20">
             <Container>
               <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-12">
-                Add Second Brain
+                {sections.newBrain.label}
               </p>
 
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6">
@@ -618,19 +455,19 @@ export default function ClientArea() {
           <section className="py-16 md:py-20">
             <Container>
               <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-8">
-                Billing
+                {sections.billing.label}
               </p>
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
                 <div className="lg:col-span-5">
                   <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em]">
-                    Licenses &amp; Invoices
+                    {sections.billing.title}
                   </h2>
                 </div>
                 <div className="lg:col-span-6 lg:col-start-7">
                   <p className="text-[17px] md:text-[18px] font-normal leading-[1.4] opacity-60">
-                    All purchases related to the AI-UP Second Brain™ method.
+                    {sections.billing.body[0]}
                     <br />
-                    Each license is tied to one or more Second Brains.
+                    {sections.billing.body[1]}
                   </p>
                 </div>
               </div>
@@ -721,59 +558,54 @@ export default function ClientArea() {
           <section className="py-16 md:py-20">
             <Container>
               <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-8">
-                Support
+                {sections.support.label}
               </p>
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
                 <div className="lg:col-span-5">
                   <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em]">
-                    Technical assistance
+                    {sections.support.title}
                   </h2>
                 </div>
                 <div className="lg:col-span-6 lg:col-start-7">
                   <p className="text-[17px] md:text-[18px] font-normal leading-[1.4] opacity-60">
-                    AI-guided support for your Second Brain setup,
+                    {sections.support.body[0]}
                     <br />
-                    platform execution and method-related questions.
+                    {sections.support.body[1]}
                   </p>
                 </div>
               </div>
             </Container>
           </section>
 
-          {/* Chat placeholder */}
+          {/* Chat entry */}
           <section className="pb-16 md:pb-20">
             <Container>
-              <div className="bg-[#f7f7f7] rounded-[4px] relative overflow-hidden">
+              <div
+                className="rounded-[4px] p-8 md:p-12 text-white relative overflow-hidden"
+                style={{
+                  background: 'linear-gradient(to bottom, #484848 0%, #2f2f2f 100%)',
+                }}
+              >
                 <span className="absolute top-6 right-6 font-ui text-[10px] tracking-widest uppercase opacity-25">
                   Chat
                 </span>
 
-                {/* Welcome */}
-                <div className="p-6 md:p-8 min-h-[280px] flex flex-col gap-5">
-                  <div className="flex flex-col items-start">
-                    <span className="font-ui text-[10px] font-medium tracking-widest uppercase opacity-25 mb-1.5">
-                      AI-UP Support
-                    </span>
-                    <div className="bg-white rounded-[4px] px-5 py-3.5 max-w-[75%]">
-                      <p className="text-[15px] leading-[1.4] opacity-70">
-                        Welcome to AI-UP Second Brain™ support. How can I help
-                        you today?
-                      </p>
-                    </div>
-                  </div>
-                </div>
+                <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-40 mb-4">
+                  AI-UP Support
+                </p>
+                <p className="text-[17px] md:text-[18px] font-normal leading-[1.4] opacity-60 mb-8">
+                  {sections.support.welcome}
+                </p>
 
-                {/* Input bar */}
-                <div className="border-t border-black/[0.06] px-6 md:px-8 py-4 flex gap-3 items-center">
-                  <p className="flex-1 text-[15px] opacity-30">Coming soon</p>
-                  <button
-                    className="bg-[#252525] text-white border-0 rounded-[4px]
-                               px-5 py-2.5 font-ui text-[11px] font-medium
-                               tracking-widest uppercase cursor-default opacity-25"
-                  >
-                    Send
-                  </button>
-                </div>
+                <Link
+                  href="/client/chat"
+                  className="inline-block bg-white text-[#1a1a1a] border-0 rounded-[4px]
+                             px-6 py-2.5 font-ui text-[11px] font-medium
+                             tracking-widest uppercase no-underline
+                             opacity-90 hover:opacity-100 transition-opacity"
+                >
+                  Open chat
+                </Link>
               </div>
             </Container>
           </section>
@@ -789,19 +621,19 @@ export default function ClientArea() {
           <section className="py-16 md:py-20">
             <Container>
               <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-8">
-                Account
+                {sections.account.label}
               </p>
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
                 <div className="lg:col-span-5">
                   <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em]">
-                    Your information
+                    {sections.account.title}
                   </h2>
                 </div>
                 <div className="lg:col-span-6 lg:col-start-7">
                   <p className="text-[17px] md:text-[18px] font-normal leading-[1.4] opacity-60">
-                    Manage your identity and access method.
+                    {sections.account.body[0]}
                     <br />
-                    Authentication is handled via Magic Link or OAuth provider.
+                    {sections.account.body[1]}
                   </p>
                 </div>
               </div>
@@ -928,7 +760,7 @@ export default function ClientArea() {
         className="fixed bottom-0 left-0 right-0 bg-[#252525]
                    border-t border-white/[0.08] grid grid-cols-4 md:hidden z-50"
       >
-        {navItems.map((item) => (
+        {nav.map((item) => (
           <button
             key={item.key}
             onClick={() => go(item.key)}

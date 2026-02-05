@@ -206,6 +206,30 @@ export default function StartPage() {
     }
   }
 
+  // ── Header block (badge only) — shared ──
+  const renderHeader = () => (
+    <p className="font-ui text-[11px] font-medium tracking-widest uppercase mb-11">
+      <span className="opacity-100">{hero.badge.primary}</span>
+      <span className="opacity-50"> {hero.badge.secondary}</span>
+    </p>
+  )
+
+  // ── Intro lines below card — shared ──
+  const renderIntro = () => (
+    <div>
+      <p className="font-ui text-[11px] font-medium tracking-widest uppercase text-white" style={{ marginBottom: '16px' }}>
+        {hero.phaseLabel}
+      </p>
+      <div className="text-[17px] md:text-[18px] font-normal leading-[1.15] text-white/50">
+        {hero.intro.map((line, index) => (
+          <span key={index} className="block" style={{ marginBottom: index < hero.intro.length - 1 ? '2px' : '0' }}>
+            {line}
+          </span>
+        ))}
+      </div>
+    </div>
+  )
+
   if (isComplete) {
     return (
       <div className="min-h-screen" style={{ background: '#1a1a1a' }}>
@@ -213,11 +237,8 @@ export default function StartPage() {
         <div className="relative w-full overflow-hidden text-white" style={{ background: 'linear-gradient(to bottom, #252525 0%, #1a1a1a 100%)' }}>
           <section className="relative z-10 pt-20 md:pt-32 pb-16 md:pb-24">
             <Container>
-              {/* Badge */}
-              <p className="font-ui text-[11px] font-medium tracking-widest uppercase mb-11">
-                <span className="opacity-100">{hero.badge.primary}</span>
-                <span className="opacity-50"> {hero.badge.secondary}</span>
-              </p>
+              {/* Header */}
+              {renderHeader()}
 
               {/* Complete Card */}
               <div 
@@ -274,44 +295,9 @@ export default function StartPage() {
                 </div>
               </div>
 
-              {/* Intro text — two columns desktop, one mobile */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
-                {/* Column 1 */}
-                <div className="text-[17px] md:text-[18px] font-normal leading-[1.15] text-white space-y-5">
-                  {hero.intro.col1.map((block, blockIndex) => (
-                    <p key={blockIndex}>
-                      {block.map((line, lineIndex) => (
-                        <span 
-                          key={lineIndex} 
-                          className={`block ${
-                            line.startsWith('Phase 1') 
-                              ? '' 
-                              : 'opacity-50'
-                          }`}
-                        >
-                          {line.startsWith('Phase 1') ? (
-                            <><span className="font-semibold text-white">Phase 1</span><span className="opacity-50">{line.slice(7)}</span></>
-                          ) : line}
-                        </span>
-                      ))}
-                    </p>
-                  ))}
-                </div>
-                {/* Column 2 */}
-                <div className="text-[17px] md:text-[18px] font-normal leading-[1.15] text-white space-y-5">
-                  {hero.intro.col2.map((block, blockIndex) => (
-                    <p key={blockIndex}>
-                      {block.map((line, lineIndex) => (
-                        <span key={lineIndex} className={`block ${line.startsWith('Phase 2') ? '' : 'opacity-50'}`}>
-                          {line.startsWith('Phase 2') ? (
-                            <><span className="font-semibold text-white">Phase 2</span><span className="opacity-50">{line.slice(7)}</span></>
-                          ) : line}
-                        </span>
-                      ))}
-                    </p>
-                  ))}
-                </div>
-              </div>
+              {/* Intro lines */}
+              {renderIntro()}
+
             </Container>
           </section>
         </div>
@@ -325,11 +311,8 @@ export default function StartPage() {
       <div className="relative w-full overflow-hidden text-white" style={{ background: 'linear-gradient(to bottom, #252525 0%, #1a1a1a 100%)' }}>
         <section className="relative z-10 pt-20 md:pt-32 pb-16 md:pb-24">
           <Container>
-            {/* Badge */}
-            <p className="font-ui text-[11px] font-medium tracking-widest uppercase mb-11">
-              <span className="opacity-100">{hero.badge.primary}</span>
-              <span className="opacity-50"> {hero.badge.secondary}</span>
-            </p>
+            {/* Header */}
+            {renderHeader()}
 
             {/* Question Card */}
             <div 
@@ -458,44 +441,9 @@ export default function StartPage() {
               
             </div>
 
-            {/* Intro text — two columns desktop, one mobile */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
-              {/* Column 1 */}
-              <div className="text-[17px] md:text-[18px] font-normal leading-[1.15] text-white space-y-5">
-                {hero.intro.col1.map((block, blockIndex) => (
-                  <p key={blockIndex}>
-                    {block.map((line, lineIndex) => (
-                      <span 
-                        key={lineIndex} 
-                        className={`block ${
-                          line.startsWith('Phase 1') 
-                            ? '' 
-                            : 'opacity-50'
-                        }`}
-                      >
-                        {line.startsWith('Phase 1') ? (
-                          <><span className="font-semibold text-white">Phase 1</span><span className="opacity-50">{line.slice(7)}</span></>
-                        ) : line}
-                      </span>
-                    ))}
-                  </p>
-                ))}
-              </div>
-              {/* Column 2 */}
-              <div className="text-[17px] md:text-[18px] font-normal leading-[1.15] text-white space-y-5">
-                {hero.intro.col2.map((block, blockIndex) => (
-                  <p key={blockIndex}>
-                    {block.map((line, lineIndex) => (
-                      <span key={lineIndex} className={`block ${line.startsWith('Phase 2') ? '' : 'opacity-50'}`}>
-                        {line.startsWith('Phase 2') ? (
-                          <><span className="font-semibold text-white">Phase 2</span><span className="opacity-50">{line.slice(7)}</span></>
-                        ) : line}
-                      </span>
-                    ))}
-                  </p>
-                ))}
-              </div>
-            </div>
+            {/* Intro lines */}
+            {renderIntro()}
+
           </Container>
         </section>
       </div>
