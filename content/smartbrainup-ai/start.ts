@@ -125,7 +125,7 @@ export const questionsMap: Record<string, AdaptiveQuestion> = {
     id: 'q1_role',
     strato: 'LAYER 1 — IDENTITY & DIRECTION',
     topic: 'YOUR OPERATING POSITION',
-    question: 'Your personal role within the organisation is',
+    question: 'Your personal role is',
     collectAs: 'personal_role',
     type: 'single',
     options: [
