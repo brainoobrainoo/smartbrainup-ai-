@@ -34,7 +34,10 @@ export default function ClientArea() {
   const [sphereData, setSphereData] = useState<any>(null)
 
   // Chat state
-  const [chatMessages, setChatMessages] = useState([
+  const [chatMessages, setChatMessages] = useState<Array<{
+    id: string; message: string; sender: string;
+    direction: 'incoming' | 'outgoing'; timestamp: Date;
+  }>>([
     {
       id: 'welcome',
       message: chatContent.system.welcome,
