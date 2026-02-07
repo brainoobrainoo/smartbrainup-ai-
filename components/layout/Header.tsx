@@ -3,7 +3,13 @@
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { usePathname, useSearchParams } from 'next/navigation'
-import { useAuth } from '@/lib/useAuth'
+import { useAuth, signOut } from '@/lib/useAuth'
+
+function getInitials(user: any): string {
+  const name = user?.user_metadata?.full_name || user?.email || ''
+  if (name.includes('@')) return name[0].toUpperCase()
+  return name.split(' ').map((w: string) => w[0]).join('').toUpperCase().slice(0, 2)
+}
 
 type NavLink = {
   label: string
@@ -28,7 +34,7 @@ export default function Header({ logo, links, variant = 'dark' }: HeaderProps) {
   const [activeTab, setActiveTab] = useState('dashboard')
   const pathname = usePathname()
   const searchParams = useSearchParams()
-  const { isAuthenticated, user, signOut } = useAuth()
+  const { isAuthenticated, user } = useAuth()
 
   const isClient = pathname === '/client'
 
@@ -174,11 +180,11 @@ export default function Header({ logo, links, variant = 'dark' }: HeaderProps) {
                     : 'bg-black/[0.06] border border-black/10 text-[#1a1a1a] hover:bg-black/[0.12] hover:border-black/20'
                 }`}
               >
-                {user.initials}
+                {getInitials(user)}
               </Link>
             ) : (
               <Link
-                href="/signin"
+                href="/login"
                 className={`font-ui text-[13px] ${textColor} font-normal
                            opacity-35 hover:opacity-65 transition-opacity`}
               >
@@ -200,7 +206,7 @@ export default function Header({ logo, links, variant = 'dark' }: HeaderProps) {
                     : 'bg-black/[0.06] border border-black/10 text-[#1a1a1a] hover:bg-black/[0.12]'
                 }`}
               >
-                {user.initials}
+                {getInitials(user)}
               </button>
             ) : (
               <button
@@ -259,7 +265,7 @@ export default function Header({ logo, links, variant = 'dark' }: HeaderProps) {
                 </Link>
               ) : (
                 <Link
-                  href="/signin"
+                  href="/login"
                   className={`font-ui text-[13px] ${textColor} font-normal
                              opacity-35 hover:opacity-65 transition-opacity`}
                   onClick={() => setMenuOpen(false)}

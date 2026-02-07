@@ -1,51 +1,69 @@
 'use client'
 
-import { usePathname } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { createClient } from '@/lib/supabase/client'
+import type { User } from '@supabase/supabase-js'
 
-// TODO: Replace with Supabase auth when integrating
-// import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-
-type AuthUser = {
-  name: string
-  email: string
-  initials: string
-}
-
-type AuthState = {
+interface AuthState {
+  user: User | null
+  loading: boolean
   isAuthenticated: boolean
-  user: AuthUser | null
-  signOut: () => void
 }
 
 export function useAuth(): AuthState {
-  const pathname = usePathname()
+  const [user, setUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState(true)
 
-  // TODO: Replace mock with Supabase session check
-  // const supabase = createClientComponentClient()
-  // const { data: { session } } = await supabase.auth.getSession()
+  useEffect(() => {
+    const supabase = createClient()
 
-  // Mock: authenticated when on /client routes
-  const isClient = pathname?.startsWith('/client')
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user)
+      setLoading(false)
+    })
 
-  if (isClient) {
-    return {
-      isAuthenticated: true,
-      user: {
-        name: 'Marco Rossi',
-        email: 'marco@example.com',
-        initials: 'MR',
-      },
-      signOut: () => {
-        // TODO: Supabase sign out
-        // await supabase.auth.signOut()
-        window.location.href = '/'
-      },
-    }
-  }
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+      setLoading(false)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
 
   return {
-    isAuthenticated: false,
-    user: null,
-    signOut: () => {},
+    user,
+    loading,
+    isAuthenticated: !!user,
   }
+}
+
+export async function signInWithGoogle() {
+  const supabase = createClient()
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: window.location.origin + '/auth/callback',
+    },
+  })
+  if (error) console.error('Google sign-in error:', error)
+}
+
+export async function signInWithMagicLink(email: string) {
+  const supabase = createClient()
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
+    options: {
+      emailRedirectTo: window.location.origin + '/auth/callback',
+    },
+  })
+  return { error }
+}
+
+export async function signOut() {
+  const supabase = createClient()
+  const { error } = await supabase.auth.signOut()
+  if (error) console.error('Sign-out error:', error)
+  window.location.href = '/'
 }
