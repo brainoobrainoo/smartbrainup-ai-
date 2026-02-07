@@ -8,7 +8,7 @@ import dynamic from 'next/dynamic'
 import Container from '@/components/layout/Container'
 import { clientContent, Section, SecondBrain } from '@/content/smartbrainup-ai/client'
 import { chatContent } from '@/content/smartbrainup-ai/chat'
-import { useAuth } from '@/lib/useAuth'
+import { useAuth, signOut } from '@/lib/useAuth'
 import '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css'
 import {
   MainContainer,
@@ -24,7 +24,7 @@ const Lottie = dynamic(() => import('lottie-react'), { ssr: false })
 const { user, brains, billing, plans, enterprise, nav, sections } = clientContent
 
 export default function ClientArea() {
-  const { signOut } = useAuth()
+  useAuth()
   const [section, setSection] = useState<Section>('dashboard')
   const [brain, setBrain] = useState<SecondBrain | null>(null)
   const [editName, setEditName] = useState(false)
