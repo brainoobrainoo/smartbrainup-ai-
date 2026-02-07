@@ -36,23 +36,23 @@ export default function LoginPage() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(to bottom, #252525 0%, #252525 80px, #5a5a5a 100%)', color: '#fff' }}>
+      <div style={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#252525', background: 'linear-gradient(to bottom, #252525 0%, #3a3a3a 50%, #4a4a4a 100%)', color: '#fff' }}>
         <p>Loading...</p>
       </div>
     )
   }
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(to bottom, #252525 0%, #252525 80px, #5a5a5a 100%)', padding: '1rem' }}>
-      <div style={{ width: '100%', maxWidth: '400px', padding: '2.5rem', borderRadius: '12px', background: 'rgba(255,255,255,0.06)', border: 'none', backdropFilter: 'blur(20px)' }}>
+    <div style={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#252525', background: 'linear-gradient(to bottom, #252525 0%, #3a3a3a 50%, #4a4a4a 100%)', padding: '1.5rem' }}>
+      <div style={{ width: '100%', maxWidth: '360px', padding: '2rem 1.75rem', borderRadius: '12px', background: 'rgba(255,255,255,0.06)', backdropFilter: 'blur(20px)' }}>
 
-        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+        <div style={{ textAlign: 'center', marginBottom: '1.75rem' }}>
           <h1 style={{ fontSize: '1.25rem', fontWeight: 600, color: '#fff', margin: 0, letterSpacing: '-0.02em' }}>SmartBrainUp</h1>
           <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.5)', marginTop: '0.5rem' }}>Sign in to your account</p>
         </div>
 
         {authError && (
-          <div style={{ padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(220,38,38,0.15)', border: 'none', color: '#fca5a5', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
+          <div style={{ padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(220,38,38,0.15)', color: '#fca5a5', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
             Authentication failed. Please try again.
           </div>
         )}
@@ -74,7 +74,7 @@ export default function LoginPage() {
         </div>
 
         {magicLinkSent ? (
-          <div style={{ padding: '1rem', borderRadius: '8px', background: 'rgba(34,197,94,0.1)', border: 'none', textAlign: 'center' }}>
+          <div style={{ padding: '1rem', borderRadius: '8px', background: 'rgba(34,197,94,0.1)', textAlign: 'center' }}>
             <p style={{ color: '#4ade80', fontSize: '0.9rem', fontWeight: 500, margin: 0 }}>Check your email</p>
             <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem', marginTop: '0.5rem' }}>We sent a magic link to <strong style={{ color: '#fff' }}>{email}</strong></p>
             <button onClick={() => { setMagicLinkSent(false); setEmail('') }} style={{ marginTop: '0.75rem', background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', fontSize: '0.8rem', cursor: 'pointer', textDecoration: 'underline' }}>
