@@ -110,12 +110,12 @@ export default function ClientArea() {
   return (
     <div className="bg-white min-h-screen">
       {/* ═══════════════════════════════════════════════════
-          DESKTOP TAB BAR — sticky below header
+          DESKTOP TAB BAR — sticky below header, no border
           ═══════════════════════════════════════════════════ */}
       <div
-        className="hidden md:block fixed top-[67px] left-0 right-0 z-40 bg-white border-b border-black/[0.06]"
+        className="hidden md:block fixed top-[67px] left-0 right-0 z-40 bg-white"
       >
-        <div className="max-w-[1200px] mx-auto px-10 md:px-12 flex items-center gap-6 py-3">
+        <div className="max-w-[1200px] mx-auto px-10 md:px-12 flex items-center gap-6 pt-5 pb-3">
           {clientTabs.map((tab) => (
             <button
               key={tab.key}
@@ -168,9 +168,9 @@ export default function ClientArea() {
       </nav>
 
       {/* ═══════════════════════════════════════════════════
-          CONTENT — extra top padding on desktop for sticky tab bar
+          CONTENT
           ═══════════════════════════════════════════════════ */}
-      <div className="pt-[67px] md:pt-[115px] pb-[72px] md:pb-12">
+      <div className="pt-[67px] md:pt-[120px] pb-[72px] md:pb-12">
         {/* ─────────────────────────────────────────────
             DASHBOARD
             ───────────────────────────────────────────── */}
@@ -576,7 +576,7 @@ export default function ClientArea() {
             SUPPORT
             ───────────────────────────────────────────── */}
         {section === 'support' && (
-          <div className="fixed top-[115px] md:top-[115px] left-0 right-0 bottom-0 pb-[52px] md:pb-0 bg-white">
+          <div className="fixed top-[120px] md:top-[120px] left-0 right-0 bottom-0 pb-[52px] md:pb-0 bg-white">
             <div className="w-full h-full md:max-w-[1200px] md:mx-auto md:px-10 lg:px-12 md:py-8">
               <div className="h-full md:rounded-[4px] overflow-hidden relative">
                 <MainContainer>

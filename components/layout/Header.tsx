@@ -54,9 +54,9 @@ export default function Header({ logo, links, variant = 'dark' }: HeaderProps) {
           {isAuthenticated && user && (
             <Link
               href="/client"
-              className="md:hidden absolute left-10 w-[40px] h-[40px] rounded-full
+              className="md:hidden absolute left-10 w-[35px] h-[35px] rounded-full
                          bg-white flex items-center justify-center
-                         text-[12px] font-semibold tracking-[0.04em] text-[#1a1a1a]
+                         text-[11px] font-semibold tracking-[0.04em] text-[#1a1a1a]
                          cursor-pointer flex-shrink-0 no-underline"
             >
               {getInitials(user)}
@@ -98,9 +98,9 @@ export default function Header({ logo, links, variant = 'dark' }: HeaderProps) {
             {isAuthenticated && user ? (
               <Link
                 href="/client"
-                className="w-[40px] h-[40px] rounded-full bg-white
+                className="w-[35px] h-[35px] rounded-full bg-white
                            flex items-center justify-center
-                           text-[12px] font-semibold tracking-[0.04em] text-[#1a1a1a]
+                           text-[11px] font-semibold tracking-[0.04em] text-[#1a1a1a]
                            cursor-pointer flex-shrink-0 no-underline
                            hover:opacity-90 transition-opacity"
               >
