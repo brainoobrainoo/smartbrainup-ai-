@@ -22,21 +22,11 @@ type HeaderProps = {
   variant?: 'dark' | 'light'
 }
 
-const clientTabs = [
-  { key: 'dashboard', label: 'dashboard' },
-  { key: 'billing', label: 'billing' },
-  { key: 'support', label: 'support' },
-  { key: 'account', label: 'account' },
-]
-
 export default function Header({ logo, links, variant = 'dark' }: HeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false)
-  const [activeTab, setActiveTab] = useState('dashboard')
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const { isAuthenticated, user } = useAuth()
-
-  const isClient = pathname === '/client'
 
   // Surface param preservation
   const surface = searchParams.get('surface')
@@ -44,16 +34,6 @@ export default function Header({ logo, links, variant = 'dark' }: HeaderProps) {
     if (surface) return `${href}?surface=${surface}`
     return href
   }
-
-  // Listen for tab updates from page.tsx
-  useEffect(() => {
-    function onTabUpdate(e: Event) {
-      const detail = (e as CustomEvent).detail
-      if (detail) setActiveTab(detail)
-    }
-    window.addEventListener('client-tab-update', onTabUpdate)
-    return () => window.removeEventListener('client-tab-update', onTabUpdate)
-  }, [])
 
   // Close menu on route change
   useEffect(() => {
@@ -67,71 +47,6 @@ export default function Header({ logo, links, variant = 'dark' }: HeaderProps) {
 
   const isActive = (href: string) => pathname === href
 
-  function goClientTab(tab: string) {
-    window.dispatchEvent(new CustomEvent('client-nav', { detail: tab }))
-    setActiveTab(tab)
-    setMenuOpen(false)
-  }
-
-  /* ═══════════════════════════════════════════
-     CLIENT MODE — white bg, black text, tabs right
-     ═══════════════════════════════════════════ */
-  if (isClient) {
-    return (
-      <header className="fixed top-0 left-0 right-0 z-50 w-full bg-white">
-        <div className="max-w-[1200px] mx-auto px-10 md:px-12 py-5 flex items-center justify-center md:justify-between relative">
-
-          {/* Logo — centered mobile, left desktop */}
-          <Link
-            href={buildHref('/')}
-            className="font-editorial text-[18px] font-normal text-[#1a1a1a] tracking-[-0.01em]"
-          >
-            {logo}
-          </Link>
-
-          {/* Desktop — client tabs + sign out */}
-          <nav className="hidden md:flex items-center gap-6">
-            {clientTabs.map((tab) => (
-              <button
-                key={tab.key}
-                onClick={() => goClientTab(tab.key)}
-                className={`font-ui text-[13px] text-[#1a1a1a] bg-transparent border-0
-                           cursor-pointer transition-opacity ${
-                  activeTab === tab.key
-                    ? 'font-medium opacity-100'
-                    : 'font-normal opacity-50 hover:opacity-80'
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-            <button
-              onClick={signOut}
-              className="font-ui text-[13px] text-[#1a1a1a] font-normal bg-transparent border-0
-                         cursor-pointer opacity-35 hover:opacity-65 transition-opacity"
-            >
-              sign out
-            </button>
-          </nav>
-
-          {/* Mobile — direct sign out */}
-          <div className="md:hidden absolute right-10">
-            <button
-              onClick={signOut}
-              className="font-ui text-[13px] text-[#1a1a1a] font-normal bg-transparent border-0
-                         cursor-pointer opacity-35 hover:opacity-65 transition-opacity"
-            >
-              sign out
-            </button>
-          </div>
-        </div>
-      </header>
-    )
-  }
-
-  /* ═══════════════════════════════════════════
-     PUBLIC MODE — with auth-aware right element
-     ═══════════════════════════════════════════ */
   return (
     <>
       <header className={`fixed top-0 left-0 right-0 z-50 w-full ${bgColor}`}>
@@ -145,7 +60,7 @@ export default function Header({ logo, links, variant = 'dark' }: HeaderProps) {
             {logo}
           </Link>
 
-          {/* Desktop — vertical separator (compositional anchor) */}
+          {/* Desktop — vertical separator */}
           <span
             className={`hidden md:block absolute left-1/2 -translate-x-1/2 w-[1.5px] h-[22px] ${
               variant === 'dark' ? 'bg-white/50' : 'bg-black/50'
@@ -168,7 +83,7 @@ export default function Header({ logo, links, variant = 'dark' }: HeaderProps) {
               </Link>
             ))}
 
-            {/* Auth element — after nav links */}
+            {/* Auth element */}
             {isAuthenticated && user ? (
               <Link
                 href="/client"
@@ -193,7 +108,7 @@ export default function Header({ logo, links, variant = 'dark' }: HeaderProps) {
             )}
           </nav>
 
-          {/* Mobile — burger or circle */}
+          {/* Mobile — burger or avatar circle */}
           <div className="md:hidden absolute right-10">
             {isAuthenticated && user && !menuOpen ? (
               <button

@@ -23,6 +23,13 @@ const Lottie = dynamic(() => import('lottie-react'), { ssr: false })
 
 const { user, brains, billing, plans, enterprise, nav, sections } = clientContent
 
+const clientTabs = [
+  { key: 'dashboard', label: 'dashboard' },
+  { key: 'billing', label: 'billing' },
+  { key: 'support', label: 'support' },
+  { key: 'account', label: 'account' },
+]
+
 export default function ClientArea() {
   useAuth()
   const [section, setSection] = useState<Section>('dashboard')
@@ -80,25 +87,10 @@ export default function ClientArea() {
       .catch(() => {})
   }, [])
 
-  // Listen for tab changes from Header
-  useEffect(() => {
-    function onNav(e: Event) {
-      const tab = (e as CustomEvent).detail as Section
-      if (tab) {
-        setSection(tab)
-        setBrain(null)
-        window.scrollTo(0, 0)
-      }
-    }
-    window.addEventListener('client-nav', onNav)
-    return () => window.removeEventListener('client-nav', onNav)
-  }, [])
-
   function go(s: Section) {
     setSection(s)
     setBrain(null)
     window.scrollTo(0, 0)
-    window.dispatchEvent(new CustomEvent('client-tab-update', { detail: s }))
   }
 
   function openBrain(b: SecondBrain) {
@@ -117,6 +109,41 @@ export default function ClientArea() {
 
   return (
     <div className="bg-white min-h-screen">
+      {/* ═══════════════════════════════════════════════════
+          DESKTOP TAB BAR — sticky below header
+          ═══════════════════════════════════════════════════ */}
+      <div
+        className="hidden md:block fixed top-[67px] left-0 right-0 z-40 bg-white border-b border-black/[0.06]"
+      >
+        <div className="max-w-[1200px] mx-auto px-10 md:px-12 flex items-center gap-6 py-3">
+          {clientTabs.map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => go(tab.key as Section)}
+              className={`
+                font-ui text-[13px] bg-transparent border-0
+                cursor-pointer transition-opacity
+                ${activeNav === tab.key
+                  ? 'font-medium text-[#1a1a1a] opacity-100'
+                  : 'font-normal text-[#1a1a1a] opacity-35 hover:opacity-60'
+                }
+              `}
+            >
+              {tab.label}
+            </button>
+          ))}
+
+          {/* Sign out — right aligned */}
+          <button
+            onClick={signOut}
+            className="font-ui text-[13px] text-[#1a1a1a] font-normal bg-transparent border-0
+                       cursor-pointer opacity-25 hover:opacity-50 transition-opacity ml-auto"
+          >
+            sign out
+          </button>
+        </div>
+      </div>
+
       {/* ═══════════════════════════════════════════════════
           MOBILE TAB BAR — fixed bottom
           ═══════════════════════════════════════════════════ */}
@@ -141,21 +168,21 @@ export default function ClientArea() {
       </nav>
 
       {/* ═══════════════════════════════════════════════════
-          CONTENT
+          CONTENT — extra top padding on desktop for sticky tab bar
           ═══════════════════════════════════════════════════ */}
-      <div className="pt-[67px] pb-[72px] md:pb-12">
+      <div className="pt-[67px] md:pt-[115px] pb-[72px] md:pb-12">
         {/* ─────────────────────────────────────────────
             DASHBOARD
             ───────────────────────────────────────────── */}
         {section === 'dashboard' && (
           <Container>
-            {/* Badge — same position as other pages */}
+            {/* Badge */}
             <p className="font-ui text-[11px] font-medium tracking-widest uppercase pt-10 md:pt-14 mb-4">
               <span className="font-semibold text-[#1a1a1a]/50">{brains.length} Second Brain{brains.length !== 1 ? 's' : ''}</span>
               <span className="text-[#1a1a1a]/30"> · Since {user.since}</span>
             </p>
 
-            {/* Client name — same size as enterprise "What you get" */}
+            {/* Client name */}
             <h1 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em] mb-12">
               {userName}
             </h1>
@@ -164,7 +191,7 @@ export default function ClientArea() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-5">
               {brains.map((b) =>
                 b.status === 'active' ? (
-                  /* ── ACTIVE CARD — gradient 15% top → 35% bottom ── */
+                  /* ── ACTIVE CARD — gradient ── */
                   <button
                     key={b.id}
                     onClick={() => openBrain(b)}
@@ -215,7 +242,7 @@ export default function ClientArea() {
                     </div>
                   </button>
                 ) : (
-                  /* ── INCOMPLETE CARD — solid gray, no dashes ── */
+                  /* ── INCOMPLETE CARD ── */
                   <Link
                     key={b.id}
                     href="/start/phase2"
@@ -239,7 +266,7 @@ export default function ClientArea() {
               )}
             </div>
 
-            {/* New brain — same grid size */}
+            {/* New brain */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <button
                 onClick={() => {
@@ -549,7 +576,7 @@ export default function ClientArea() {
             SUPPORT
             ───────────────────────────────────────────── */}
         {section === 'support' && (
-          <div className="fixed top-[67px] left-0 right-0 bottom-0 md:bottom-0 pb-[52px] md:pb-0 bg-white">
+          <div className="fixed top-[115px] md:top-[115px] left-0 right-0 bottom-0 pb-[52px] md:pb-0 bg-white">
             <div className="w-full h-full md:max-w-[1200px] md:mx-auto md:px-10 lg:px-12 md:py-8">
               <div className="h-full md:rounded-[4px] overflow-hidden relative">
                 <MainContainer>
