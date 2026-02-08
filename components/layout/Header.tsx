@@ -28,14 +28,12 @@ export default function Header({ logo, links, variant = 'dark' }: HeaderProps) {
   const searchParams = useSearchParams()
   const { isAuthenticated, user } = useAuth()
 
-  // Surface param preservation
   const surface = searchParams.get('surface')
   const buildHref = (href: string) => {
     if (surface) return `${href}?surface=${surface}`
     return href
   }
 
-  // Close menu on route change
   useEffect(() => {
     setMenuOpen(false)
   }, [pathname])
@@ -52,6 +50,19 @@ export default function Header({ logo, links, variant = 'dark' }: HeaderProps) {
       <header className={`fixed top-0 left-0 right-0 z-50 w-full ${bgColor}`}>
         <div className="max-w-[1200px] mx-auto px-10 md:px-12 py-5 flex items-center justify-center md:justify-between relative">
 
+          {/* ═══ MOBILE LEFT: Avatar (logged in) ═══ */}
+          {isAuthenticated && user && (
+            <Link
+              href="/client"
+              className="md:hidden absolute left-10 w-[40px] h-[40px] rounded-full
+                         bg-white flex items-center justify-center
+                         text-[12px] font-semibold tracking-[0.04em] text-[#1a1a1a]
+                         cursor-pointer flex-shrink-0 no-underline"
+            >
+              {getInitials(user)}
+            </Link>
+          )}
+
           {/* Logo — centered mobile, left desktop */}
           <Link
             href={buildHref('/')}
@@ -67,7 +78,7 @@ export default function Header({ logo, links, variant = 'dark' }: HeaderProps) {
             }`}
           />
 
-          {/* Desktop nav — right */}
+          {/* ═══ DESKTOP NAV — right ═══ */}
           <nav className="hidden md:flex items-center gap-6">
             {links.map((link) => (
               <Link
@@ -83,17 +94,15 @@ export default function Header({ logo, links, variant = 'dark' }: HeaderProps) {
               </Link>
             ))}
 
-            {/* Auth element */}
+            {/* Desktop auth element */}
             {isAuthenticated && user ? (
               <Link
                 href="/client"
-                className={`w-[30px] h-[30px] rounded-full flex items-center justify-center
-                           text-[10px] font-semibold tracking-[0.04em] cursor-pointer
-                           flex-shrink-0 transition-all ${
-                  variant === 'dark'
-                    ? 'bg-white/10 border border-white/15 text-white hover:bg-white/[0.18] hover:border-white/30'
-                    : 'bg-black/[0.06] border border-black/10 text-[#1a1a1a] hover:bg-black/[0.12] hover:border-black/20'
-                }`}
+                className="w-[40px] h-[40px] rounded-full bg-white
+                           flex items-center justify-center
+                           text-[12px] font-semibold tracking-[0.04em] text-[#1a1a1a]
+                           cursor-pointer flex-shrink-0 no-underline
+                           hover:opacity-90 transition-opacity"
               >
                 {getInitials(user)}
               </Link>
@@ -108,43 +117,28 @@ export default function Header({ logo, links, variant = 'dark' }: HeaderProps) {
             )}
           </nav>
 
-          {/* Mobile — burger or avatar circle */}
+          {/* ═══ MOBILE RIGHT: Burger (always) ═══ */}
           <div className="md:hidden absolute right-10">
-            {isAuthenticated && user && !menuOpen ? (
-              <button
-                onClick={() => setMenuOpen(true)}
-                className={`w-[30px] h-[30px] rounded-full flex items-center justify-center
-                           text-[10px] font-semibold tracking-[0.04em] cursor-pointer
-                           transition-all ${
-                  variant === 'dark'
-                    ? 'bg-white/10 border border-white/15 text-white hover:bg-white/[0.18]'
-                    : 'bg-black/[0.06] border border-black/10 text-[#1a1a1a] hover:bg-black/[0.12]'
+            <button
+              className="flex flex-col justify-center items-center w-8 h-8"
+              onClick={() => setMenuOpen(!menuOpen)}
+              aria-label="Toggle menu"
+            >
+              <span
+                className={`block w-5 h-[1px] ${lineColor} transition-all duration-300 ${
+                  menuOpen ? 'rotate-45 translate-y-[3px]' : ''
                 }`}
-              >
-                {getInitials(user)}
-              </button>
-            ) : (
-              <button
-                className="flex flex-col justify-center items-center w-8 h-8"
-                onClick={() => setMenuOpen(!menuOpen)}
-                aria-label="Toggle menu"
-              >
-                <span
-                  className={`block w-5 h-[1px] ${lineColor} transition-all duration-300 ${
-                    menuOpen ? 'rotate-45 translate-y-[3px]' : ''
-                  }`}
-                />
-                <span
-                  className={`block w-5 h-[1px] ${lineColor} mt-[5px] transition-all duration-300 ${
-                    menuOpen ? '-rotate-45 -translate-y-[3px]' : ''
-                  }`}
-                />
-              </button>
-            )}
+              />
+              <span
+                className={`block w-5 h-[1px] ${lineColor} mt-[5px] transition-all duration-300 ${
+                  menuOpen ? '-rotate-45 -translate-y-[3px]' : ''
+                }`}
+              />
+            </button>
           </div>
         </div>
 
-        {/* Mobile dropdown */}
+        {/* ═══ MOBILE DROPDOWN ═══ */}
         {menuOpen && (
           <nav className={`md:hidden ${bgColor} border-t ${borderColor} px-10 py-6`}>
             <div className="flex flex-col gap-4">
@@ -163,21 +157,24 @@ export default function Header({ logo, links, variant = 'dark' }: HeaderProps) {
                 </Link>
               ))}
 
-              {/* Auth element — mobile */}
+              {/* Sign in or Sign out */}
               <div
                 className={`h-px my-1 ${
                   variant === 'dark' ? 'bg-white/[0.06]' : 'bg-black/[0.06]'
                 }`}
               />
               {isAuthenticated ? (
-                <Link
-                  href="/client"
+                <button
+                  onClick={() => {
+                    setMenuOpen(false)
+                    signOut()
+                  }}
                   className={`font-ui text-[13px] ${textColor} font-normal
-                             opacity-50 hover:opacity-80 transition-opacity`}
-                  onClick={() => setMenuOpen(false)}
+                             opacity-35 hover:opacity-65 transition-opacity
+                             bg-transparent border-0 text-left cursor-pointer p-0`}
                 >
-                  client area
-                </Link>
+                  sign out
+                </button>
               ) : (
                 <Link
                   href="/login"
