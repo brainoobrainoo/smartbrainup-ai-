@@ -19,6 +19,9 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: 'SmartBrainUp',
   description: 'AI-UP Second Brain™',
+  other: {
+    'theme-color': '#252525',
+  },
 }
 
 export const viewport: Viewport = {
@@ -26,6 +29,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+  themeColor: '#252525',
 }
 
 export default function RootLayout({
@@ -36,13 +40,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${crimson.variable} ${inter.variable}`} style={{ background: '#252525' }}>
       <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `document.documentElement.style.background='#252525';document.body&&(document.body.style.background='#252525');`,
-          }}
-        />
+        <style dangerouslySetInnerHTML={{ __html: `html,body{background:#252525!important}` }} />
       </head>
-      <body className="font-editorial font-normal">
+      <body className="font-editorial font-normal" style={{ background: '#252525' }}>
         {children}
       </body>
     </html>
