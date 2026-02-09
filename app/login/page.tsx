@@ -118,7 +118,7 @@ export default function LoginPage() {
               placeholder="Email address"
               required
               className="w-full py-[11px] px-4 rounded-[8px] border-0
-                         bg-white/[0.08] text-white text-[0.85rem] outline-none
+                         bg-white/[0.08] text-white text-[16px] outline-none
                          box-border placeholder:text-white/30"
             />
             {magicLinkError && (

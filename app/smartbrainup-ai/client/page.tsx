@@ -654,7 +654,7 @@ export default function ClientArea() {
               }
               .cs-message__content {
                 padding: 10px 16px !important;
-                font-size: 15px !important;
+                font-size: 16px !important;
                 line-height: 1.45 !important;
                 font-family: inherit !important;
               }
@@ -820,7 +820,7 @@ export default function ClientArea() {
                       value={userName}
                       onChange={(e) => setUserName(e.target.value)}
                       autoFocus
-                      className="text-[15px] font-normal border-0 border-b border-black/20
+                      className="text-[16px] font-normal border-0 border-b border-black/20
                                  bg-transparent outline-none w-full md:w-[300px] rounded-none"
                     />
                   ) : (

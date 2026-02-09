@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Crimson_Pro, Inter } from 'next/font/google'
 import './globals.css'
 
@@ -21,6 +21,13 @@ export const metadata: Metadata = {
   description: 'AI-UP Second Brain™',
 }
 
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+}
+
 export default function RootLayout({
   children,
 }: {
@@ -28,6 +35,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${crimson.variable} ${inter.variable}`} style={{ background: '#252525' }}>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `document.documentElement.style.background='#252525';document.body&&(document.body.style.background='#252525');`,
+          }}
+        />
+      </head>
       <body className="font-editorial font-normal">
         {children}
       </body>
