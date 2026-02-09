@@ -9,6 +9,7 @@ import SecondBrainCard from '@/components/client/SecondBrainCard'
 import { clientContent, Section, SecondBrain, BillingItem } from '@/content/smartbrainup-ai/client'
 import { chatContent } from '@/content/smartbrainup-ai/chat'
 import { useAuth, updateDisplayName, signOut } from '@/lib/useAuth'
+import { supabase } from '@/lib/supabase'
 import '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css'
 import {
   MainContainer,
@@ -39,7 +40,7 @@ export default function ClientArea() {
   const [userName, setUserName] = useState('')
   const [savingName, setSavingName] = useState(false)
 
-  // Dynamic data (from database in future — empty for now)
+  // Dynamic data
   const [brains, setBrains] = useState<SecondBrain[]>([])
   const [billing, setBilling] = useState<BillingItem[]>([])
 
@@ -49,6 +50,75 @@ export default function ClientArea() {
       setUserName(displayName)
     }
   }, [displayName])
+
+  // ── SAVE PENDING PHASE 1 RESULTS FROM LOCALSTORAGE ──
+  useEffect(() => {
+    if (!user) return
+
+    const pending = localStorage.getItem('phase1_results')
+    if (!pending) return
+
+    try {
+      const results = JSON.parse(pending)
+      
+      supabase.from('assessments').insert([{
+        user_id: user.id,
+        user_name: user.user_metadata?.full_name || displayName || '',
+        user_email: user.email || '',
+        responses: results,
+        phase2_complete: false,
+      }])
+      .then(({ error }) => {
+        if (error) {
+          console.error('Failed to save assessment:', error)
+        } else {
+          console.log('Phase 1 results saved to Supabase')
+          localStorage.removeItem('phase1_results')
+          // Refresh assessments after saving
+          fetchAssessments(user.id)
+        }
+      })
+    } catch (e) {
+      console.error('Failed to parse phase1_results:', e)
+      localStorage.removeItem('phase1_results')
+    }
+  }, [user])
+
+  // ── FETCH ASSESSMENTS FROM SUPABASE ──
+  const fetchAssessments = async (userId: string) => {
+    const { data, error } = await supabase
+      .from('assessments')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: true })
+
+    if (error) {
+      console.error('Failed to fetch assessments:', error)
+      return
+    }
+
+    if (data && data.length > 0) {
+      const mapped: SecondBrain[] = data.map((row: any, index: number) => ({
+        id: row.id.toString(),
+        num: index + 1,
+        name: row.phase2_complete ? 'Second Brain' : 'Second Brain',
+        status: row.phase2_complete ? 'active' as const : 'setup' as const,
+        context: '',
+        platforms: [],
+        pmf: 'Pending',
+        created: new Date(row.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+        lastActive: '',
+        interactions: 0,
+      }))
+      setBrains(mapped)
+    }
+  }
+
+  useEffect(() => {
+    if (user) {
+      fetchAssessments(user.id)
+    }
+  }, [user])
 
   // Chat state
   const [chatMessages, setChatMessages] = useState<Array<{
@@ -617,180 +687,35 @@ export default function ClientArea() {
             </div>
 
             <style jsx global>{`
-              /* Hide perfect-scrollbar */
-              .ps__rail-x, .ps__rail-y,
-              .ps__thumb-x, .ps__thumb-y {
-                display: none !important;
-              }
-
-              /* Main containers — light theme */
-              .cs-main-container {
-                border: none !important;
-                background: transparent !important;
-                height: 100% !important;
-                border-radius: 4px !important;
-              }
-              .cs-chat-container {
-                background: transparent !important;
-              }
-
-              /* Message list */
-              .cs-message-list {
-                background: transparent !important;
-                padding: 1rem !important;
-              }
-              @media (min-width: 768px) {
-                .cs-message-list {
-                  padding: 1.5rem !important;
-                }
-              }
-              .cs-message-list__scroll-wrapper {
-                padding: 0 !important;
-              }
-
-              /* Messages */
-              .cs-message {
-                margin-bottom: 0.5rem !important;
-              }
-              .cs-message__content {
-                padding: 10px 16px !important;
-                font-size: 16px !important;
-                line-height: 1.45 !important;
-                font-family: inherit !important;
-              }
-              @media (min-width: 768px) {
-                .cs-message__content {
-                  padding: 12px 18px !important;
-                }
-              }
-
-              /* Incoming messages (assistant) — gray bubble */
-              .cs-message--incoming .cs-message__content {
-                background: #f0f0f0 !important;
-                color: #1a1a1a !important;
-                border: none !important;
-                border-radius: 18px 18px 18px 4px !important;
-                box-shadow: none !important;
-              }
-
-              /* Outgoing messages (user) — near black */
-              .cs-message--outgoing .cs-message__content {
-                background: #1a1a1a !important;
-                color: white !important;
-                border: none !important;
-                border-radius: 18px 18px 4px 18px !important;
-              }
-
-              /* Input container */
-              .cs-message-input {
-                background: transparent !important;
-                border-top: none !important;
-                padding: 0.5rem 1rem !important;
-                padding-bottom: 16px !important;
-              }
-              @media (min-width: 768px) {
-                .cs-message-input {
-                  padding: 1rem 1.5rem !important;
-                }
-              }
-
-              /* Input wrapper */
-              .cs-message-input__content-editor-wrapper {
-                background: #f0f0f0 !important;
-                border-radius: 24px !important;
-                padding: 8px 16px !important;
-                border: none !important;
-                box-shadow: none !important;
-              }
-              @media (min-width: 768px) {
-                .cs-message-input__content-editor-wrapper {
-                  padding: 10px 18px !important;
-                }
-              }
-
-              /* Input field */
-              .cs-message-input__content-editor {
-                background: transparent !important;
-                color: #1a1a1a !important;
-                font-size: 16px !important;
-                font-family: inherit !important;
-                line-height: 1.4 !important;
-              }
-              .cs-message-input__content-editor:focus {
-                outline: none !important;
-                box-shadow: none !important;
-              }
-              .cs-message-input__content-editor-container {
-                background: transparent !important;
-                border: none !important;
-              }
-              .cs-message-input__content-editor[data-placeholder]:empty:before {
-                color: #999 !important;
-                font-size: 16px !important;
-              }
-
-              /* Send button — dark on light */
-              .cs-button--send {
-                background: #1a1a1a !important;
-                color: white !important;
-                border-radius: 50% !important;
-                width: 36px !important;
-                height: 36px !important;
-                min-width: 36px !important;
-                margin-left: 8px !important;
-                border: none !important;
-                display: flex !important;
-                align-items: center !important;
-                justify-content: center !important;
-              }
-              @media (min-width: 768px) {
-                .cs-button--send {
-                  width: 40px !important;
-                  height: 40px !important;
-                  min-width: 40px !important;
-                  margin-left: 10px !important;
-                }
-              }
-              .cs-button--send:hover {
-                background: #333 !important;
-              }
-              .cs-button--send:disabled {
-                opacity: 0.2 !important;
-              }
-              .cs-button--send svg {
-                fill: white !important;
-                width: 16px !important;
-                height: 16px !important;
-              }
-
-              /* Typing indicator */
-              .cs-typing-indicator {
-                background: transparent !important;
-                border: none !important;
-                padding: 4px 16px !important;
-              }
-              .cs-typing-indicator__text {
-                color: rgba(0, 0, 0, 0.35) !important;
-                font-size: 13px !important;
-              }
-              .cs-typing-indicator__dot {
-                display: none !important;
-              }
-
-              /* Focus states */
-              .cs-message-input__content-editor-wrapper:focus-within {
-                border: none !important;
-                outline: none !important;
-                box-shadow: none !important;
-                background: #e8e8e8 !important;
-              }
-
-              /* Mobile */
-              @media (max-width: 767px) {
-                .cs-main-container {
-                  border-radius: 0 !important;
-                }
-              }
+              .ps__rail-x, .ps__rail-y, .ps__thumb-x, .ps__thumb-y { display: none !important; }
+              .cs-main-container { border: none !important; background: transparent !important; height: 100% !important; border-radius: 4px !important; }
+              .cs-chat-container { background: transparent !important; }
+              .cs-message-list { background: transparent !important; padding: 1rem !important; }
+              @media (min-width: 768px) { .cs-message-list { padding: 1.5rem !important; } }
+              .cs-message-list__scroll-wrapper { padding: 0 !important; }
+              .cs-message { margin-bottom: 0.5rem !important; }
+              .cs-message__content { padding: 10px 16px !important; font-size: 16px !important; line-height: 1.45 !important; font-family: inherit !important; }
+              @media (min-width: 768px) { .cs-message__content { padding: 12px 18px !important; } }
+              .cs-message--incoming .cs-message__content { background: #f0f0f0 !important; color: #1a1a1a !important; border: none !important; border-radius: 18px 18px 18px 4px !important; box-shadow: none !important; }
+              .cs-message--outgoing .cs-message__content { background: #1a1a1a !important; color: white !important; border: none !important; border-radius: 18px 18px 4px 18px !important; }
+              .cs-message-input { background: transparent !important; border-top: none !important; padding: 0.5rem 1rem !important; padding-bottom: 16px !important; }
+              @media (min-width: 768px) { .cs-message-input { padding: 1rem 1.5rem !important; } }
+              .cs-message-input__content-editor-wrapper { background: #f0f0f0 !important; border-radius: 24px !important; padding: 8px 16px !important; border: none !important; box-shadow: none !important; }
+              @media (min-width: 768px) { .cs-message-input__content-editor-wrapper { padding: 10px 18px !important; } }
+              .cs-message-input__content-editor { background: transparent !important; color: #1a1a1a !important; font-size: 16px !important; font-family: inherit !important; line-height: 1.4 !important; }
+              .cs-message-input__content-editor:focus { outline: none !important; box-shadow: none !important; }
+              .cs-message-input__content-editor-container { background: transparent !important; border: none !important; }
+              .cs-message-input__content-editor[data-placeholder]:empty:before { color: #999 !important; font-size: 16px !important; }
+              .cs-button--send { background: #1a1a1a !important; color: white !important; border-radius: 50% !important; width: 36px !important; height: 36px !important; min-width: 36px !important; margin-left: 8px !important; border: none !important; display: flex !important; align-items: center !important; justify-content: center !important; }
+              @media (min-width: 768px) { .cs-button--send { width: 40px !important; height: 40px !important; min-width: 40px !important; margin-left: 10px !important; } }
+              .cs-button--send:hover { background: #333 !important; }
+              .cs-button--send:disabled { opacity: 0.2 !important; }
+              .cs-button--send svg { fill: white !important; width: 16px !important; height: 16px !important; }
+              .cs-typing-indicator { background: transparent !important; border: none !important; padding: 4px 16px !important; }
+              .cs-typing-indicator__text { color: rgba(0, 0, 0, 0.35) !important; font-size: 13px !important; }
+              .cs-typing-indicator__dot { display: none !important; }
+              .cs-message-input__content-editor-wrapper:focus-within { border: none !important; outline: none !important; box-shadow: none !important; background: #e8e8e8 !important; }
+              @media (max-width: 767px) { .cs-main-container { border-radius: 0 !important; } }
             `}</style>
           </div>
         )}
