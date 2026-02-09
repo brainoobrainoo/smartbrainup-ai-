@@ -35,76 +35,10 @@ export type PricingPlan = {
 }
 
 // ────────────────────────────────────────────
-// Mock data (→ Supabase in production)
+// Static content (non-user-specific)
 // ────────────────────────────────────────────
 
 export const clientContent = {
-  user: {
-    name: 'Marco Rossi',
-    email: 'marco.rossi@company.com',
-    method: 'Google OAuth',
-    since: 'Jan 2026',
-  },
-
-  brains: [
-    {
-      id: 1,
-      num: '01',
-      name: 'Strategic Planning',
-      context:
-        'Corporate strategy and decision-making for Q1–Q2 2026. Focus on market expansion in DACH region and partnership development.',
-      status: 'active',
-      platforms: ['Claude', 'GPT', 'Gemini'],
-      created: '15 Jan 2026',
-      lastActive: '3 Feb 2026',
-      pmf: 'PMF™ v2.1',
-      interactions: 47,
-    },
-    {
-      id: 2,
-      num: '02',
-      name: 'Legal Compliance',
-      context:
-        'GDPR compliance review and contract analysis for B2B partnerships across EU markets.',
-      status: 'active',
-      platforms: ['Claude', 'GPT'],
-      created: '22 Jan 2026',
-      lastActive: '2 Feb 2026',
-      pmf: 'PMF™ v2.1',
-      interactions: 23,
-    },
-    {
-      id: 3,
-      num: '03',
-      name: 'Team Onboarding',
-      context:
-        'New hire integration process for technical roles. Knowledge transfer acceleration.',
-      status: 'setup',
-      platforms: ['Claude'],
-      created: '1 Feb 2026',
-      lastActive: '1 Feb 2026',
-      pmf: 'Pending',
-      interactions: 3,
-    },
-  ] as SecondBrain[],
-
-  billing: [
-    {
-      id: 1,
-      date: '15 Jan 2026',
-      item: 'AI-UP Second Brain™ — 3 Second Brains',
-      amount: '€4,997.00',
-      status: 'Paid',
-    },
-    {
-      id: 2,
-      date: '1 Feb 2026',
-      item: 'AI-UP Second Brain™ — Single Second Brain',
-      amount: '€1,997.00',
-      status: 'Paid',
-    },
-  ] as BillingItem[],
-
   plans: [
     {
       name: 'Single',
@@ -184,27 +118,16 @@ export const clientContent = {
     billing: {
       label: 'Billing',
       title: 'Licenses & Invoices',
-      body: [
-        'All purchases related to the AI-UP Second Brain™ method.',
-        'Each license is tied to one or more Second Brains.',
-      ],
+      empty: 'No purchases yet. Your billing history will appear here after your first Second Brain.',
     },
     support: {
       label: 'Support',
       title: 'Technical assistance',
-      body: [
-        'AI-guided support for your Second Brain setup,',
-        'platform execution and method-related questions.',
-      ],
       welcome: 'Welcome to AI-UP Second Brain™ support. How can I help you today?',
     },
     account: {
       label: 'Account',
       title: 'Your information',
-      body: [
-        'Manage your identity and access method.',
-        'Authentication is handled via Magic Link or OAuth provider.',
-      ],
     },
   },
 }

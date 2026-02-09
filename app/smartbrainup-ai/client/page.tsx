@@ -4,11 +4,11 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
-import dynamic from 'next/dynamic'
 import Container from '@/components/layout/Container'
-import { clientContent, Section, SecondBrain } from '@/content/smartbrainup-ai/client'
+import SecondBrainCard from '@/components/client/SecondBrainCard'
+import { clientContent, Section, SecondBrain, BillingItem } from '@/content/smartbrainup-ai/client'
 import { chatContent } from '@/content/smartbrainup-ai/chat'
-import { useAuth, signOut } from '@/lib/useAuth'
+import { useAuth, updateDisplayName, signOut } from '@/lib/useAuth'
 import '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css'
 import {
   MainContainer,
@@ -19,9 +19,7 @@ import {
   TypingIndicator,
 } from '@chatscope/chat-ui-kit-react'
 
-const Lottie = dynamic(() => import('lottie-react'), { ssr: false })
-
-const { user, brains, billing, plans, enterprise, nav, sections } = clientContent
+const { plans, enterprise, nav, sections } = clientContent
 
 const clientTabs = [
   { key: 'dashboard', label: 'dashboard' },
@@ -31,14 +29,26 @@ const clientTabs = [
 ]
 
 export default function ClientArea() {
-  useAuth()
+  const { user, loading, displayName, userEmail } = useAuth()
+
   const [section, setSection] = useState<Section>('dashboard')
   const [brain, setBrain] = useState<SecondBrain | null>(null)
+
+  // Account state — initialized from auth
   const [editName, setEditName] = useState(false)
-  const [editEmail, setEditEmail] = useState(false)
-  const [userName, setUserName] = useState(user.name)
-  const [userEmail, setUserEmail] = useState(user.email)
-  const [sphereData, setSphereData] = useState<any>(null)
+  const [userName, setUserName] = useState('')
+  const [savingName, setSavingName] = useState(false)
+
+  // Dynamic data (from database in future — empty for now)
+  const [brains, setBrains] = useState<SecondBrain[]>([])
+  const [billing, setBilling] = useState<BillingItem[]>([])
+
+  // Sync displayName from auth
+  useEffect(() => {
+    if (displayName && !userName) {
+      setUserName(displayName)
+    }
+  }, [displayName, userName])
 
   // Chat state
   const [chatMessages, setChatMessages] = useState<Array<{
@@ -79,13 +89,15 @@ export default function ClientArea() {
     }, 800 + Math.random() * 400)
   }, [responseIndex])
 
-  // Load sphere animation
-  useEffect(() => {
-    fetch('/animations/SFERA_LOGO_B_bianco.json')
-      .then((r) => r.json())
-      .then(setSphereData)
-      .catch(() => {})
-  }, [])
+  // Save name to Supabase
+  async function handleSaveName() {
+    if (!userName.trim()) return
+    setSavingName(true)
+    const { error } = await updateDisplayName(userName.trim())
+    if (error) console.error('Failed to update name:', error)
+    setSavingName(false)
+    setEditName(false)
+  }
 
   function go(s: Section) {
     setSection(s)
@@ -106,6 +118,26 @@ export default function ClientArea() {
     .join('')
     .toUpperCase()
     .slice(0, 2)
+
+  // Active and incomplete brains
+  const activeBrains = brains.filter((b) => b.status === 'active')
+  const incompleteBrains = brains.filter((b) => b.status === 'setup')
+
+  // Member since
+  const memberSince = user?.created_at
+    ? new Date(user.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+    : ''
+
+  // Access method
+  const accessMethod = user?.app_metadata?.provider === 'google' ? 'Google OAuth' : 'Magic Link'
+
+  if (loading) {
+    return (
+      <div className="bg-white min-h-screen flex items-center justify-center">
+        <p className="font-ui text-[13px] opacity-30">Loading…</p>
+      </div>
+    )
+  }
 
   return (
     <div className="bg-white min-h-screen">
@@ -178,8 +210,16 @@ export default function ClientArea() {
           <Container>
             {/* Badge */}
             <p className="font-ui text-[11px] font-medium tracking-widest uppercase pt-10 md:pt-14 mb-4">
-              <span className="font-semibold text-[#1a1a1a]/50">{brains.length} Second Brain{brains.length !== 1 ? 's' : ''}</span>
-              <span className="text-[#1a1a1a]/30"> · Since {user.since}</span>
+              {brains.length > 0 ? (
+                <>
+                  <span className="font-semibold text-[#1a1a1a]/50">
+                    {activeBrains.length} Second Brain{activeBrains.length !== 1 ? 's' : ''}
+                  </span>
+                  <span className="text-[#1a1a1a]/30"> · Since {memberSince}</span>
+                </>
+              ) : (
+                <span className="text-[#1a1a1a]/30">Welcome</span>
+              )}
             </p>
 
             {/* Client name */}
@@ -187,62 +227,19 @@ export default function ClientArea() {
               {userName}
             </h1>
 
-            {/* Brain grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-5">
-              {brains.map((b) =>
-                b.status === 'active' ? (
-                  /* ── ACTIVE CARD — gradient ── */
-                  <button
-                    key={b.id}
-                    onClick={() => openBrain(b)}
-                    className="rounded-[4px] p-6
-                               text-left cursor-pointer transition-all duration-200
-                               relative border-0 hover:brightness-[0.96]"
-                    style={{ background: 'linear-gradient(to bottom, #e0e0e0 0%, #aeaeae 100%)' }}
-                  >
-                    {/* Sphere */}
-                    <div className="mb-4">
-                      {sphereData ? (
-                        <Lottie
-                          animationData={sphereData}
-                          loop
-                          autoplay
-                          style={{ width: 40, height: 40 }}
-                        />
-                      ) : (
-                        <div className="w-[40px] h-[40px] rounded-full bg-black/[0.06]" />
-                      )}
-                    </div>
+            {/* Active brain cards */}
+            {activeBrains.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-5">
+                {activeBrains.map((b) => (
+                  <SecondBrainCard key={b.id} brain={b} onOpen={openBrain} />
+                ))}
+              </div>
+            )}
 
-                    <p className="font-ui text-[11px] font-medium tracking-widest uppercase text-black/50 mb-2">
-                      Second Brain {b.num}
-                    </p>
-
-                    <h3 className="text-[20px] font-normal tracking-[-0.01em] text-[#1a1a1a] mb-2">
-                      {b.name}
-                    </h3>
-
-                    <p className="text-[15px] leading-[1.4] text-black/60 mb-4">
-                      {b.context.length > 90
-                        ? b.context.slice(0, 90) + '…'
-                        : b.context}
-                    </p>
-
-                    <div className="flex gap-1.5">
-                      {b.platforms.map((p) => (
-                        <span
-                          key={p}
-                          className="font-ui text-[10px] font-medium tracking-[0.06em]
-                                     uppercase px-2.5 py-0.5 border border-black/[0.15]
-                                     rounded-[3px] text-black/50"
-                        >
-                          {p}
-                        </span>
-                      ))}
-                    </div>
-                  </button>
-                ) : (
-                  /* ── INCOMPLETE CARD ── */
+            {/* Incomplete brain cards */}
+            {incompleteBrains.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-5">
+                {incompleteBrains.map((b) => (
                   <Link
                     key={b.id}
                     href="/start/phase2"
@@ -262,9 +259,9 @@ export default function ClientArea() {
                       Continue assessment →
                     </p>
                   </Link>
-                )
-              )}
-            </div>
+                ))}
+              </div>
+            )}
 
             {/* New brain */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -528,47 +525,58 @@ export default function ClientArea() {
               Billing &amp; Licenses
             </p>
 
-            {/* Desktop */}
-            <div className="hidden md:block bg-[#f7f7f7] rounded-[4px] overflow-hidden">
-              {billing.map((row, i) => (
-                <div
-                  key={row.id}
-                  className={`flex justify-between items-center px-6 py-[18px]
-                    ${i < billing.length - 1 ? 'border-b border-black/[0.04]' : ''}`}
-                >
-                  <div>
-                    <p className="font-ui text-[10px] font-medium tracking-[0.08em] uppercase opacity-30 mb-1.5">
-                      {row.date}
-                    </p>
-                    <p className="text-[15px] opacity-75">{row.item}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-[15px]">{row.amount}</p>
-                    <p className="font-ui text-[10px] font-medium tracking-[0.08em] uppercase opacity-30 mt-1">
-                      {row.status}
-                    </p>
-                  </div>
+            {billing.length > 0 ? (
+              <>
+                {/* Desktop */}
+                <div className="hidden md:block bg-[#f7f7f7] rounded-[4px] overflow-hidden">
+                  {billing.map((row, i) => (
+                    <div
+                      key={row.id}
+                      className={`flex justify-between items-center px-6 py-[18px]
+                        ${i < billing.length - 1 ? 'border-b border-black/[0.04]' : ''}`}
+                    >
+                      <div>
+                        <p className="font-ui text-[10px] font-medium tracking-[0.08em] uppercase opacity-30 mb-1.5">
+                          {row.date}
+                        </p>
+                        <p className="text-[15px] opacity-75">{row.item}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-[15px]">{row.amount}</p>
+                        <p className="font-ui text-[10px] font-medium tracking-[0.08em] uppercase opacity-30 mt-1">
+                          {row.status}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
 
-            {/* Mobile */}
-            <div className="md:hidden flex flex-col gap-3">
-              {billing.map((row) => (
-                <div key={row.id} className="bg-[#f7f7f7] rounded-[4px] p-6">
-                  <p className="font-ui text-[10px] font-medium tracking-widest uppercase opacity-30 mb-3">
-                    {row.date}
-                  </p>
-                  <p className="text-[15px] opacity-70 mb-2">{row.item}</p>
-                  <div className="flex justify-between items-end">
-                    <p className="text-[22px] font-normal">{row.amount}</p>
-                    <span className="font-ui text-[10px] font-medium tracking-widest uppercase opacity-30">
-                      {row.status}
-                    </span>
-                  </div>
+                {/* Mobile */}
+                <div className="md:hidden flex flex-col gap-3">
+                  {billing.map((row) => (
+                    <div key={row.id} className="bg-[#f7f7f7] rounded-[4px] p-6">
+                      <p className="font-ui text-[10px] font-medium tracking-widest uppercase opacity-30 mb-3">
+                        {row.date}
+                      </p>
+                      <p className="text-[15px] opacity-70 mb-2">{row.item}</p>
+                      <div className="flex justify-between items-end">
+                        <p className="text-[22px] font-normal">{row.amount}</p>
+                        <span className="font-ui text-[10px] font-medium tracking-widest uppercase opacity-30">
+                          {row.status}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </>
+            ) : (
+              /* Empty state */
+              <div className="bg-[#f7f7f7] rounded-[4px] p-8 md:p-12">
+                <p className="text-[15px] opacity-40 text-center">
+                  {sections.billing.empty}
+                </p>
+              </div>
+            )}
           </Container>
         )}
 
@@ -818,12 +826,19 @@ export default function ClientArea() {
                   )}
                 </div>
                 <button
-                  onClick={() => setEditName(!editName)}
+                  onClick={() => {
+                    if (editName) {
+                      handleSaveName()
+                    } else {
+                      setEditName(true)
+                    }
+                  }}
+                  disabled={savingName}
                   className="font-ui text-[10px] font-medium tracking-[0.08em] uppercase
                              opacity-40 hover:opacity-70 transition-opacity cursor-pointer
                              bg-transparent border-0 ml-4"
                 >
-                  {editName ? 'Save' : 'Edit'}
+                  {savingName ? 'Saving…' : editName ? 'Save' : 'Edit'}
                 </button>
               </div>
 
@@ -836,27 +851,8 @@ export default function ClientArea() {
                   <p className="font-ui text-[10px] font-medium tracking-[0.08em] uppercase opacity-30 mb-1.5">
                     Email
                   </p>
-                  {editEmail ? (
-                    <input
-                      type="email"
-                      value={userEmail}
-                      onChange={(e) => setUserEmail(e.target.value)}
-                      autoFocus
-                      className="text-[15px] font-normal border-0 border-b border-black/20
-                                 bg-transparent outline-none w-full md:w-[300px] rounded-none"
-                    />
-                  ) : (
-                    <p className="text-[15px] opacity-70">{userEmail}</p>
-                  )}
+                  <p className="text-[15px] opacity-70">{userEmail}</p>
                 </div>
-                <button
-                  onClick={() => setEditEmail(!editEmail)}
-                  className="font-ui text-[10px] font-medium tracking-[0.08em] uppercase
-                             opacity-40 hover:opacity-70 transition-opacity cursor-pointer
-                             bg-transparent border-0 ml-4"
-                >
-                  {editEmail ? 'Save' : 'Edit'}
-                </button>
               </div>
 
               {/* Member since */}
@@ -865,8 +861,7 @@ export default function ClientArea() {
                   Member since
                 </p>
                 <p className="text-[15px] opacity-70">
-                  {user.since} · {brains.length} Second Brain
-                  {brains.length !== 1 ? 's' : ''} active
+                  {memberSince}{brains.length > 0 ? ` · ${brains.length} Second Brain${brains.length !== 1 ? 's' : ''} active` : ''}
                 </p>
               </div>
 
@@ -876,7 +871,7 @@ export default function ClientArea() {
                   Access method
                 </p>
                 <p className="text-[15px] opacity-70">
-                  {user.method} + Magic Link
+                  {accessMethod}
                 </p>
               </div>
 

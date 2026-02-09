@@ -8,6 +8,36 @@ interface AuthState {
   user: User | null
   loading: boolean
   isAuthenticated: boolean
+  displayName: string
+  userEmail: string
+}
+
+/**
+ * Derive a display name from the user object.
+ * Priority: user_metadata.full_name → user_metadata.name → email parsing
+ */
+function deriveDisplayName(user: User | null): string {
+  if (!user) return ''
+
+  // Google OAuth provides full_name or name in metadata
+  const meta = user.user_metadata
+  if (meta?.full_name && typeof meta.full_name === 'string' && meta.full_name.trim()) {
+    return meta.full_name.trim()
+  }
+  if (meta?.name && typeof meta.name === 'string' && meta.name.trim()) {
+    return meta.name.trim()
+  }
+
+  // Magic Link — derive from email
+  const email = user.email
+  if (!email) return ''
+
+  const local = email.split('@')[0]
+  return local
+    .split(/[._\-]/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .join(' ')
 }
 
 export function useAuth(): AuthState {
@@ -36,7 +66,20 @@ export function useAuth(): AuthState {
     user,
     loading,
     isAuthenticated: !!user,
+    displayName: deriveDisplayName(user),
+    userEmail: user?.email ?? '',
   }
+}
+
+/**
+ * Update display name in Supabase user metadata
+ */
+export async function updateDisplayName(name: string): Promise<{ error: Error | null }> {
+  const supabase = createClient()
+  const { error } = await supabase.auth.updateUser({
+    data: { full_name: name },
+  })
+  return { error: error ? new Error(error.message) : null }
 }
 
 export async function signInWithGoogle() {
