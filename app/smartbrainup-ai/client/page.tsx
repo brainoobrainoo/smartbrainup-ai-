@@ -100,7 +100,7 @@ export default function ClientArea() {
     if (data && data.length > 0) {
       const mapped: SecondBrain[] = data.map((row: any, index: number) => ({
         id: row.id.toString(),
-        num: String(index + 1),
+        num: index + 1,
         name: row.phase2_complete ? 'Second Brain' : 'Second Brain',
         status: row.phase2_complete ? 'active' as const : 'setup' as const,
         context: '',
@@ -285,7 +285,7 @@ export default function ClientArea() {
               {brains.length > 0 ? (
                 <>
                   <span className="font-semibold text-[#1a1a1a]/50">
-                    {activeBrains.length} Second Brain{activeBrains.length !== 1 ? 's' : ''}
+                    {brains.length} Second Brain{brains.length !== 1 ? 's' : ''}
                   </span>
                   <span className="text-[#1a1a1a]/30"> · Since {memberSince}</span>
                 </>

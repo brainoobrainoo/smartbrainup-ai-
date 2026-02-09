@@ -3,7 +3,7 @@
 // CONTEXT INTAKE — AI-UP SECOND BRAIN™
 // ═══════════════════════════════════════════════════════════
 //
-// Phase 1 only → login → Supabase (with user_id)
+// Phase 1 only → completion card → login → client area
 // Extensible: add questions, replace null with next id
 //
 // ROUTING (Q1):
@@ -370,7 +370,8 @@ export const assessmentContent = {
   complete: {
     section: 'PHASE 1 COMPLETE',
     title: ['Done', 'Phase 1 complete'],
-    body: 'Sign in to continue building your Second Brain.',
-    cta: 'Create account',
+    body: 'Your initial context has been captured.',
+    detail: 'Sign in to access your client area. Your Second Brain will be ready for Phase 2.',
+    cta: 'Continue',
   },
 }

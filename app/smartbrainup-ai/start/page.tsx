@@ -5,7 +5,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import Container from '@/components/layout/Container'
-import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/useAuth'
 import { 
   questionsMap,
@@ -39,12 +38,6 @@ export default function StartPage() {
   
   // Multi-select state
   const [multiSelected, setMultiSelected] = useState<string[]>([])
-  
-  // Auth state for completion card
-  const [authEmail, setAuthEmail] = useState('')
-  const [magicLinkSent, setMagicLinkSent] = useState(false)
-  const [magicLinkError, setMagicLinkError] = useState('')
-  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const question = questionsMap[currentQuestionId]
   const { hero, complete } = assessmentContent
@@ -81,88 +74,41 @@ export default function StartPage() {
     }
   }, [currentQuestionId])
 
-  // If user is already logged in when completing Phase 1, save and redirect
+  // Save to localStorage when assessment completes
   useEffect(() => {
-    if (isComplete && isAuthenticated && user) {
-      saveResultsAndRedirect(user.id, user.user_metadata?.full_name || '', user.email || '')
-    }
-  }, [isComplete, isAuthenticated, user])
-
-  // Save results to localStorage before auth
-  const saveToLocalStorage = () => {
+    if (!isComplete) return
     try {
       localStorage.setItem('phase1_results', JSON.stringify(collectedData))
     } catch (e) {
       console.error('Failed to save to localStorage:', e)
     }
-  }
+  }, [isComplete])
 
-  // Save results directly to Supabase (for already-authenticated users)
-  const saveResultsAndRedirect = async (userId: string, userName: string, userEmail: string) => {
-    try {
-      await supabase.from('assessments').insert([{
-        user_id: userId,
-        user_name: userName,
-        user_email: userEmail,
-        responses: collectedData,
-        phase2_complete: false,
-      }])
-      // Clear any localStorage remnant
-      localStorage.removeItem('phase1_results')
+  // Handle continue button — go to /client if logged in, /login if not
+  const handleContinue = () => {
+    if (isAuthenticated && user) {
       router.push('/client')
-    } catch (err) {
-      console.error('Failed to save assessment:', err)
-    }
-  }
-
-  // Google OAuth — save first, then auth
-  const handleGoogleLogin = async () => {
-    saveToLocalStorage()
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
-    })
-    if (error) console.error('Google login error:', error)
-  }
-
-  // Magic Link — save first, then send
-  const handleMagicLink = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!authEmail.trim()) return
-    setIsSubmitting(true)
-    setMagicLinkError('')
-    saveToLocalStorage()
-    const { error } = await supabase.auth.signInWithOtp({
-      email: authEmail.trim(),
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
-      },
-    })
-    if (error) {
-      setMagicLinkError(error.message)
     } else {
-      setMagicLinkSent(true)
+      router.push('/login')
     }
-    setIsSubmitting(false)
   }
 
   // ── Single-select handler ──
   const handleOptionClick = (option: AdaptiveOption) => {
     if (question.type === 'multi') return
 
-    setCollectedData(prev => ({
-      ...prev,
+    const updatedData = {
+      ...collectedData,
       [question.collectAs]: option.value,
-    }))
+    }
+    setCollectedData(updatedData)
 
     setIsTransitioning(true)
     
     setTimeout(() => {
       if (option.nextId === null) {
+        setCollectedData(updatedData)
         setIsComplete(true)
-        console.log('Assessment complete:', { ...collectedData, [question.collectAs]: option.value })
       } else {
         setHistory(prev => [...prev, currentQuestionId])
         setCurrentQuestionId(option.nextId)
@@ -192,10 +138,11 @@ export default function StartPage() {
   const handleMultiConfirm = () => {
     if (multiSelected.length === 0) return
 
-    setCollectedData(prev => ({
-      ...prev,
+    const updatedData = {
+      ...collectedData,
       [question.collectAs]: multiSelected,
-    }))
+    }
+    setCollectedData(updatedData)
 
     const nextId = question.options[0].nextId
 
@@ -203,8 +150,8 @@ export default function StartPage() {
 
     setTimeout(() => {
       if (nextId === null) {
+        setCollectedData(updatedData)
         setIsComplete(true)
-        console.log('Assessment complete:', { ...collectedData, [question.collectAs]: multiSelected })
       } else {
         setHistory(prev => [...prev, currentQuestionId])
         setCurrentQuestionId(nextId)
@@ -238,18 +185,8 @@ export default function StartPage() {
     </div>
   )
 
-  // ── COMPLETION SCREEN ──
+  // ── COMPLETION CARD ──
   if (isComplete) {
-    // If already authenticated, the useEffect above handles save+redirect
-    // Show a loading state while that happens
-    if (isAuthenticated) {
-      return (
-        <div className="min-h-screen flex items-center justify-center" style={{ background: '#1a1a1a' }}>
-          <p className="text-white/50 text-[13px] font-ui">Saving your results…</p>
-        </div>
-      )
-    }
-
     return (
       <div className="min-h-screen" style={{ background: '#1a1a1a' }}>
         <div className="relative w-full overflow-hidden text-white" style={{ background: 'linear-gradient(to bottom, #252525 0%, #1a1a1a 100%)' }}>
@@ -257,97 +194,49 @@ export default function StartPage() {
             <Container>
               {renderHeader()}
 
-              {/* Complete Card with Login */}
+              {/* Completion Card */}
               <div 
                 className="rounded-[4px] p-8 py-10 md:p-12 md:py-14 mb-11"
                 style={{ background: 'linear-gradient(to bottom, #353535 0%, #232323 100%)' }}
               >
                 <div className="flex flex-col items-center justify-center text-center">
                   
-                  {/* Complete message */}
-                  <h2 className="text-[24px] md:text-[32px] font-normal leading-[1.1] text-white mb-3">
+                  {/* Section label */}
+                  <p className="font-ui text-[11px] font-medium tracking-widest uppercase text-white/[0.45] mb-8">
+                    {complete.section}
+                  </p>
+
+                  {/* Title */}
+                  <h2 className="text-[24px] md:text-[32px] font-normal leading-[1.1] text-white mb-4">
                     {complete.title.map((line, index) => (
                       <span key={index} className="block">{line}</span>
                     ))}
                   </h2>
-                  <p className="text-[16px] md:text-[17px] font-normal leading-[1.3] text-white/50 mb-10">
+
+                  {/* Body */}
+                  <p className="text-[16px] md:text-[17px] font-normal leading-[1.4] text-white/50 mb-2 max-w-[400px]">
                     {complete.body}
                   </p>
+
+                  {/* Detail */}
+                  <p className="text-[15px] md:text-[16px] font-normal leading-[1.4] text-white/35 mb-10 max-w-[400px]">
+                    {complete.detail}
+                  </p>
                   
-                  {/* Auth UI */}
-                  <div className="w-full max-w-[320px]">
-                    
-                    {/* Google */}
-                    <button
-                      onClick={handleGoogleLogin}
-                      className="w-full py-[11px] px-4 rounded-[8px] border-0 bg-white text-[#111]
-                                 text-[0.85rem] font-medium cursor-pointer flex items-center
-                                 justify-center gap-2 hover:opacity-90 transition-opacity"
-                    >
-                      <svg width="16" height="16" viewBox="0 0 24 24">
-                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
-                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                      </svg>
-                      Continue with Google
-                    </button>
+                  {/* CTA Button */}
+                  <button 
+                    onClick={handleContinue}
+                    className="px-10 py-3.5 bg-white/[0.08] hover:bg-white/[0.14]
+                               rounded-[4px] text-white text-[16px] font-medium
+                               tracking-wide transition-all cursor-pointer border-0"
+                  >
+                    {complete.cta}
+                  </button>
 
-                    {/* Divider */}
-                    <div className="flex items-center my-5 gap-4">
-                      <div className="flex-1 h-px bg-white/10" />
-                      <span className="text-[0.7rem] text-white/35">or</span>
-                      <div className="flex-1 h-px bg-white/10" />
-                    </div>
-
-                    {/* Magic Link */}
-                    {magicLinkSent ? (
-                      <div className="p-4 rounded-[8px] bg-green-500/10 text-center">
-                        <p className="text-[#4ade80] text-[0.85rem] font-medium m-0">Check your email</p>
-                        <p className="text-white/50 text-[0.75rem] mt-2">
-                          We sent a magic link to <strong className="text-white">{authEmail}</strong>
-                        </p>
-                        <button
-                          onClick={() => { setMagicLinkSent(false); setAuthEmail('') }}
-                          className="mt-3 bg-transparent border-0 text-white/40 text-[0.75rem]
-                                     cursor-pointer underline"
-                        >
-                          Use a different email
-                        </button>
-                      </div>
-                    ) : (
-                      <form onSubmit={handleMagicLink}>
-                        <input
-                          type="email"
-                          value={authEmail}
-                          onChange={(e) => setAuthEmail(e.target.value)}
-                          placeholder="Email address"
-                          required
-                          className="w-full py-[11px] px-4 rounded-[8px] border-0
-                                     bg-white/[0.08] text-white text-[16px] outline-none
-                                     box-border placeholder:text-white/30"
-                        />
-                        {magicLinkError && (
-                          <p className="text-red-300 text-[0.75rem] mt-2">{magicLinkError}</p>
-                        )}
-                        <button
-                          type="submit"
-                          disabled={isSubmitting}
-                          className="w-full mt-3 py-[11px] px-4 rounded-[8px] border-0
-                                     bg-white/[0.12] text-white text-[0.85rem] font-medium
-                                     cursor-pointer transition-colors hover:bg-white/[0.16]
-                                     disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          {isSubmitting ? 'Sending...' : 'Send Magic Link'}
-                        </button>
-                      </form>
-                    )}
-
-                    {/* Footer */}
-                    <p className="text-center text-[0.7rem] text-white/25 mt-7">
-                      AI-UP Second Brain™ by SmartBrainUp S.r.l.
-                    </p>
-                  </div>
+                  {/* Footer */}
+                  <p className="text-center text-[0.7rem] text-white/20 mt-8">
+                    AI-UP Second Brain™ by SmartBrainUp S.r.l.
+                  </p>
                   
                 </div>
               </div>
