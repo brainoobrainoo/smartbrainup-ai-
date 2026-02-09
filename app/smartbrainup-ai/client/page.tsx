@@ -69,6 +69,8 @@ export default function ClientArea() {
     if (!user) return
     const pending = localStorage.getItem('phase1_results')
     if (!pending) return
+    // Remove immediately to prevent duplicate inserts
+    localStorage.removeItem('phase1_results')
     try {
       const results = JSON.parse(pending)
       supabase.from('assessments').insert([{
@@ -82,13 +84,11 @@ export default function ClientArea() {
         if (error) {
           console.error('Failed to save assessment:', error)
         } else {
-          localStorage.removeItem('phase1_results')
           fetchAssessments(user.id)
         }
       })
     } catch (e) {
       console.error('Failed to parse phase1_results:', e)
-      localStorage.removeItem('phase1_results')
     }
   }, [user])
 
