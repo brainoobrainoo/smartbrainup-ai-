@@ -443,60 +443,62 @@ export default function ClientArea() {
                     </div>
 
                     {/* Action buttons */}
-                    <div className="flex items-center gap-3 mt-4">
-                      {/* Complete Phase 2 */}
-                      <button
-                        onClick={() => handleStartPhase2(b)}
-                        className="flex-1 py-2.5 bg-[#1a1a1a]/[0.08] hover:bg-[#1a1a1a]/[0.15]
-                                   rounded-[4px] font-ui text-[10px] font-medium tracking-widest
-                                   uppercase text-[#1a1a1a]/60 border-0 cursor-pointer transition-colors"
-                      >
-                        Complete
-                      </button>
-
-                      {/* Rename */}
-                      <button
-                        onClick={() => {
-                          setEditingBrainId(b.id)
-                          setEditingBrainName(b.name === 'Second Brain' ? '' : b.name)
-                        }}
-                        className="py-2.5 px-4 bg-[#1a1a1a]/[0.05] hover:bg-[#1a1a1a]/[0.1]
-                                   rounded-[4px] font-ui text-[10px] font-medium tracking-widest
-                                   uppercase text-[#1a1a1a]/40 border-0 cursor-pointer transition-colors"
-                      >
-                        Rename
-                      </button>
-
-                      {/* Delete */}
+                    <div className="mt-4">
                       {deletingBrainId === b.id ? (
-                        <div className="flex items-center gap-1">
+                        <>
+                          <p className="text-[14px] text-[#1a1a1a]/45 text-center mb-3">
+                            This will delete all progress. Are you sure?
+                          </p>
+                          <div className="flex gap-3">
+                            <button
+                              onClick={() => handleDeleteBrain(b.id)}
+                              className="flex-1 py-2.5 bg-red-500/10 hover:bg-red-500/20
+                                         rounded-[4px] font-ui text-[10px] font-medium tracking-widest
+                                         uppercase text-red-600/70 border-0 cursor-pointer transition-colors"
+                            >
+                              Yes
+                            </button>
+                            <button
+                              onClick={() => setDeletingBrainId(null)}
+                              className="flex-1 py-2.5 bg-[#1a1a1a]/[0.06] hover:bg-[#1a1a1a]/[0.12]
+                                         rounded-[4px] font-ui text-[10px] font-medium tracking-widest
+                                         uppercase text-[#1a1a1a]/50 border-0 cursor-pointer transition-colors"
+                            >
+                              No
+                            </button>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="flex gap-3">
                           <button
-                            onClick={() => handleDeleteBrain(b.id)}
-                            className="py-2.5 px-3 bg-red-500/10 hover:bg-red-500/20
+                            onClick={() => handleStartPhase2(b)}
+                            className="flex-1 py-2.5 bg-[#1a1a1a]/[0.08] hover:bg-[#1a1a1a]/[0.15]
                                        rounded-[4px] font-ui text-[10px] font-medium tracking-widest
-                                       uppercase text-red-600/70 border-0 cursor-pointer transition-colors"
+                                       uppercase text-[#1a1a1a]/60 border-0 cursor-pointer transition-colors"
                           >
-                            Yes
+                            Complete
                           </button>
                           <button
-                            onClick={() => setDeletingBrainId(null)}
-                            className="py-2.5 px-3 bg-[#1a1a1a]/[0.05] hover:bg-[#1a1a1a]/[0.1]
+                            onClick={() => {
+                              setEditingBrainId(b.id)
+                              setEditingBrainName(b.name === 'Second Brain' ? '' : b.name)
+                            }}
+                            className="flex-1 py-2.5 bg-[#1a1a1a]/[0.06] hover:bg-[#1a1a1a]/[0.12]
                                        rounded-[4px] font-ui text-[10px] font-medium tracking-widest
-                                       uppercase text-[#1a1a1a]/40 border-0 cursor-pointer transition-colors"
+                                       uppercase text-[#1a1a1a]/50 border-0 cursor-pointer transition-colors"
                           >
-                            No
+                            Rename
+                          </button>
+                          <button
+                            onClick={() => setDeletingBrainId(b.id)}
+                            className="flex-1 py-2.5 bg-[#1a1a1a]/[0.06] hover:bg-red-500/10
+                                       rounded-[4px] font-ui text-[10px] font-medium tracking-widest
+                                       uppercase text-[#1a1a1a]/50 hover:text-red-600/60
+                                       border-0 cursor-pointer transition-colors"
+                          >
+                            Delete
                           </button>
                         </div>
-                      ) : (
-                        <button
-                          onClick={() => setDeletingBrainId(b.id)}
-                          className="py-2.5 px-4 bg-[#1a1a1a]/[0.05] hover:bg-red-500/10
-                                     rounded-[4px] font-ui text-[10px] font-medium tracking-widest
-                                     uppercase text-[#1a1a1a]/40 hover:text-red-600/60
-                                     border-0 cursor-pointer transition-colors"
-                        >
-                          Delete
-                        </button>
                       )}
                     </div>
                   </div>
