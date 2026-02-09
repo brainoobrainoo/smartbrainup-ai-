@@ -371,7 +371,7 @@ export default function ClientArea() {
         {!loading && section === 'dashboard' && (
           <Container>
             {/* Badge */}
-            <p className="font-ui text-[11px] font-medium tracking-widest uppercase pt-10 md:pt-14 mb-4">
+            <p className="font-ui text-[11px] font-medium tracking-widest uppercase pt-10 md:pt-14 mb-8">
               {brains.length > 0 ? (
                 <>
                   <span className="font-semibold text-[#1a1a1a]/50">
@@ -754,7 +754,7 @@ export default function ClientArea() {
             ───────────────────────────────────────────────── */}
         {!loading && section === 'billing' && (
           <Container>
-            <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-30 pt-10 md:pt-14 mb-5">
+            <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-30 pt-10 md:pt-14 mb-8">
               Billing &amp; Licenses
             </p>
 
@@ -885,7 +885,7 @@ export default function ClientArea() {
             ───────────────────────────────────────────────── */}
         {!loading && section === 'account' && (
           <Container>
-            <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-30 pt-10 md:pt-14 mb-5">
+            <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-30 pt-10 md:pt-14 mb-8">
               Account
             </p>
 

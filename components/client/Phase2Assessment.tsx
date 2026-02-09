@@ -128,8 +128,8 @@ export default function Phase2Assessment({ brainName, onExit, onComplete }: Phas
           <Container>
             {/* Header */}
             <p className="font-ui text-[11px] font-medium tracking-widest uppercase mb-11 text-[#1a1a1a]">
-              <span className="opacity-60">{header.badge.primary}</span>
-              <span className="opacity-30"> {header.badge.secondary}</span>
+              <span className="opacity-100">{header.badge.primary}</span>
+              <span className="opacity-50"> {header.badge.secondary}</span>
             </p>
 
             {/* Completion Card */}
@@ -189,21 +189,23 @@ export default function Phase2Assessment({ brainName, onExit, onComplete }: Phas
     <div className="min-h-screen bg-white">
       <section className="relative z-10 pt-20 md:pt-32 pb-16 md:pb-24">
         <Container>
-          {/* Header with Exit */}
-          <div className="flex items-center justify-between mb-11">
-            <p className="font-ui text-[11px] font-medium tracking-widest uppercase text-[#1a1a1a]">
-              <span className="opacity-60">{header.badge.primary}</span>
-              <span className="opacity-30"> {header.badge.secondary}</span>
-            </p>
+          {/* Badge */}
+          <p className="font-ui text-[11px] font-medium tracking-widest uppercase mb-11 text-[#1a1a1a]">
+            <span className="opacity-100">{header.badge.primary}</span>
+            <span className="opacity-50"> {header.badge.secondary}</span>
+          </p>
+
+          {/* Exit — centered above card */}
+          <p className="text-center mb-4">
             <button
               onClick={onExit}
-              className="font-ui text-[13px] font-normal text-[#1a1a1a] opacity-40
-                         hover:opacity-70 transition-opacity cursor-pointer
+              className="font-ui text-[13px] font-normal text-[#1a1a1a] opacity-35
+                         hover:opacity-60 transition-opacity cursor-pointer
                          bg-transparent border-0"
             >
               {header.exit}
             </button>
-          </div>
+          </p>
 
           {/* Question Card — light */}
           <div
