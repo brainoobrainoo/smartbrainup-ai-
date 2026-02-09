@@ -165,6 +165,19 @@ export default function Phase2Assessment({ brainName, onExit, onComplete }: Phas
                 </p>
               </div>
             </div>
+
+            {/* Intro — below card */}
+            <div>
+              <p className="font-ui text-[11px] font-medium tracking-widest uppercase mb-6 text-[#1a1a1a]/60">
+                02 — PRIVATE PHASE
+              </p>
+              <p className="text-[17px] md:text-[18px] leading-[1.5] text-[#1a1a1a]/35 mb-1">This is where your Second Brain takes shape</p>
+              <p className="text-[17px] md:text-[18px] leading-[1.5] text-[#1a1a1a]/35 mb-1">phase 2 is private and requires login</p>
+              <p className="text-[17px] md:text-[18px] leading-[1.5] text-[#1a1a1a]/35 mb-1">the system adapts through your choices</p>
+              <p className="text-[17px] md:text-[18px] leading-[1.5] text-[#1a1a1a]/35 mb-1">to reflect how you work and decide</p>
+              <p className="text-[17px] md:text-[18px] leading-[1.5] text-[#1a1a1a]/35 mb-1">and what actually drives your actions</p>
+            </div>
+
           </Container>
         </section>
       </div>
@@ -191,9 +204,6 @@ export default function Phase2Assessment({ brainName, onExit, onComplete }: Phas
               {header.exit}
             </button>
           </div>
-
-          {/* Brain name */}
-          <p className="text-[15px] text-[#1a1a1a]/35 mb-6">{brainName}</p>
 
           {/* Question Card — light */}
           <div
@@ -304,6 +314,19 @@ export default function Phase2Assessment({ brainName, onExit, onComplete }: Phas
             </div>
 
           </div>
+
+          {/* Intro — below card */}
+          <div>
+            <p className="font-ui text-[11px] font-medium tracking-widest uppercase mb-6 text-[#1a1a1a]/60">
+              02 — PRIVATE PHASE
+            </p>
+            <p className="text-[17px] md:text-[18px] leading-[1.5] text-[#1a1a1a]/35 mb-1">This is where your Second Brain takes shape</p>
+            <p className="text-[17px] md:text-[18px] leading-[1.5] text-[#1a1a1a]/35 mb-1">phase 2 is private and requires login</p>
+            <p className="text-[17px] md:text-[18px] leading-[1.5] text-[#1a1a1a]/35 mb-1">the system adapts through your choices</p>
+            <p className="text-[17px] md:text-[18px] leading-[1.5] text-[#1a1a1a]/35 mb-1">to reflect how you work and decide</p>
+            <p className="text-[17px] md:text-[18px] leading-[1.5] text-[#1a1a1a]/35 mb-1">and what actually drives your actions</p>
+          </div>
+
         </Container>
       </section>
     </div>

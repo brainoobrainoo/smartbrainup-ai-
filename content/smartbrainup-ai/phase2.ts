@@ -100,8 +100,8 @@ export const phase2StartQuestionId = 'q7_constraint'
 export const phase2Content = {
   header: {
     badge: {
-      primary: 'AI-UP',
-      secondary: 'SECOND BRAIN™ PHASE 2',
+      primary: 'AI-UP SECOND BRAIN™',
+      secondary: 'TAILORED EXECUTION',
     },
     exit: 'Exit',
   },
