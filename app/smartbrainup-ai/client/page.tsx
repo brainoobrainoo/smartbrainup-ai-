@@ -3,11 +3,12 @@
 // app/(smartbrainup-ai)/client/page.tsx
 
 import { useState, useEffect, useCallback } from 'react'
-import Link from 'next/link'
 import Container from '@/components/layout/Container'
 import SecondBrainCard from '@/components/client/SecondBrainCard'
+import Phase2Assessment from '@/components/client/Phase2Assessment'
 import { clientContent, Section, SecondBrain, BillingItem } from '@/content/smartbrainup-ai/client'
 import { chatContent } from '@/content/smartbrainup-ai/chat'
+import { Phase2CollectedData } from '@/content/smartbrainup-ai/phase2'
 import { useAuth, updateDisplayName, signOut } from '@/lib/useAuth'
 import { supabase } from '@/lib/supabase'
 import '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css'
@@ -35,7 +36,7 @@ export default function ClientArea() {
   const [section, setSection] = useState<Section>('dashboard')
   const [brain, setBrain] = useState<SecondBrain | null>(null)
 
-  // Account state — initialized from auth
+  // Account state
   const [editName, setEditName] = useState(false)
   const [userName, setUserName] = useState('')
   const [savingName, setSavingName] = useState(false)
@@ -44,7 +45,19 @@ export default function ClientArea() {
   const [brains, setBrains] = useState<SecondBrain[]>([])
   const [billing, setBilling] = useState<BillingItem[]>([])
 
-  // Sync displayName from auth — only on first load, not during editing
+  // Phase 2 state
+  const [phase2BrainId, setPhase2BrainId] = useState<string | null>(null)
+  const [phase2BrainName, setPhase2BrainName] = useState('')
+
+  // Inline rename state for incomplete cards
+  const [editingBrainId, setEditingBrainId] = useState<string | null>(null)
+  const [editingBrainName, setEditingBrainName] = useState('')
+  const [savingBrainName, setSavingBrainName] = useState(false)
+
+  // Delete confirm state
+  const [deletingBrainId, setDeletingBrainId] = useState<string | null>(null)
+
+  // Sync displayName from auth
   useEffect(() => {
     if (displayName && !userName && !editName) {
       setUserName(displayName)
@@ -54,13 +67,10 @@ export default function ClientArea() {
   // ── SAVE PENDING PHASE 1 RESULTS FROM LOCALSTORAGE ──
   useEffect(() => {
     if (!user) return
-
     const pending = localStorage.getItem('phase1_results')
     if (!pending) return
-
     try {
       const results = JSON.parse(pending)
-      
       supabase.from('assessments').insert([{
         user_id: user.id,
         user_name: user.user_metadata?.full_name || displayName || '',
@@ -72,9 +82,7 @@ export default function ClientArea() {
         if (error) {
           console.error('Failed to save assessment:', error)
         } else {
-          console.log('Phase 1 results saved to Supabase')
           localStorage.removeItem('phase1_results')
-          // Refresh assessments after saving
           fetchAssessments(user.id)
         }
       })
@@ -101,7 +109,7 @@ export default function ClientArea() {
       const mapped: SecondBrain[] = data.map((row: any, index: number) => ({
         id: row.id.toString(),
         num: String(index + 1),
-        name: row.phase2_complete ? 'Second Brain' : 'Second Brain',
+        name: row.brain_name || 'Second Brain',
         status: row.phase2_complete ? 'active' as const : 'setup' as const,
         context: '',
         platforms: [],
@@ -111,14 +119,87 @@ export default function ClientArea() {
         interactions: 0,
       }))
       setBrains(mapped)
+    } else {
+      setBrains([])
     }
   }
 
   useEffect(() => {
-    if (user) {
-      fetchAssessments(user.id)
-    }
+    if (user) fetchAssessments(user.id)
   }, [user])
+
+  // ── RENAME BRAIN ──
+  const handleRenameBrain = async (brainId: string) => {
+    if (!editingBrainName.trim()) return
+    setSavingBrainName(true)
+    const { error } = await supabase
+      .from('assessments')
+      .update({ brain_name: editingBrainName.trim() })
+      .eq('id', parseInt(brainId))
+    if (!error && user) {
+      await fetchAssessments(user.id)
+    }
+    setSavingBrainName(false)
+    setEditingBrainId(null)
+  }
+
+  // ── DELETE BRAIN ──
+  const handleDeleteBrain = async (brainId: string) => {
+    const { error } = await supabase
+      .from('assessments')
+      .delete()
+      .eq('id', parseInt(brainId))
+    if (!error && user) {
+      await fetchAssessments(user.id)
+    }
+    setDeletingBrainId(null)
+  }
+
+  // ── START PHASE 2 ──
+  const handleStartPhase2 = (b: SecondBrain) => {
+    setPhase2BrainId(b.id)
+    setPhase2BrainName(b.name)
+    setSection('phase2')
+    window.scrollTo(0, 0)
+  }
+
+  // ── EXIT PHASE 2 (no save) ──
+  const handleExitPhase2 = () => {
+    setPhase2BrainId(null)
+    setPhase2BrainName('')
+    setSection('dashboard')
+    window.scrollTo(0, 0)
+  }
+
+  // ── COMPLETE PHASE 2 ──
+  const handleCompletePhase2 = async (data: Phase2CollectedData) => {
+    if (!phase2BrainId || !user) return
+    // Merge phase2 responses into existing responses
+    const { data: existing } = await supabase
+      .from('assessments')
+      .select('responses')
+      .eq('id', parseInt(phase2BrainId))
+      .single()
+
+    const mergedResponses = {
+      ...(existing?.responses || {}),
+      phase2: data,
+    }
+
+    await supabase
+      .from('assessments')
+      .update({
+        responses: mergedResponses,
+        phase2_complete: true,
+      })
+      .eq('id', parseInt(phase2BrainId))
+
+    await fetchAssessments(user.id)
+    setPhase2BrainId(null)
+    setPhase2BrainName('')
+    setSection('dashboard')
+    window.scrollTo(0, 0)
+  }
 
   // Chat state
   const [chatMessages, setChatMessages] = useState<Array<{
@@ -189,23 +270,33 @@ export default function ClientArea() {
     .toUpperCase()
     .slice(0, 2)
 
-  // Active and incomplete brains
   const activeBrains = brains.filter((b) => b.status === 'active')
   const incompleteBrains = brains.filter((b) => b.status === 'setup')
 
-  // Member since
   const memberSince = user?.created_at
     ? new Date(user.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
     : ''
 
-  // Access method
   const accessMethod = user?.app_metadata?.provider === 'google' ? 'Google OAuth' : 'Magic Link'
+
+  // ═══════════════════════════════════════════════════════
+  // PHASE 2 — FULL SCREEN (hides everything)
+  // ═══════════════════════════════════════════════════════
+  if (section === 'phase2' && phase2BrainId) {
+    return (
+      <Phase2Assessment
+        brainName={phase2BrainName}
+        onExit={handleExitPhase2}
+        onComplete={handleCompletePhase2}
+      />
+    )
+  }
 
   return (
     <div className="bg-white min-h-screen">
-      {/* ═══════════════════════════════════════════════════
-          DESKTOP TAB BAR — sticky below header, no border
-          ═══════════════════════════════════════════════════ */}
+      {/* ═══════════════════════════════════════════════════════
+          DESKTOP TAB BAR
+          ═══════════════════════════════════════════════════════ */}
       <div
         className="hidden md:block fixed top-[67px] left-0 right-0 z-40 bg-white"
       >
@@ -227,7 +318,6 @@ export default function ClientArea() {
             </button>
           ))}
 
-          {/* Sign out — right aligned, visible */}
           <button
             onClick={signOut}
             className="font-ui text-[13px] text-[#1a1a1a] font-normal bg-transparent border-0
@@ -238,9 +328,9 @@ export default function ClientArea() {
         </div>
       </div>
 
-      {/* ═══════════════════════════════════════════════════
-          MOBILE TAB BAR — fixed bottom, ALWAYS visible
-          ═══════════════════════════════════════════════════ */}
+      {/* ═══════════════════════════════════════════════════════
+          MOBILE TAB BAR
+          ═══════════════════════════════════════════════════════ */}
       <nav
         className="fixed bottom-0 left-0 right-0 bg-white
                    flex items-center justify-evenly md:hidden z-50"
@@ -261,23 +351,23 @@ export default function ClientArea() {
         ))}
       </nav>
 
-      {/* ═══════════════════════════════════════════════════
+      {/* ═══════════════════════════════════════════════════════
           CONTENT
-          ═══════════════════════════════════════════════════ */}
+          ═══════════════════════════════════════════════════════ */}
       <div className="pt-[67px] md:pt-[120px] pb-[72px] md:pb-12">
 
-        {/* ─────────────────────────────────────────────
-            LOADING STATE — tabs remain visible
-            ───────────────────────────────────────────── */}
+        {/* ─────────────────────────────────────────────────
+            LOADING STATE
+            ───────────────────────────────────────────────── */}
         {loading && (
           <div className="flex items-center justify-center" style={{ minHeight: 'calc(100vh - 180px)' }}>
             <p className="font-ui text-[13px] opacity-30">Loading…</p>
           </div>
         )}
 
-        {/* ─────────────────────────────────────────────
+        {/* ─────────────────────────────────────────────────
             DASHBOARD
-            ───────────────────────────────────────────── */}
+            ───────────────────────────────────────────────── */}
         {!loading && section === 'dashboard' && (
           <Container>
             {/* Badge */}
@@ -308,29 +398,108 @@ export default function ClientArea() {
               </div>
             )}
 
-            {/* Incomplete brain cards */}
+            {/* ── Incomplete brain cards ── */}
             {incompleteBrains.length > 0 && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-5">
                 {incompleteBrains.map((b) => (
-                  <Link
+                  <div
                     key={b.id}
-                    href="/start/phase2"
-                    className="rounded-[4px]
-                               transition-all duration-200 hover:brightness-[0.96]
-                               p-6 flex flex-col items-center justify-center text-center
-                               min-h-[260px] no-underline border-0"
+                    className="rounded-[4px] p-6 flex flex-col min-h-[260px]"
                     style={{ background: 'linear-gradient(to bottom, #ededed 0%, #c9c9c9 100%)' }}
                   >
-                    <p className="font-ui text-[11px] font-medium tracking-widest uppercase text-[#1a1a1a]/45 mb-3">
+                    {/* Top label */}
+                    <p className="font-ui text-[11px] font-medium tracking-widest uppercase text-[#1a1a1a]/35 mb-4">
                       Second Brain {b.num}
                     </p>
-                    <p className="text-[17px] font-normal text-[#1a1a1a]/55 mb-1">
-                      Complete your Second Brain
-                    </p>
-                    <p className="font-ui text-[11px] font-medium tracking-widest uppercase text-[#1a1a1a]/40">
-                      Continue assessment →
-                    </p>
-                  </Link>
+
+                    {/* Editable name */}
+                    <div className="mb-auto">
+                      {editingBrainId === b.id ? (
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            value={editingBrainName}
+                            onChange={(e) => setEditingBrainName(e.target.value)}
+                            onKeyDown={(e) => { if (e.key === 'Enter') handleRenameBrain(b.id) }}
+                            autoFocus
+                            className="text-[16px] font-normal border-0 border-b border-[#1a1a1a]/20
+                                       bg-transparent outline-none w-full rounded-none text-[#1a1a1a]/70"
+                          />
+                          <button
+                            onClick={() => handleRenameBrain(b.id)}
+                            disabled={savingBrainName}
+                            className="font-ui text-[10px] font-medium tracking-widest uppercase
+                                       text-[#1a1a1a]/50 hover:text-[#1a1a1a]/80
+                                       bg-transparent border-0 cursor-pointer whitespace-nowrap"
+                          >
+                            {savingBrainName ? '...' : 'save'}
+                          </button>
+                        </div>
+                      ) : (
+                        <p className="text-[18px] font-normal text-[#1a1a1a]/60">
+                          {b.name}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Action buttons */}
+                    <div className="flex items-center gap-3 mt-4">
+                      {/* Complete Phase 2 */}
+                      <button
+                        onClick={() => handleStartPhase2(b)}
+                        className="flex-1 py-2.5 bg-[#1a1a1a]/[0.08] hover:bg-[#1a1a1a]/[0.15]
+                                   rounded-[4px] font-ui text-[10px] font-medium tracking-widest
+                                   uppercase text-[#1a1a1a]/60 border-0 cursor-pointer transition-colors"
+                      >
+                        Complete
+                      </button>
+
+                      {/* Rename */}
+                      <button
+                        onClick={() => {
+                          setEditingBrainId(b.id)
+                          setEditingBrainName(b.name === 'Second Brain' ? '' : b.name)
+                        }}
+                        className="py-2.5 px-4 bg-[#1a1a1a]/[0.05] hover:bg-[#1a1a1a]/[0.1]
+                                   rounded-[4px] font-ui text-[10px] font-medium tracking-widest
+                                   uppercase text-[#1a1a1a]/40 border-0 cursor-pointer transition-colors"
+                      >
+                        Rename
+                      </button>
+
+                      {/* Delete */}
+                      {deletingBrainId === b.id ? (
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => handleDeleteBrain(b.id)}
+                            className="py-2.5 px-3 bg-red-500/10 hover:bg-red-500/20
+                                       rounded-[4px] font-ui text-[10px] font-medium tracking-widest
+                                       uppercase text-red-600/70 border-0 cursor-pointer transition-colors"
+                          >
+                            Yes
+                          </button>
+                          <button
+                            onClick={() => setDeletingBrainId(null)}
+                            className="py-2.5 px-3 bg-[#1a1a1a]/[0.05] hover:bg-[#1a1a1a]/[0.1]
+                                       rounded-[4px] font-ui text-[10px] font-medium tracking-widest
+                                       uppercase text-[#1a1a1a]/40 border-0 cursor-pointer transition-colors"
+                          >
+                            No
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => setDeletingBrainId(b.id)}
+                          className="py-2.5 px-4 bg-[#1a1a1a]/[0.05] hover:bg-red-500/10
+                                     rounded-[4px] font-ui text-[10px] font-medium tracking-widest
+                                     uppercase text-[#1a1a1a]/40 hover:text-red-600/60
+                                     border-0 cursor-pointer transition-colors"
+                        >
+                          Delete
+                        </button>
+                      )}
+                    </div>
+                  </div>
                 ))}
               </div>
             )}
@@ -356,9 +525,9 @@ export default function ClientArea() {
           </Container>
         )}
 
-        {/* ─────────────────────────────────────────────
+        {/* ─────────────────────────────────────────────────
             DETAIL
-            ───────────────────────────────────────────── */}
+            ───────────────────────────────────────────────── */}
         {!loading && section === 'detail' && brain && (
           <div>
             <Container>
@@ -408,7 +577,6 @@ export default function ClientArea() {
               <Container>
                 <div className="bg-[#f7f7f7] rounded-[4px] p-6 md:p-8">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    {/* Platforms */}
                     <div>
                       <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-40 mb-4">
                         Platforms
@@ -436,7 +604,6 @@ export default function ClientArea() {
                       </div>
                     </div>
 
-                    {/* PMF */}
                     <div>
                       <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-40 mb-4">
                         Method Delivery
@@ -488,9 +655,9 @@ export default function ClientArea() {
           </div>
         )}
 
-        {/* ─────────────────────────────────────────────
+        {/* ─────────────────────────────────────────────────
             NEW SECOND BRAIN
-            ───────────────────────────────────────────── */}
+            ───────────────────────────────────────────────── */}
         {!loading && section === 'new' && (
           <Container>
             <button
@@ -507,7 +674,6 @@ export default function ClientArea() {
             </p>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-              {/* Plans */}
               <div className="lg:col-span-7 grid grid-cols-1 md:grid-cols-2 gap-4">
                 {plans.map((plan) => (
                   <div
@@ -526,10 +692,7 @@ export default function ClientArea() {
                     </p>
                     <div className="mb-auto">
                       {plan.lines.map((line, i) => (
-                        <p
-                          key={i}
-                          className="text-[15px] leading-[1.4] opacity-50"
-                        >
+                        <p key={i} className="text-[15px] leading-[1.4] opacity-50">
                           {line}
                         </p>
                       ))}
@@ -548,7 +711,6 @@ export default function ClientArea() {
                 ))}
               </div>
 
-              {/* Enterprise */}
               <div
                 className="lg:col-span-5 rounded-[4px] p-6 md:p-8 text-white
                            flex flex-col justify-center min-h-[240px]"
@@ -565,10 +727,7 @@ export default function ClientArea() {
                 </p>
                 <div className="mb-5">
                   {enterprise.lines.map((line, i) => (
-                    <p
-                      key={i}
-                      className="text-[15px] leading-[1.4] opacity-50"
-                    >
+                    <p key={i} className="text-[15px] leading-[1.4] opacity-50">
                       {line}
                     </p>
                   ))}
@@ -588,9 +747,9 @@ export default function ClientArea() {
           </Container>
         )}
 
-        {/* ─────────────────────────────────────────────
+        {/* ─────────────────────────────────────────────────
             BILLING
-            ───────────────────────────────────────────── */}
+            ───────────────────────────────────────────────── */}
         {!loading && section === 'billing' && (
           <Container>
             <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-30 pt-10 md:pt-14 mb-5">
@@ -642,19 +801,18 @@ export default function ClientArea() {
                 </div>
               </>
             ) : (
-              /* Empty state */
               <div className="bg-[#f7f7f7] rounded-[4px] p-8 md:p-12">
                 <p className="text-[15px] opacity-40 text-center">
-                  {sections.billing.empty}
+                  No billing records yet.
                 </p>
               </div>
             )}
           </Container>
         )}
 
-        {/* ─────────────────────────────────────────────
+        {/* ─────────────────────────────────────────────────
             SUPPORT
-            ───────────────────────────────────────────── */}
+            ───────────────────────────────────────────────── */}
         {!loading && section === 'support' && (
           <div className="fixed top-[120px] md:top-[120px] left-0 right-0 bottom-0 pb-[52px] md:pb-0 bg-white">
             <div className="w-full h-full md:max-w-[1200px] md:mx-auto md:px-10 lg:px-12 md:py-8">
@@ -720,9 +878,9 @@ export default function ClientArea() {
           </div>
         )}
 
-        {/* ─────────────────────────────────────────────
+        {/* ─────────────────────────────────────────────────
             ACCOUNT
-            ───────────────────────────────────────────── */}
+            ───────────────────────────────────────────────── */}
         {!loading && section === 'account' && (
           <Container>
             <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-30 pt-10 md:pt-14 mb-5">

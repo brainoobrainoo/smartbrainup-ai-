@@ -4,10 +4,10 @@
 // Types
 // ────────────────────────────────────────────
 
-export type Section = 'dashboard' | 'detail' | 'new' | 'billing' | 'support' | 'account'
+export type Section = 'dashboard' | 'detail' | 'new' | 'billing' | 'support' | 'account' | 'phase2'
 
 export type SecondBrain = {
-  id: number
+  id: any
   num: string
   name: string
   context: string
@@ -35,10 +35,21 @@ export type PricingPlan = {
 }
 
 // ────────────────────────────────────────────
-// Static content (non-user-specific)
+// Content
 // ────────────────────────────────────────────
 
 export const clientContent = {
+  user: {
+    name: 'Marco Rossi',
+    email: 'marco.rossi@company.com',
+    method: 'Google OAuth',
+    since: 'Jan 2026',
+  },
+
+  brains: [] as SecondBrain[],
+
+  billing: [] as BillingItem[],
+
   plans: [
     {
       name: 'Single',
@@ -118,16 +129,28 @@ export const clientContent = {
     billing: {
       label: 'Billing',
       title: 'Licenses & Invoices',
-      empty: 'No purchases yet. Your billing history will appear here after your first Second Brain.',
+      body: [
+        'All purchases related to the AI-UP Second Brain™ method.',
+        'Each license is tied to one or more Second Brains.',
+      ],
+      empty: 'No billing records yet.',
     },
     support: {
       label: 'Support',
       title: 'Technical assistance',
+      body: [
+        'AI-guided support for your Second Brain setup,',
+        'platform execution and method-related questions.',
+      ],
       welcome: 'Welcome to AI-UP Second Brain™ support. How can I help you today?',
     },
     account: {
       label: 'Account',
       title: 'Your information',
+      body: [
+        'Manage your identity and access method.',
+        'Authentication is handled via Magic Link or OAuth provider.',
+      ],
     },
   },
 }
