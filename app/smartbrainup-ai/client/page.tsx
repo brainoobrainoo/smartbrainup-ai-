@@ -157,11 +157,11 @@ export default function ClientArea() {
             </button>
           ))}
 
-          {/* Sign out — right aligned */}
+          {/* Sign out — right aligned, visible */}
           <button
             onClick={signOut}
             className="font-ui text-[13px] text-[#1a1a1a] font-normal bg-transparent border-0
-                       cursor-pointer opacity-25 hover:opacity-50 transition-opacity ml-auto"
+                       cursor-pointer opacity-70 hover:opacity-100 transition-opacity ml-auto"
           >
             sign out
           </button>
