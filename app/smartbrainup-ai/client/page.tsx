@@ -43,12 +43,12 @@ export default function ClientArea() {
   const [brains, setBrains] = useState<SecondBrain[]>([])
   const [billing, setBilling] = useState<BillingItem[]>([])
 
-  // Sync displayName from auth
+  // Sync displayName from auth — only on first load, not during editing
   useEffect(() => {
-    if (displayName && !userName) {
+    if (displayName && !userName && !editName) {
       setUserName(displayName)
     }
-  }, [displayName, userName])
+  }, [displayName])
 
   // Chat state
   const [chatMessages, setChatMessages] = useState<Array<{
@@ -131,14 +131,6 @@ export default function ClientArea() {
   // Access method
   const accessMethod = user?.app_metadata?.provider === 'google' ? 'Google OAuth' : 'Magic Link'
 
-  if (loading) {
-    return (
-      <div className="bg-white min-h-screen flex items-center justify-center">
-        <p className="font-ui text-[13px] opacity-30">Loading…</p>
-      </div>
-    )
-  }
-
   return (
     <div className="bg-white min-h-screen">
       {/* ═══════════════════════════════════════════════════
@@ -177,7 +169,7 @@ export default function ClientArea() {
       </div>
 
       {/* ═══════════════════════════════════════════════════
-          MOBILE TAB BAR — fixed bottom
+          MOBILE TAB BAR — fixed bottom, ALWAYS visible
           ═══════════════════════════════════════════════════ */}
       <nav
         className="fixed bottom-0 left-0 right-0 bg-white
@@ -203,10 +195,20 @@ export default function ClientArea() {
           CONTENT
           ═══════════════════════════════════════════════════ */}
       <div className="pt-[67px] md:pt-[120px] pb-[72px] md:pb-12">
+
+        {/* ─────────────────────────────────────────────
+            LOADING STATE — tabs remain visible
+            ───────────────────────────────────────────── */}
+        {loading && (
+          <div className="flex items-center justify-center" style={{ minHeight: 'calc(100vh - 180px)' }}>
+            <p className="font-ui text-[13px] opacity-30">Loading…</p>
+          </div>
+        )}
+
         {/* ─────────────────────────────────────────────
             DASHBOARD
             ───────────────────────────────────────────── */}
-        {section === 'dashboard' && (
+        {!loading && section === 'dashboard' && (
           <Container>
             {/* Badge */}
             <p className="font-ui text-[11px] font-medium tracking-widest uppercase pt-10 md:pt-14 mb-4">
@@ -287,7 +289,7 @@ export default function ClientArea() {
         {/* ─────────────────────────────────────────────
             DETAIL
             ───────────────────────────────────────────── */}
-        {section === 'detail' && brain && (
+        {!loading && section === 'detail' && brain && (
           <div>
             <Container>
               <button
@@ -419,7 +421,7 @@ export default function ClientArea() {
         {/* ─────────────────────────────────────────────
             NEW SECOND BRAIN
             ───────────────────────────────────────────── */}
-        {section === 'new' && (
+        {!loading && section === 'new' && (
           <Container>
             <button
               onClick={() => go('dashboard')}
@@ -519,7 +521,7 @@ export default function ClientArea() {
         {/* ─────────────────────────────────────────────
             BILLING
             ───────────────────────────────────────────── */}
-        {section === 'billing' && (
+        {!loading && section === 'billing' && (
           <Container>
             <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-30 pt-10 md:pt-14 mb-5">
               Billing &amp; Licenses
@@ -583,7 +585,7 @@ export default function ClientArea() {
         {/* ─────────────────────────────────────────────
             SUPPORT
             ───────────────────────────────────────────── */}
-        {section === 'support' && (
+        {!loading && section === 'support' && (
           <div className="fixed top-[120px] md:top-[120px] left-0 right-0 bottom-0 pb-[52px] md:pb-0 bg-white">
             <div className="w-full h-full md:max-w-[1200px] md:mx-auto md:px-10 lg:px-12 md:py-8">
               <div className="h-full md:rounded-[4px] overflow-hidden relative">
@@ -796,7 +798,7 @@ export default function ClientArea() {
         {/* ─────────────────────────────────────────────
             ACCOUNT
             ───────────────────────────────────────────── */}
-        {section === 'account' && (
+        {!loading && section === 'account' && (
           <Container>
             <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-30 pt-10 md:pt-14 mb-5">
               Account

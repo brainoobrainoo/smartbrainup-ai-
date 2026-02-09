@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
 
@@ -43,6 +43,7 @@ function deriveDisplayName(user: User | null): string {
 export function useAuth(): AuthState {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const initialLoadDone = useRef(false)
 
   useEffect(() => {
     const supabase = createClient()
@@ -50,13 +51,18 @@ export function useAuth(): AuthState {
     supabase.auth.getUser().then(({ data: { user } }) => {
       setUser(user)
       setLoading(false)
+      initialLoadDone.current = true
     })
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null)
-      setLoading(false)
+      // Only set loading on initial load, not on subsequent updates
+      if (!initialLoadDone.current) {
+        setLoading(false)
+        initialLoadDone.current = true
+      }
     })
 
     return () => subscription.unsubscribe()

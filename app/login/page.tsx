@@ -36,29 +36,49 @@ export default function LoginPage() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#252525', background: 'linear-gradient(to bottom, #252525 0%, #3a3a3a 50%, #4a4a4a 100%)', color: '#fff' }}>
-        <p>Loading...</p>
+      <div
+        className="min-h-[100dvh] flex items-center justify-center"
+        style={{ backgroundColor: '#252525', background: 'linear-gradient(to bottom, #252525 0%, #3a3a3a 50%, #4a4a4a 100%)' }}
+      >
+        <p className="text-white/50 text-[13px] font-ui">Loading...</p>
       </div>
     )
   }
 
   return (
-    <div style={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#252525', background: 'linear-gradient(to bottom, #252525 0%, #3a3a3a 50%, #4a4a4a 100%)', padding: '1.5rem' }}>
-      <div style={{ width: '100%', maxWidth: '360px', padding: '2rem 1.75rem', borderRadius: '12px', background: 'rgba(255,255,255,0.06)', backdropFilter: 'blur(20px)' }}>
-
-        <div style={{ textAlign: 'center', marginBottom: '1.75rem' }}>
-          <h1 style={{ fontSize: '1.25rem', fontWeight: 600, color: '#fff', margin: 0, letterSpacing: '-0.02em' }}>SmartBrainUp</h1>
-          <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.5)', marginTop: '0.5rem' }}>Sign in to your account</p>
+    <div
+      className="min-h-[100dvh] flex items-center justify-center px-10 md:px-12"
+      style={{ backgroundColor: '#252525', background: 'linear-gradient(to bottom, #252525 0%, #3a3a3a 50%, #4a4a4a 100%)' }}
+    >
+      <div
+        className="w-full max-w-[310px] md:max-w-[320px] rounded-[12px] p-7 md:p-8"
+        style={{ background: 'rgba(255,255,255,0.06)', backdropFilter: 'blur(20px)' }}
+      >
+        {/* Header */}
+        <div className="text-center mb-7">
+          <h1 className="text-[1.15rem] font-semibold text-white tracking-[-0.02em] m-0">
+            SmartBrainUp
+          </h1>
+          <p className="text-[0.8rem] text-white/50 mt-2">
+            Sign in to your account
+          </p>
         </div>
 
+        {/* Auth error */}
         {authError && (
-          <div style={{ padding: '0.75rem 1rem', borderRadius: '8px', background: 'rgba(220,38,38,0.15)', color: '#fca5a5', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
+          <div className="px-4 py-3 rounded-[8px] bg-red-600/15 text-red-300 text-[0.8rem] mb-6">
             Authentication failed. Please try again.
           </div>
         )}
 
-        <button onClick={signInWithGoogle} style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', border: 'none', background: '#fff', color: '#111', fontSize: '0.9rem', fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', transition: 'opacity 0.15s' }}>
-          <svg width="18" height="18" viewBox="0 0 24 24">
+        {/* Google */}
+        <button
+          onClick={signInWithGoogle}
+          className="w-full py-[11px] px-4 rounded-[8px] border-0 bg-white text-[#111]
+                     text-[0.85rem] font-medium cursor-pointer flex items-center
+                     justify-center gap-2 hover:opacity-90 transition-opacity"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24">
             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
             <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
             <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
@@ -67,31 +87,58 @@ export default function LoginPage() {
           Continue with Google
         </button>
 
-        <div style={{ display: 'flex', alignItems: 'center', margin: '1.5rem 0', gap: '1rem' }}>
-          <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.1)' }} />
-          <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.35)' }}>or</span>
-          <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.1)' }} />
+        {/* Divider */}
+        <div className="flex items-center my-5 gap-4">
+          <div className="flex-1 h-px bg-white/10" />
+          <span className="text-[0.7rem] text-white/35">or</span>
+          <div className="flex-1 h-px bg-white/10" />
         </div>
 
+        {/* Magic Link */}
         {magicLinkSent ? (
-          <div style={{ padding: '1rem', borderRadius: '8px', background: 'rgba(34,197,94,0.1)', textAlign: 'center' }}>
-            <p style={{ color: '#4ade80', fontSize: '0.9rem', fontWeight: 500, margin: 0 }}>Check your email</p>
-            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem', marginTop: '0.5rem' }}>We sent a magic link to <strong style={{ color: '#fff' }}>{email}</strong></p>
-            <button onClick={() => { setMagicLinkSent(false); setEmail('') }} style={{ marginTop: '0.75rem', background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', fontSize: '0.8rem', cursor: 'pointer', textDecoration: 'underline' }}>
+          <div className="p-4 rounded-[8px] bg-green-500/10 text-center">
+            <p className="text-[#4ade80] text-[0.85rem] font-medium m-0">Check your email</p>
+            <p className="text-white/50 text-[0.75rem] mt-2">
+              We sent a magic link to <strong className="text-white">{email}</strong>
+            </p>
+            <button
+              onClick={() => { setMagicLinkSent(false); setEmail('') }}
+              className="mt-3 bg-transparent border-0 text-white/40 text-[0.75rem]
+                         cursor-pointer underline"
+            >
               Use a different email
             </button>
           </div>
         ) : (
           <form onSubmit={handleMagicLink}>
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email address" required style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', border: 'none', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box' }} />
-            {magicLinkError && <p style={{ color: '#fca5a5', fontSize: '0.8rem', marginTop: '0.5rem' }}>{magicLinkError}</p>}
-            <button type="submit" disabled={isSubmitting} style={{ width: '100%', marginTop: '0.75rem', padding: '0.75rem 1rem', borderRadius: '8px', border: 'none', background: 'rgba(255,255,255,0.12)', color: '#fff', fontSize: '0.9rem', fontWeight: 500, cursor: isSubmitting ? 'not-allowed' : 'pointer', opacity: isSubmitting ? 0.6 : 1, transition: 'background 0.15s' }}>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Email address"
+              required
+              className="w-full py-[11px] px-4 rounded-[8px] border-0
+                         bg-white/[0.08] text-white text-[0.85rem] outline-none
+                         box-border placeholder:text-white/30"
+            />
+            {magicLinkError && (
+              <p className="text-red-300 text-[0.75rem] mt-2">{magicLinkError}</p>
+            )}
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full mt-3 py-[11px] px-4 rounded-[8px] border-0
+                         bg-white/[0.12] text-white text-[0.85rem] font-medium
+                         cursor-pointer transition-colors hover:bg-white/[0.16]
+                         disabled:opacity-50 disabled:cursor-not-allowed"
+            >
               {isSubmitting ? 'Sending...' : 'Send Magic Link'}
             </button>
           </form>
         )}
 
-        <p style={{ textAlign: 'center', fontSize: '0.75rem', color: 'rgba(255,255,255,0.25)', marginTop: '2rem' }}>
+        {/* Footer */}
+        <p className="text-center text-[0.7rem] text-white/25 mt-7">
           AI-UP Second Brain™ by SmartBrainUp S.r.l.
         </p>
       </div>
