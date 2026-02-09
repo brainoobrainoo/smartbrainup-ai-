@@ -100,7 +100,7 @@ export default function ClientArea() {
     if (data && data.length > 0) {
       const mapped: SecondBrain[] = data.map((row: any, index: number) => ({
         id: row.id.toString(),
-        num: index + 1,
+        num: String(index + 1),
         name: row.phase2_complete ? 'Second Brain' : 'Second Brain',
         status: row.phase2_complete ? 'active' as const : 'setup' as const,
         context: '',
