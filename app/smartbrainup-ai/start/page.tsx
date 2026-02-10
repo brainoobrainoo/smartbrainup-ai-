@@ -214,14 +214,18 @@ export default function StartPage() {
                   </h2>
 
                   {/* Body */}
-                  <p className="text-[16px] md:text-[17px] font-normal leading-[1.4] text-white/50 mb-2 max-w-[400px]">
-                    {complete.body}
+                  <p className="text-[16px] md:text-[17px] font-normal leading-[1.4] text-white/50 mb-10 max-w-[400px]">
+                    {Array.isArray(complete.body) ? complete.body.map((line, i) => (
+                      <span key={i} className="block">{line}</span>
+                    )) : complete.body}
                   </p>
 
                   {/* Detail */}
-                  <p className="text-[15px] md:text-[16px] font-normal leading-[1.4] text-white/35 mb-10 max-w-[400px]">
-                    {complete.detail}
-                  </p>
+                  {complete.detail && (
+                    <p className="text-[15px] md:text-[16px] font-normal leading-[1.4] text-white/35 mb-10 max-w-[400px]">
+                      {complete.detail}
+                    </p>
+                  )}
                   
                   {/* CTA Button */}
                   <button 

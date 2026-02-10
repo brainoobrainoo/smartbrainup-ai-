@@ -17,6 +17,7 @@ export type SecondBrain = {
   lastActive: string
   pmf: string
   interactions: number
+  cardColor: string
 }
 
 export type BillingItem = {

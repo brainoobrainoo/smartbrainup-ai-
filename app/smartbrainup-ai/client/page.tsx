@@ -3,6 +3,7 @@
 // app/(smartbrainup-ai)/client/page.tsx
 
 import { useState, useEffect, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import Container from '@/components/layout/Container'
 import SecondBrainCard from '@/components/client/SecondBrainCard'
 import Phase2Assessment from '@/components/client/Phase2Assessment'
@@ -32,6 +33,7 @@ const clientTabs = [
 
 export default function ClientArea() {
   const { user, loading, displayName, userEmail } = useAuth()
+  const router = useRouter()
 
   const [section, setSection] = useState<Section>('dashboard')
   const [brain, setBrain] = useState<SecondBrain | null>(null)
@@ -56,6 +58,13 @@ export default function ClientArea() {
 
   // Delete confirm state
   const [deletingBrainId, setDeletingBrainId] = useState<string | null>(null)
+  const [contactBrainId, setContactBrainId] = useState<string | null>(null)
+
+  // localStorage pending brain (Phase 1 done, not yet in Supabase)
+  const [pendingBrain, setPendingBrain] = useState<SecondBrain | null>(null)
+
+  // Credits from user_profiles
+  const [credits, setCredits] = useState<number>(0)
 
   // Sync displayName from auth
   useEffect(() => {
@@ -64,33 +73,67 @@ export default function ClientArea() {
     }
   }, [displayName])
 
-  // ── SAVE PENDING PHASE 1 RESULTS FROM LOCALSTORAGE ──
-  useEffect(() => {
-    if (!user) return
-    const pending = localStorage.getItem('phase1_results')
-    if (!pending) return
-    // Remove immediately to prevent duplicate inserts
-    localStorage.removeItem('phase1_results')
-    try {
-      const results = JSON.parse(pending)
-      supabase.from('assessments').insert([{
-        user_id: user.id,
-        user_name: user.user_metadata?.full_name || displayName || '',
-        user_email: user.email || '',
-        responses: results,
-        phase2_complete: false,
+  // ── FETCH OR CREATE USER PROFILE (credits) ──
+  const fetchCredits = async (userId: string) => {
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .select('credits, email, full_name')
+      .eq('id', userId)
+      .single()
+
+    if (data) {
+      setCredits(data.credits)
+      // Update email/name if missing
+      if (!data.email || !data.full_name) {
+        await supabase.from('user_profiles').update({
+          email: userEmail || null,
+          full_name: displayName || null,
+        }).eq('id', userId)
+      }
+    } else if (error?.code === 'PGRST116') {
+      // No row exists — create one with 0 credits + email/name
+      await supabase.from('user_profiles').insert([{
+        id: userId,
+        credits: 0,
+        email: userEmail || null,
+        full_name: displayName || null,
       }])
-      .then(({ error }) => {
-        if (error) {
-          console.error('Failed to save assessment:', error)
-        } else {
-          fetchAssessments(user.id)
-        }
-      })
-    } catch (e) {
-      console.error('Failed to parse phase1_results:', e)
+      setCredits(0)
     }
+  }
+
+  useEffect(() => {
+    if (user) fetchCredits(user.id)
   }, [user])
+
+  // ── READ PENDING PHASE 1 FROM LOCALSTORAGE (no Supabase write) ──
+  useEffect(() => {
+    const raw = localStorage.getItem('phase1_results')
+    if (!raw) {
+      setPendingBrain(null)
+      return
+    }
+    try {
+      JSON.parse(raw) // validate
+      const savedName = localStorage.getItem('phase1_brain_name') || 'Second Brain'
+      setPendingBrain({
+        id: 'local',
+        num: '–',
+        name: savedName,
+        status: 'setup',
+        context: '',
+        platforms: [],
+        pmf: 'Pending',
+        created: '',
+        lastActive: '',
+        interactions: 0,
+        cardColor: 'default',
+      })
+    } catch {
+      localStorage.removeItem('phase1_results')
+      setPendingBrain(null)
+    }
+  }, [user, section])
 
   // ── FETCH ASSESSMENTS FROM SUPABASE ──
   const fetchAssessments = async (userId: string) => {
@@ -117,6 +160,7 @@ export default function ClientArea() {
         created: new Date(row.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
         lastActive: '',
         interactions: 0,
+        cardColor: row.card_color || 'default',
       }))
       setBrains(mapped)
     } else {
@@ -132,12 +176,17 @@ export default function ClientArea() {
   const handleRenameBrain = async (brainId: string) => {
     if (!editingBrainName.trim()) return
     setSavingBrainName(true)
-    const { error } = await supabase
-      .from('assessments')
-      .update({ brain_name: editingBrainName.trim() })
-      .eq('id', parseInt(brainId))
-    if (!error && user) {
-      await fetchAssessments(user.id)
+    if (brainId === 'local') {
+      localStorage.setItem('phase1_brain_name', editingBrainName.trim())
+      setPendingBrain(prev => prev ? { ...prev, name: editingBrainName.trim() } : null)
+    } else {
+      const { error } = await supabase
+        .from('assessments')
+        .update({ brain_name: editingBrainName.trim() })
+        .eq('id', parseInt(brainId))
+      if (!error && user) {
+        await fetchAssessments(user.id)
+      }
     }
     setSavingBrainName(false)
     setEditingBrainId(null)
@@ -145,14 +194,42 @@ export default function ClientArea() {
 
   // ── DELETE BRAIN ──
   const handleDeleteBrain = async (brainId: string) => {
+    if (brainId === 'local') {
+      localStorage.removeItem('phase1_results')
+      localStorage.removeItem('phase1_brain_name')
+      setPendingBrain(null)
+    } else {
+      const { error } = await supabase
+        .from('assessments')
+        .delete()
+        .eq('id', parseInt(brainId))
+      if (!error && user) {
+        await fetchAssessments(user.id)
+      }
+    }
+    setDeletingBrainId(null)
+  }
+
+  // ── ACTIVE BRAIN RENAME ──
+  const handleActiveBrainRename = async (brainId: string, newName: string) => {
     const { error } = await supabase
       .from('assessments')
-      .delete()
+      .update({ brain_name: newName })
       .eq('id', parseInt(brainId))
     if (!error && user) {
       await fetchAssessments(user.id)
     }
-    setDeletingBrainId(null)
+  }
+
+  // ── ACTIVE BRAIN COLOR CHANGE ──
+  const handleActiveBrainColor = async (brainId: string, color: string) => {
+    const { error } = await supabase
+      .from('assessments')
+      .update({ card_color: color })
+      .eq('id', parseInt(brainId))
+    if (!error && user) {
+      await fetchAssessments(user.id)
+    }
   }
 
   // ── START PHASE 2 ──
@@ -174,27 +251,57 @@ export default function ClientArea() {
   // ── COMPLETE PHASE 2 ──
   const handleCompletePhase2 = async (data: Phase2CollectedData) => {
     if (!phase2BrainId || !user) return
-    // Merge phase2 responses into existing responses
-    const { data: existing } = await supabase
-      .from('assessments')
-      .select('responses')
-      .eq('id', parseInt(phase2BrainId))
-      .single()
 
-    const mergedResponses = {
-      ...(existing?.responses || {}),
-      phase2: data,
+    if (phase2BrainId === 'local') {
+      // localStorage brain → first write to Supabase with both phases
+      const raw = localStorage.getItem('phase1_results')
+      if (!raw) return
+      const phase1Data = JSON.parse(raw)
+      const brainName = localStorage.getItem('phase1_brain_name') || 'Second Brain'
+
+      const { error } = await supabase.from('assessments').insert([{
+        user_id: user.id,
+        user_name: user.user_metadata?.full_name || displayName || '',
+        user_email: user.email || '',
+        responses: { ...phase1Data, phase2: data },
+        phase2_complete: true,
+        brain_name: brainName,
+      }])
+
+      if (!error) {
+        localStorage.removeItem('phase1_results')
+        localStorage.removeItem('phase1_brain_name')
+        setPendingBrain(null)
+        await fetchAssessments(user.id)
+      }
+    } else {
+      // Supabase brain → merge phase2 into existing record
+      const { data: existing } = await supabase
+        .from('assessments')
+        .select('responses')
+        .eq('id', parseInt(phase2BrainId))
+        .single()
+
+      const mergedResponses = {
+        ...(existing?.responses || {}),
+        phase2: data,
+      }
+
+      await supabase
+        .from('assessments')
+        .update({
+          responses: mergedResponses,
+          phase2_complete: true,
+        })
+        .eq('id', parseInt(phase2BrainId))
+
+      await fetchAssessments(user.id)
     }
 
-    await supabase
-      .from('assessments')
-      .update({
-        responses: mergedResponses,
-        phase2_complete: true,
-      })
-      .eq('id', parseInt(phase2BrainId))
+    // Decrement credit after successful completion
+    await supabase.rpc('decrement_credits', { user_id_input: user.id })
+    setCredits(prev => Math.max(0, prev - 1))
 
-    await fetchAssessments(user.id)
     setPhase2BrainId(null)
     setPhase2BrainName('')
     setSection('dashboard')
@@ -271,7 +378,10 @@ export default function ClientArea() {
     .slice(0, 2)
 
   const activeBrains = brains.filter((b) => b.status === 'active')
-  const incompleteBrains = brains.filter((b) => b.status === 'setup')
+  const incompleteBrains = [
+    ...(pendingBrain ? [pendingBrain] : []),
+    ...brains.filter((b) => b.status === 'setup'),
+  ]
 
   const memberSince = user?.created_at
     ? new Date(user.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
@@ -372,15 +482,23 @@ export default function ClientArea() {
           <Container>
             {/* Badge */}
             <p className="font-ui text-[11px] font-medium tracking-widest uppercase pt-10 md:pt-14 mb-8">
-              {brains.length > 0 ? (
+              {(brains.length + (pendingBrain ? 1 : 0)) > 0 ? (
                 <>
                   <span className="font-semibold text-[#1a1a1a]/50">
-                    {brains.length} Second Brain{brains.length !== 1 ? 's' : ''}
+                    {brains.length + (pendingBrain ? 1 : 0)} Second Brain{(brains.length + (pendingBrain ? 1 : 0)) !== 1 ? 's' : ''}
                   </span>
                   <span className="text-[#1a1a1a]/30"> · Since {memberSince}</span>
+                  {credits > 0 && (
+                    <span className="text-[#1a1a1a]/30"> · {credits} credit{credits !== 1 ? 's' : ''}</span>
+                  )}
                 </>
               ) : (
-                <span className="text-[#1a1a1a]/30">Welcome</span>
+                <>
+                  <span className="text-[#1a1a1a]/30">Welcome</span>
+                  {credits > 0 && (
+                    <span className="text-[#1a1a1a]/30"> · {credits} credit{credits !== 1 ? 's' : ''}</span>
+                  )}
+                </>
               )}
             </p>
 
@@ -393,7 +511,13 @@ export default function ClientArea() {
             {activeBrains.length > 0 && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-5">
                 {activeBrains.map((b) => (
-                  <SecondBrainCard key={b.id} brain={b} onOpen={openBrain} />
+                  <SecondBrainCard
+                    key={b.id}
+                    brain={b}
+                    onOpen={openBrain}
+                    onRename={handleActiveBrainRename}
+                    onColorChange={handleActiveBrainColor}
+                  />
                 ))}
               </div>
             )}
@@ -444,9 +568,30 @@ export default function ClientArea() {
 
                     {/* Action buttons */}
                     <div className="mt-4">
-                      {deletingBrainId === b.id ? (
+                      {contactBrainId === b.id ? (
                         <>
-                          <p className="text-[14px] text-[#1a1a1a]/45 text-center mb-3">
+                          <p className="text-[16px] text-[#1a1a1a]/45 text-center mb-2">
+                            Phase 2 activation requires a license
+                          </p>
+                          <a
+                            href="mailto:info@smartbrainup.com"
+                            className="block text-[16px] text-[#1a1a1a]/60 text-center mb-4
+                                       hover:text-[#1a1a1a]/80 transition-colors"
+                          >
+                            info@smartbrainup.com
+                          </a>
+                          <button
+                            onClick={() => setContactBrainId(null)}
+                            className="w-full py-2.5 bg-[#1a1a1a]/[0.06] hover:bg-[#1a1a1a]/[0.12]
+                                       rounded-[4px] font-ui text-[11px] font-medium tracking-widest
+                                       uppercase text-[#1a1a1a]/50 border-0 cursor-pointer transition-colors"
+                          >
+                            Back
+                          </button>
+                        </>
+                      ) : deletingBrainId === b.id ? (
+                        <>
+                          <p className="text-[16px] text-[#1a1a1a]/45 text-center mb-3">
                             This will delete all progress. Are you sure?
                           </p>
                           <div className="flex gap-3">
@@ -471,7 +616,7 @@ export default function ClientArea() {
                       ) : (
                         <div className="flex gap-3">
                           <button
-                            onClick={() => handleStartPhase2(b)}
+                            onClick={() => credits > 0 ? handleStartPhase2(b) : setContactBrainId(b.id)}
                             className="flex-1 py-2.5 bg-[#1a1a1a]/[0.08] hover:bg-[#1a1a1a]/[0.15]
                                        rounded-[4px] font-ui text-[10px] font-medium tracking-widest
                                        uppercase text-[#1a1a1a]/60 border-0 cursor-pointer transition-colors"
@@ -509,10 +654,7 @@ export default function ClientArea() {
             {/* New brain */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <button
-                onClick={() => {
-                  setSection('new')
-                  window.scrollTo(0, 0)
-                }}
+                onClick={() => router.push('/start')}
                 className="rounded-[4px] bg-[#f7f7f7] hover:bg-[#f0f0f0]
                            transition-colors duration-200
                            flex flex-col items-center justify-center min-h-[260px]

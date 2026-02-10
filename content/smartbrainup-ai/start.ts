@@ -370,8 +370,8 @@ export const assessmentContent = {
   complete: {
     section: 'PHASE 1 COMPLETE',
     title: ['Done', 'Phase 1 complete'],
-    body: 'Your initial context has been captured.',
-    detail: 'Sign in to access your client area. Your Second Brain will be ready for Phase 2.',
+    body: ['Your Second Brain has been saved to your dashboard', 'and is ready for Phase 2'],
+    detail: '',
     cta: 'Continue',
   },
 }

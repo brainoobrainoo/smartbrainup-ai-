@@ -6,13 +6,34 @@ import type { SecondBrain } from '@/content/smartbrainup-ai/client'
 
 const Lottie = dynamic(() => import('lottie-react'), { ssr: false })
 
+const CARD_COLORS: { key: string; from: string; to: string }[] = [
+  { key: 'default', from: '#e0e0e0', to: '#aeaeae' },
+  { key: 'slate', from: '#c8cfd8', to: '#8f99a8' },
+  { key: 'ocean', from: '#b8d4e3', to: '#7ba3bd' },
+  { key: 'sage', from: '#c2d4c2', to: '#8aaa8a' },
+  { key: 'sand', from: '#ddd5c8', to: '#b5a898' },
+  { key: 'rose', from: '#dfc8cb', to: '#b89a9f' },
+  { key: 'lavender', from: '#cfc8df', to: '#a89ab8' },
+  { key: 'charcoal', from: '#6a6a6a', to: '#3a3a3a' },
+]
+
+function getGradient(colorKey: string) {
+  const c = CARD_COLORS.find((c) => c.key === colorKey) || CARD_COLORS[0]
+  return `linear-gradient(to bottom, ${c.from} 0%, ${c.to} 100%)`
+}
+
 interface SecondBrainCardProps {
   brain: SecondBrain
   onOpen: (brain: SecondBrain) => void
+  onRename?: (brainId: string, newName: string) => Promise<void>
+  onColorChange?: (brainId: string, color: string) => Promise<void>
 }
 
-export default function SecondBrainCard({ brain, onOpen }: SecondBrainCardProps) {
+export default function SecondBrainCard({ brain, onOpen, onRename, onColorChange }: SecondBrainCardProps) {
   const [sphereData, setSphereData] = useState<any>(null)
+  const [editing, setEditing] = useState(false)
+  const [editName, setEditName] = useState(brain.name)
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     fetch('/animations/SFERA_LOGO_B_bianco.json')
@@ -21,13 +42,96 @@ export default function SecondBrainCard({ brain, onOpen }: SecondBrainCardProps)
       .catch(() => {})
   }, [])
 
+  const isLight = brain.cardColor !== 'charcoal'
+  const textPrimary = isLight ? 'text-[#1a1a1a]' : 'text-white'
+  const textSecondary = isLight ? 'text-black/50' : 'text-white/50'
+  const textBody = isLight ? 'text-black/60' : 'text-white/60'
+  const borderColor = isLight ? 'border-black/[0.15]' : 'border-white/[0.2]'
+
+  const handleSave = async () => {
+    if (!editName.trim()) return
+    setSaving(true)
+    if (onRename && editName.trim() !== brain.name) {
+      await onRename(brain.id, editName.trim())
+    }
+    setSaving(false)
+    setEditing(false)
+  }
+
+  const handleColorSelect = async (colorKey: string) => {
+    if (onColorChange) {
+      await onColorChange(brain.id, colorKey)
+    }
+  }
+
+  if (editing) {
+    return (
+      <div
+        className="rounded-[4px] p-6 min-h-[260px] flex flex-col"
+        style={{ background: getGradient(brain.cardColor) }}
+      >
+        {/* Name input */}
+        <p className={`font-ui text-[10px] font-medium tracking-widest uppercase ${textSecondary} mb-2`}>
+          Rename
+        </p>
+        <input
+          type="text"
+          value={editName}
+          onChange={(e) => setEditName(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') handleSave() }}
+          autoFocus
+          className={`text-[18px] font-normal border-0 border-b ${borderColor}
+                     bg-transparent outline-none w-full rounded-none ${textPrimary} mb-6`}
+        />
+
+        {/* Color picker */}
+        <p className={`font-ui text-[10px] font-medium tracking-widest uppercase ${textSecondary} mb-3`}>
+          Color
+        </p>
+        <div className="flex gap-2 mb-auto">
+          {CARD_COLORS.map((c) => (
+            <button
+              key={c.key}
+              onClick={() => handleColorSelect(c.key)}
+              className="w-[28px] h-[28px] rounded-full border-0 cursor-pointer transition-transform hover:scale-110"
+              style={{
+                background: c.from,
+                boxShadow: brain.cardColor === c.key ? '0 0 0 2px #1a1a1a, 0 0 0 4px white' : 'none',
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Buttons */}
+        <div className="flex gap-3 mt-4">
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className={`flex-1 py-2.5 ${isLight ? 'bg-[#1a1a1a]/[0.08] hover:bg-[#1a1a1a]/[0.15] text-[#1a1a1a]/60' : 'bg-white/[0.1] hover:bg-white/[0.18] text-white/70'}
+                       rounded-[4px] font-ui text-[10px] font-medium tracking-widest
+                       uppercase border-0 cursor-pointer transition-colors`}
+          >
+            {saving ? '...' : 'Save'}
+          </button>
+          <button
+            onClick={() => { setEditing(false); setEditName(brain.name) }}
+            className={`flex-1 py-2.5 ${isLight ? 'bg-[#1a1a1a]/[0.06] hover:bg-[#1a1a1a]/[0.12] text-[#1a1a1a]/50' : 'bg-white/[0.06] hover:bg-white/[0.12] text-white/50'}
+                       rounded-[4px] font-ui text-[10px] font-medium tracking-widest
+                       uppercase border-0 cursor-pointer transition-colors`}
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <button
-      onClick={() => onOpen(brain)}
-      className="rounded-[4px] p-6
-                 text-left cursor-pointer transition-all duration-200
-                 relative border-0 hover:brightness-[0.96]"
-      style={{ background: 'linear-gradient(to bottom, #e0e0e0 0%, #aeaeae 100%)' }}
+    <div
+      className="rounded-[4px] p-6 min-h-[260px] flex flex-col
+                 text-left transition-all duration-200
+                 relative border-0"
+      style={{ background: getGradient(brain.cardColor) }}
     >
       {/* Sphere */}
       <div className="mb-4">
@@ -43,32 +147,52 @@ export default function SecondBrainCard({ brain, onOpen }: SecondBrainCardProps)
         )}
       </div>
 
-      <p className="font-ui text-[11px] font-medium tracking-widest uppercase text-black/50 mb-2">
+      <p className={`font-ui text-[11px] font-medium tracking-widest uppercase ${textSecondary} mb-2`}>
         Second Brain {brain.num}
       </p>
 
-      <h3 className="text-[20px] font-normal tracking-[-0.01em] text-[#1a1a1a] mb-2">
+      <h3 className={`text-[20px] font-normal tracking-[-0.01em] ${textPrimary} mb-2`}>
         {brain.name}
       </h3>
 
-      <p className="text-[15px] leading-[1.4] text-black/60 mb-4">
+      <p className={`text-[15px] leading-[1.4] ${textBody} mb-auto`}>
         {brain.context.length > 90
           ? brain.context.slice(0, 90) + '…'
           : brain.context}
       </p>
 
-      <div className="flex gap-1.5">
+      <div className="flex gap-1.5 mt-4 mb-4">
         {brain.platforms.map((p) => (
           <span
             key={p}
-            className="font-ui text-[10px] font-medium tracking-[0.06em]
-                       uppercase px-2.5 py-0.5 border border-black/[0.15]
-                       rounded-[3px] text-black/50"
+            className={`font-ui text-[10px] font-medium tracking-[0.06em]
+                       uppercase px-2.5 py-0.5 border ${borderColor}
+                       rounded-[3px] ${textSecondary}`}
           >
             {p}
           </span>
         ))}
       </div>
-    </button>
+
+      {/* Action buttons */}
+      <div className="flex gap-3">
+        <button
+          onClick={() => onOpen(brain)}
+          className={`flex-1 py-2.5 ${isLight ? 'bg-[#1a1a1a]/[0.08] hover:bg-[#1a1a1a]/[0.15] text-[#1a1a1a]/60' : 'bg-white/[0.1] hover:bg-white/[0.18] text-white/70'}
+                     rounded-[4px] font-ui text-[10px] font-medium tracking-widest
+                     uppercase border-0 cursor-pointer transition-colors`}
+        >
+          Open
+        </button>
+        <button
+          onClick={() => { setEditing(true); setEditName(brain.name) }}
+          className={`flex-1 py-2.5 ${isLight ? 'bg-[#1a1a1a]/[0.06] hover:bg-[#1a1a1a]/[0.12] text-[#1a1a1a]/50' : 'bg-white/[0.06] hover:bg-white/[0.12] text-white/50'}
+                     rounded-[4px] font-ui text-[10px] font-medium tracking-widest
+                     uppercase border-0 cursor-pointer transition-colors`}
+        >
+          Edit
+        </button>
+      </div>
+    </div>
   )
 }
