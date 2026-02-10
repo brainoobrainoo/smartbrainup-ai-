@@ -364,6 +364,8 @@ export default function ClientArea() {
   }
 
   function openBrain(b: SecondBrain) {
+    window.location.href = `/brain/${b.id}`
+    return
     setBrain(b)
     setSection('detail')
     window.scrollTo(0, 0)
