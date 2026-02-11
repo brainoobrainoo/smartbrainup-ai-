@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 import { useRouter } from 'next/navigation'
 import { getColorByKey } from '@/lib/cardColors'
+import InstallBanner from '@/components/client/InstallBanner'
 
 export default function BrainPage({ params }: { params: { id: string } }) {
   const supabase = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
@@ -125,17 +126,6 @@ export default function BrainPage({ params }: { params: { id: string } }) {
           </p>
         </div>
 
-        {/* Add to Home instruction */}
-        <div className="mt-12 text-center">
-          <p className="font-ui text-[10px] font-medium tracking-widest uppercase text-black/30 mb-2">
-            Add to Home Screen
-          </p>
-          <p className="text-[14px] leading-[1.5] text-black/45">
-            Tap the share button in your browser<br />
-            and select &ldquo;Add to Home Screen&rdquo;
-          </p>
-        </div>
-
         {/* Back to dashboard */}
         <div className="mt-12 text-center">
           <button
@@ -148,6 +138,9 @@ export default function BrainPage({ params }: { params: { id: string } }) {
           </button>
         </div>
       </div>
+
+      {/* Install banner — appears once on first visit */}
+      <InstallBanner brainId={params.id} brainName={brain.brain_name || 'Second Brain'} />
     </div>
   )
 }
