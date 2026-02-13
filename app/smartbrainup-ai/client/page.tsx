@@ -74,10 +74,12 @@ export default function ClientArea() {
   }, [displayName])
 
   // ── FETCH OR CREATE USER PROFILE (credits) ──
+  const DEVELOPER_EMAILS = ['ca75it@gmail.com']
+
   const fetchCredits = async (userId: string) => {
     const { data, error } = await supabase
       .from('user_profiles')
-      .select('credits, email, full_name')
+      .select('credits, email, full_name, role')
       .eq('id', userId)
       .single()
 
@@ -91,14 +93,16 @@ export default function ClientArea() {
         }).eq('id', userId)
       }
     } else if (error?.code === 'PGRST116') {
-      // No row exists — create one with 0 credits + email/name
+      // No row exists — check if developer email
+      const isDev = DEVELOPER_EMAILS.includes((userEmail || '').toLowerCase())
       await supabase.from('user_profiles').insert([{
         id: userId,
-        credits: 0,
+        credits: isDev ? 10 : 0,
+        role: isDev ? 'developer' : 'client',
         email: userEmail || null,
         full_name: displayName || null,
       }])
-      setCredits(0)
+      setCredits(isDev ? 10 : 0)
     }
   }
 
