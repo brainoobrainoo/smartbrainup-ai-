@@ -51,10 +51,10 @@ export default function FloatingChatButton({
 
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
 
-  const outerSize = isMobile ? 108 : 144
-  const middleSize = isMobile ? 29 : 40
-  const coreSize = isMobile ? 14 : 18
-  const innerSize = isMobile ? 7 : 9
+  const outerSize = isMobile ? 103 : 115
+  const middleSize = isMobile ? 28 : 32
+  const coreSize = isMobile ? 13 : 14
+  const innerSize = isMobile ? 7 : 7
 
   const outerBg = isMobile 
     ? 'radial-gradient(circle, rgba(255,255,255,0.18) 25%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0) 70%)'
@@ -69,8 +69,8 @@ export default function FloatingChatButton({
       href={chatUrl}
       style={{
         position: 'fixed',
-        bottom: isMobile ? 'calc(15% + 190px)' : 'calc(18% + 270px)',
-        right: isMobile ? 'calc(8% + 30px)' : 'calc(10% + 520px)',
+        bottom: isMobile ? 'calc(15% + 190px)' : 'calc(18% + 290px)',
+        right: isMobile ? 'calc(8% + 30px)' : 'calc(10% + 510px)',
         zIndex: 999,
         width: `${outerSize}px`,
         height: `${outerSize}px`,
