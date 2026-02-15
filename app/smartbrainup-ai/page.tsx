@@ -8,6 +8,7 @@ import { homeContent } from '@/content/smartbrainup-ai/home'
 import Container from '@/components/layout/Container'
 import Lottie from 'lottie-react'
 import sphereAnimation from '../../public/animations/SFERA_LOGO_B.json'
+import FloatingChatButton from '@/components/ui/FloatingChatButton'
 
 export default function HomePage() {
   const { hero, problem, solution, impact, platforms, cta } = homeContent
@@ -262,6 +263,12 @@ export default function HomePage() {
           </div>
         </Container>
       </section>
+
+      {/* Floating Chat Button — visible only for users with active Second Brain */}
+      <FloatingChatButton 
+        chatUrl="https://app.smartbrainup.ai/chat" 
+        show={true} // TODO: replace with Supabase session check
+      />
 
     </div>
   )

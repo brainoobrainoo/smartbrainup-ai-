@@ -9,13 +9,30 @@ const Lottie = dynamic(() => import('lottie-react'), { ssr: false })
 const CARD_COLORS: { key: string; from: string; to: string }[] = [
   { key: 'default', from: '#e0e0e0', to: '#aeaeae' },
   { key: 'slate', from: '#c8cfd8', to: '#8f99a8' },
-  { key: 'ocean', from: '#b8d4e3', to: '#7ba3bd' },
-  { key: 'sage', from: '#c2d4c2', to: '#8aaa8a' },
-  { key: 'sand', from: '#ddd5c8', to: '#b5a898' },
-  { key: 'rose', from: '#dfc8cb', to: '#b89a9f' },
-  { key: 'lavender', from: '#cfc8df', to: '#a89ab8' },
+  { key: 'ocean', from: '#d0dde6', to: '#9bb4c4' },
+  { key: 'sage', from: '#bcc0a8', to: '#8a9070' },
+  { key: 'sand', from: '#ebe0a0', to: '#d0c078' },
+  { key: 'rose', from: '#b47575', to: '#945c5c' },
+  { key: 'lavender', from: '#4d6578', to: '#2d3f4e' },
   { key: 'charcoal', from: '#6a6a6a', to: '#3a3a3a' },
 ]
+
+const SPHERE_ANIMATIONS = [
+  '/animations/sfera_cards_01.json',
+  '/animations/sfera_cards_02.json',
+  '/animations/sfera_cards_03.json',
+]
+
+// Cycle through spheres — guaranteed different for each brain
+function getSphereIndex(brain: { num: string; id: any }): number {
+  const n = parseInt(brain.num, 10)
+  if (!isNaN(n)) return (n - 1) % SPHERE_ANIMATIONS.length
+  // fallback: use id string
+  let sum = 0
+  const id = String(brain.id)
+  for (let i = 0; i < id.length; i++) sum += id.charCodeAt(i)
+  return sum % SPHERE_ANIMATIONS.length
+}
 
 function getGradient(colorKey: string) {
   const c = CARD_COLORS.find((c) => c.key === colorKey) || CARD_COLORS[0]
@@ -36,13 +53,15 @@ export default function SecondBrainCard({ brain, onOpen, onRename, onColorChange
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
-    fetch('/animations/SFERA_LOGO_B_bianco.json')
+    const sphereIdx = getSphereIndex(brain)
+    console.log(`[Sphere] brain.num="${brain.num}" brain.id="${brain.id}" → index=${sphereIdx} → ${SPHERE_ANIMATIONS[sphereIdx]}`)
+    fetch(SPHERE_ANIMATIONS[sphereIdx])
       .then((r) => r.json())
       .then(setSphereData)
       .catch(() => {})
-  }, [])
+  }, [brain.num, brain.id])
 
-  const isLight = brain.cardColor !== 'charcoal'
+  const isLight = !['charcoal', 'rose', 'lavender'].includes(brain.cardColor)
   const textPrimary = isLight ? 'text-[#1a1a1a]' : 'text-white'
   const textSecondary = isLight ? 'text-black/50' : 'text-white/50'
   const textBody = isLight ? 'text-black/60' : 'text-white/60'
