@@ -32,9 +32,9 @@ export default function FloatingChatButton({
           100% { transform: translate(0px, 0px) rotate(0deg); }
         }
         @keyframes breathe {
-          0% { opacity: 1; }
-          50% { opacity: 0.8; }
-          100% { opacity: 1; }
+          0% { opacity: 0.85; }
+          50% { opacity: 0.65; }
+          100% { opacity: 0.85; }
         }
       `
       document.head.appendChild(style)
@@ -69,7 +69,7 @@ export default function FloatingChatButton({
       href={chatUrl}
       style={{
         position: 'fixed',
-        bottom: isMobile ? 'calc(15% + 175px)' : 'calc(18% + 270px)',
+        bottom: isMobile ? 'calc(15% + 190px)' : 'calc(18% + 270px)',
         right: isMobile ? 'calc(8% + 30px)' : 'calc(10% + 520px)',
         zIndex: 999,
         width: `${outerSize}px`,
