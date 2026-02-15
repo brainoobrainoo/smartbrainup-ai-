@@ -13,6 +13,7 @@ export default function FloatingChatButton({
 }: FloatingChatButtonProps) {
   const [visible, setVisible] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const [breathing, setBreathing] = useState(false)
 
   useEffect(() => {
     setMounted(true)
@@ -30,13 +31,20 @@ export default function FloatingChatButton({
           80% { transform: translate(-0.6px, -1.2px) rotate(-0.24deg); }
           100% { transform: translate(0px, 0px) rotate(0deg); }
         }
+        @keyframes breathe {
+          0% { opacity: 1; }
+          50% { opacity: 0.8; }
+          100% { opacity: 1; }
+        }
       `
       document.head.appendChild(style)
     }
 
     if (!show) return
     const timer = setTimeout(() => setVisible(true), 300)
-    return () => clearTimeout(timer)
+    // Start breathing after fade-in completes (0.3s delay + 2s fade)
+    const breathTimer = setTimeout(() => setBreathing(true), 2500)
+    return () => { clearTimeout(timer); clearTimeout(breathTimer) }
   }, [show])
 
   if (!show || !mounted) return null
@@ -75,8 +83,12 @@ export default function FloatingChatButton({
         border: 'none',
         boxShadow: 'none',
         opacity: visible ? 1 : 0,
-        transition: 'opacity 2s ease-in',
-        animation: visible ? 'floatWobble 6s ease-in-out infinite' : 'none',
+        transition: breathing ? 'none' : 'opacity 2s ease-in',
+        animation: visible 
+          ? breathing 
+            ? 'floatWobble 6s ease-in-out infinite, breathe 3s ease-in-out infinite'
+            : 'floatWobble 6s ease-in-out infinite'
+          : 'none',
         cursor: 'pointer',
       }}
       aria-label="Open Second Brain Chat"
