@@ -25,11 +25,18 @@ export default function FloatingChatButton({
       style.textContent = `
         @keyframes floatWobble {
           0% { transform: translate(0px, 0px) rotate(0deg); }
-          20% { transform: translate(2.4px, -4.8px) rotate(0.6deg); }
-          40% { transform: translate(-1.2px, -2.4px) rotate(-0.36deg); }
-          60% { transform: translate(1.8px, -6px) rotate(0.48deg); }
-          80% { transform: translate(-0.6px, -1.2px) rotate(-0.24deg); }
+          25% { transform: translate(18px, -5px) rotate(2.5deg); }
+          50% { transform: translate(6px, -1px) rotate(0.5deg); }
+          75% { transform: translate(22px, -7px) rotate(3deg); }
           100% { transform: translate(0px, 0px) rotate(0deg); }
+        }
+        @keyframes lightDrift {
+          0% { transform: translate(0px, 0px); }
+          20% { transform: translate(4px, -2px); }
+          45% { transform: translate(8px, -2.5px); }
+          65% { transform: translate(2.5px, 0.5px); }
+          85% { transform: translate(7px, -1.5px); }
+          100% { transform: translate(0px, 0px); }
         }
         @keyframes breathe {
           0% { opacity: 0.85; }
@@ -42,7 +49,6 @@ export default function FloatingChatButton({
 
     if (!show) return
     const timer = setTimeout(() => setVisible(true), 300)
-    // Start breathing after fade-in completes (0.3s delay + 2s fade)
     const breathTimer = setTimeout(() => setBreathing(true), 2500)
     return () => { clearTimeout(timer); clearTimeout(breathTimer) }
   }, [show])
@@ -55,6 +61,12 @@ export default function FloatingChatButton({
   const middleSize = isMobile ? 28 : 32
   const coreSize = isMobile ? 13 : 14
   const innerSize = isMobile ? 7 : 7
+
+  // Light group — 20% smaller on desktop
+  const lightOuterSize = isMobile ? 103 : 74
+  const lightMiddleSize = isMobile ? 28 : 21
+  const lightCoreSize = isMobile ? 10 : 10
+  const lightInnerSize = isMobile ? 5 : 5
 
   const outerBg = isMobile 
     ? 'radial-gradient(circle, rgba(255,255,255,0.18) 25%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0) 70%)'
@@ -75,7 +87,7 @@ export default function FloatingChatButton({
         width: `${outerSize}px`,
         height: `${outerSize}px`,
         borderRadius: '50%',
-        background: outerBg,
+        background: 'transparent',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -86,49 +98,98 @@ export default function FloatingChatButton({
         transition: breathing ? 'none' : 'opacity 2s ease-in',
         animation: visible 
           ? breathing 
-            ? 'floatWobble 6s ease-in-out infinite, breathe 3s ease-in-out infinite'
-            : 'floatWobble 6s ease-in-out infinite'
+            ? 'floatWobble 12s ease-in-out infinite, breathe 3s ease-in-out infinite'
+            : 'floatWobble 12s ease-in-out infinite'
           : 'none',
         cursor: 'pointer',
       }}
       aria-label="Open Second Brain Chat"
     >
-      {/* Middle feathered circle */}
+      {/* Concentric ring */}
       <div
         style={{
-          width: `${middleSize}px`,
-          height: `${middleSize}px`,
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          width: isMobile ? '40px' : '50px',
+          height: isMobile ? '40px' : '50px',
           borderRadius: '50%',
-          background: middleBg,
+          backgroundColor: 'transparent',
+          border: '0.5px solid #ffffff',
+          transform: 'translate(-50%, -50%)',
+          opacity: isMobile ? 0.75 : 0.85,
+          pointerEvents: 'none',
+        }}
+      />
+
+
+      {/* === LIGHT GROUP — extra drift on top of parent === */}
+      <div
+        style={{
+          position: 'relative',
+          zIndex: 1,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
+          width: `${lightOuterSize}px`,
+          height: `${lightOuterSize}px`,
+          borderRadius: '50%',
+          background: outerBg,
+          animation: visible ? 'lightDrift 9s ease-in-out infinite' : 'none',
           pointerEvents: 'none',
         }}
       >
-        {/* Core circle - 80% opacity */}
+        {/* Tiny concentric circle — 3px, solid white */}
         <div
           style={{
-            width: `${coreSize}px`,
-            height: `${coreSize}px`,
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            width: '3px',
+            height: '3px',
             borderRadius: '50%',
-            backgroundColor: isMobile ? 'rgba(255,255,255,0.40)' : 'rgba(255,255,255,0.64)',
+            backgroundColor: '#ffffff',
+            transform: 'translate(-50%, -50%)',
+            zIndex: 2,
+          }}
+        />
+        {/* Middle feathered circle */}
+        <div
+          style={{
+            width: `${lightMiddleSize}px`,
+            height: `${lightMiddleSize}px`,
+            borderRadius: '50%',
+            background: middleBg,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             pointerEvents: 'none',
           }}
         >
-          {/* Innermost solid white circle */}
+          {/* Core circle */}
           <div
             style={{
-              width: `${innerSize}px`,
-              height: `${innerSize}px`,
+              width: `${lightCoreSize}px`,
+              height: `${lightCoreSize}px`,
               borderRadius: '50%',
-              backgroundColor: '#ffffff',
+              backgroundColor: 'rgba(255,255,255,0.20)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
               pointerEvents: 'none',
             }}
-          />
+          >
+            {/* Innermost solid white circle */}
+            <div
+              style={{
+                width: `${lightInnerSize}px`,
+                height: `${lightInnerSize}px`,
+                borderRadius: '50%',
+                backgroundColor: '#ffffff',
+                pointerEvents: 'none',
+              }}
+            />
+          </div>
         </div>
       </div>
     </a>
