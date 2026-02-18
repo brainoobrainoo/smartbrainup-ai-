@@ -34,10 +34,11 @@ export default function FloatingChatButton({
         }
         @keyframes lightDrift {
           0% { transform: translate(0px, 0px); }
-          20% { transform: translate(4px, -2px); }
-          45% { transform: translate(8px, -2.5px); }
-          65% { transform: translate(2.5px, 0.5px); }
-          85% { transform: translate(7px, -1.5px); }
+          14% { transform: translate(-7px, 5px); }
+          32% { transform: translate(12px, -6px); }
+          48% { transform: translate(-4px, 8px); }
+          63% { transform: translate(10px, -3px); }
+          79% { transform: translate(-8px, -5px); }
           100% { transform: translate(0px, 0px); }
         }
         @keyframes breathe {
@@ -69,6 +70,11 @@ export default function FloatingChatButton({
   const lightMiddleSize = isMobile ? 28 : 21
   const lightCoreSize = isMobile ? 10 : 10
   const lightInnerSize = isMobile ? 5 : 5
+
+  // Lens sizes
+  const lensSize = isMobile ? 40 : 50
+  // Outer lens — double diameter, half border
+  const outerLensSize = isMobile ? 80 : 100
 
   const outerBg = isMobile 
     ? 'radial-gradient(circle, rgba(255,255,255,0.18) 25%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0) 70%)'
@@ -108,14 +114,31 @@ export default function FloatingChatButton({
       }}
       aria-label="Open Second Brain Chat"
     >
-      {/* Concentric ring */}
+      {/* Outer lens — double size, half thickness */}
       <div
         style={{
           position: 'absolute',
           top: '50%',
           left: '50%',
-          width: isMobile ? '40px' : '50px',
-          height: isMobile ? '40px' : '50px',
+          width: `${outerLensSize}px`,
+          height: `${outerLensSize}px`,
+          borderRadius: '50%',
+          backgroundColor: 'transparent',
+          border: '0.25px solid #ffffff',
+          transform: 'translate(-50%, -50%)',
+          opacity: isMobile ? 0.55 : 0.65,
+          pointerEvents: 'none',
+        }}
+      />
+
+      {/* Inner lens — original */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          width: `${lensSize}px`,
+          height: `${lensSize}px`,
           borderRadius: '50%',
           backgroundColor: 'transparent',
           border: '0.5px solid #ffffff',
@@ -126,7 +149,7 @@ export default function FloatingChatButton({
       />
 
 
-      {/* === LIGHT GROUP — extra drift on top of parent === */}
+      {/* === LIGHT GROUP — more displaced drift === */}
       <div
         style={{
           position: 'relative',
@@ -138,7 +161,7 @@ export default function FloatingChatButton({
           height: `${lightOuterSize}px`,
           borderRadius: '50%',
           background: outerBg,
-          animation: visible ? 'lightDrift 9s ease-in-out infinite' : 'none',
+          animation: visible ? 'lightDrift 11s ease-in-out infinite' : 'none',
           pointerEvents: 'none',
         }}
       >
