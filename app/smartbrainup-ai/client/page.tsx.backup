@@ -302,35 +302,6 @@ export default function ClientArea() {
       await fetchAssessments(user.id)
     }
 
-    // Create Second Brain record for the chat
-    const assessmentId = phase2BrainId === 'local' ? null : parseInt(phase2BrainId)
-    // Get the latest assessment if it was a local brain (just inserted)
-    let finalAssessmentId = assessmentId
-    if (phase2BrainId === 'local') {
-      const { data: latest } = await supabase
-        .from('assessments')
-        .select('id')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single()
-      if (latest) finalAssessmentId = latest.id
-    }
-
-    const brainName = phase2BrainId === 'local'
-      ? (localStorage.getItem('phase1_brain_name') || 'Second Brain')
-      : phase2BrainName
-
-    await supabase.from('second_brains').insert([{
-      user_id: user.id,
-      assessment_id: finalAssessmentId,
-      name: brainName,
-      system_prompt: 'You are a Second Brain powered by the AI-UP Second Brain™ method. You help the user based on their personal context. Ask one targeted question at a time. Keep responses brief and essential. You lead the reasoning.',
-      color: '#6366f1',
-      icon: 'brain',
-      status: 'active',
-    }])
-
     // Decrement credit after successful completion
     await supabase.rpc('decrement_credits', { user_id_input: user.id })
     setCredits(prev => Math.max(0, prev - 1))
@@ -396,23 +367,12 @@ export default function ClientArea() {
     window.scrollTo(0, 0)
   }
 
-  async function openBrain(b: SecondBrain) {
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) return
-
-    // Find the second_brain id from the assessment id
-    const { data: sb } = await supabase
-      .from('second_brains')
-      .select('id')
-      .eq('assessment_id', parseInt(b.id))
-      .single()
-
-    const chatUrl = new URL('https://secondbrain-chat.vercel.app')
-    chatUrl.searchParams.set('access_token', session.access_token)
-    chatUrl.searchParams.set('refresh_token', session.refresh_token)
-    if (sb) chatUrl.searchParams.set('brain_id', sb.id)
-
-    window.open(chatUrl.toString(), '_blank')
+  function openBrain(b: SecondBrain) {
+    window.location.href = `/brain/${b.id}`
+    return
+    setBrain(b)
+    setSection('detail')
+    window.scrollTo(0, 0)
   }
 
   const activeNav = section === 'detail' || section === 'new' ? 'dashboard' : section
