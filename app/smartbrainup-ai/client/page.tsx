@@ -221,6 +221,11 @@ export default function ClientArea() {
       .from('assessments')
       .update({ brain_name: newName })
       .eq('id', parseInt(brainId))
+    // Sync to second_brains
+    await supabase
+      .from('second_brains')
+      .update({ name: newName })
+      .eq('assessment_id', parseInt(brainId))
     if (!error && user) {
       await fetchAssessments(user.id)
     }
@@ -232,6 +237,11 @@ export default function ClientArea() {
       .from('assessments')
       .update({ card_color: color })
       .eq('id', parseInt(brainId))
+    // Sync to second_brains
+    await supabase
+      .from('second_brains')
+      .update({ color })
+      .eq('assessment_id', parseInt(brainId))
     if (!error && user) {
       await fetchAssessments(user.id)
     }
@@ -328,7 +338,7 @@ export default function ClientArea() {
       assessment_id: finalAssessmentId,
       name: savedBrainName,
       system_prompt: 'You are a Second Brain powered by the AI-UP Second Brain™ method. You help the user based on their personal context. Ask one targeted question at a time. Keep responses brief and essential. You lead the reasoning.',
-      color: '#6366f1',
+      color: '#9CA3AF',
       icon: 'brain',
       status: 'active',
     }])
