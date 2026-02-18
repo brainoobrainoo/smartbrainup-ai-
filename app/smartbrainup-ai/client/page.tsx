@@ -397,27 +397,22 @@ export default function ClientArea() {
     window.scrollTo(0, 0)
   }
 
-  function openBrain(b: SecondBrain) {
-    // Open window immediately to avoid popup blocker
-    const chatWindow = window.open('about:blank', '_blank')
+  async function openBrain(b: SecondBrain) {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) return
 
-    ;(async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) { chatWindow?.close(); return }
+    const { data: sb } = await supabase
+      .from('second_brains')
+      .select('id')
+      .eq('assessment_id', parseInt(b.id))
+      .single()
 
-      const { data: sb } = await supabase
-        .from('second_brains')
-        .select('id')
-        .eq('assessment_id', parseInt(b.id))
-        .single()
+    const chatUrl = new URL('https://secondbrain-chat.vercel.app')
+    chatUrl.searchParams.set('access_token', session.access_token)
+    chatUrl.searchParams.set('refresh_token', session.refresh_token)
+    if (sb) chatUrl.searchParams.set('brain_id', sb.id)
 
-      const chatUrl = new URL('https://secondbrain-chat.vercel.app')
-      chatUrl.searchParams.set('access_token', session.access_token)
-      chatUrl.searchParams.set('refresh_token', session.refresh_token)
-      if (sb) chatUrl.searchParams.set('brain_id', sb.id)
-
-      if (chatWindow) chatWindow.location.href = chatUrl.toString()
-    })()
+    window.location.href = chatUrl.toString()
   }
 
   const activeNav = section === 'detail' || section === 'new' ? 'dashboard' : section
