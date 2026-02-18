@@ -6,6 +6,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import Container from '@/components/layout/Container'
 import { useAuth } from '@/lib/useAuth'
+import { createClient } from '@/lib/supabase/client'
 import { 
   questionsMap,
   strati,
@@ -30,6 +31,20 @@ const renderLabel = (label: string) => {
 export default function StartPage() {
   const router = useRouter()
   const { user, isAuthenticated } = useAuth()
+
+  // Accept session tokens from secondbrain-chat redirect
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const accessToken = params.get('access_token')
+    const refreshToken = params.get('refresh_token')
+    if (accessToken && refreshToken) {
+      const supabase = createClient()
+      supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken })
+        .then(() => {
+          window.history.replaceState({}, '', window.location.pathname)
+        })
+    }
+  }, [])
   const [currentQuestionId, setCurrentQuestionId] = useState(startQuestionId)
   const [history, setHistory] = useState<string[]>([])
   const [collectedData, setCollectedData] = useState<CollectedData>({})
