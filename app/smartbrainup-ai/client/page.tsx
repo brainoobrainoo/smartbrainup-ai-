@@ -221,8 +221,9 @@ export default function ClientArea() {
       .from('assessments')
       .update({ brain_name: newName })
       .eq('id', parseInt(brainId))
-    // Sync to second_brains
-    const { error: sbError } = await supabase
+    // Sync to second_brains (using auth client)
+    const authClient = createClient()
+    const { error: sbError } = await authClient
       .from('second_brains')
       .update({ name: newName })
       .eq('assessment_id', parseInt(brainId))
@@ -238,8 +239,9 @@ export default function ClientArea() {
       .from('assessments')
       .update({ card_color: color })
       .eq('id', parseInt(brainId))
-    // Sync to second_brains
-    const { error: sbColorErr } = await supabase
+    // Sync to second_brains (using auth client)
+    const authClientColor = createClient()
+    const { error: sbColorErr } = await authClientColor
       .from('second_brains')
       .update({ color })
       .eq('assessment_id', parseInt(brainId))
