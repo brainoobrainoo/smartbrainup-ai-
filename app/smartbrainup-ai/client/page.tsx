@@ -397,24 +397,15 @@ export default function ClientArea() {
     window.scrollTo(0, 0)
   }
 
-  async function openBrain(b: SecondBrain) {
-    console.log('[openBrain] called with brain:', b.id, b.name)
-    const { data: { session } } = await supabase.auth.getSession()
-    console.log('[openBrain] session:', session ? 'found' : 'NULL')
-    if (!session) { alert('No session found - please log in again'); return }
-
-    const { data: sb } = await supabase
-      .from('second_brains')
-      .select('id')
-      .eq('assessment_id', parseInt(b.id))
-      .single()
-
-    const chatUrl = new URL('https://secondbrain-chat.vercel.app')
-    chatUrl.searchParams.set('access_token', session.access_token)
-    chatUrl.searchParams.set('refresh_token', session.refresh_token)
-    if (sb) chatUrl.searchParams.set('brain_id', sb.id)
-
-    window.location.href = chatUrl.toString()
+  function openBrain(b: SecondBrain) {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) { alert('No session - please log in again'); return }
+      const url = 'https://secondbrain-chat.vercel.app' +
+        '?access_token=' + encodeURIComponent(session.access_token) +
+        '&refresh_token=' + encodeURIComponent(session.refresh_token) +
+        '&assessment_id=' + encodeURIComponent(b.id)
+      window.location.href = url
+    })
   }
 
   const activeNav = section === 'detail' || section === 'new' ? 'dashboard' : section
