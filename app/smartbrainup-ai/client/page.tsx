@@ -222,10 +222,11 @@ export default function ClientArea() {
       .update({ brain_name: newName })
       .eq('id', parseInt(brainId))
     // Sync to second_brains
-    await supabase
+    const { error: sbError } = await supabase
       .from('second_brains')
       .update({ name: newName })
       .eq('assessment_id', parseInt(brainId))
+    console.log('[RENAME SYNC]', brainId, newName, sbError || 'OK')
     if (!error && user) {
       await fetchAssessments(user.id)
     }
@@ -238,10 +239,11 @@ export default function ClientArea() {
       .update({ card_color: color })
       .eq('id', parseInt(brainId))
     // Sync to second_brains
-    await supabase
+    const { error: sbColorErr } = await supabase
       .from('second_brains')
       .update({ color })
       .eq('assessment_id', parseInt(brainId))
+    console.log('[COLOR SYNC]', brainId, color, sbColorErr || 'OK')
     if (!error && user) {
       await fetchAssessments(user.id)
     }
