@@ -256,6 +256,11 @@ export default function ClientArea() {
   const handleCompletePhase2 = async (data: Phase2CollectedData) => {
     if (!phase2BrainId || !user) return
 
+    // Save brain name early (before localStorage cleanup)
+    const savedBrainName = phase2BrainId === 'local'
+      ? (localStorage.getItem('phase1_brain_name') || 'Second Brain')
+      : phase2BrainName
+
     if (phase2BrainId === 'local') {
       // localStorage brain → first write to Supabase with both phases
       const raw = localStorage.getItem('phase1_results')
@@ -317,14 +322,10 @@ export default function ClientArea() {
       if (latest) finalAssessmentId = latest.id
     }
 
-    const brainName = phase2BrainId === 'local'
-      ? (localStorage.getItem('phase1_brain_name') || 'Second Brain')
-      : phase2BrainName
-
     await supabase.from('second_brains').insert([{
       user_id: user.id,
       assessment_id: finalAssessmentId,
-      name: brainName,
+      name: savedBrainName,
       system_prompt: 'You are a Second Brain powered by the AI-UP Second Brain™ method. You help the user based on their personal context. Ask one targeted question at a time. Keep responses brief and essential. You lead the reasoning.',
       color: '#6366f1',
       icon: 'brain',
