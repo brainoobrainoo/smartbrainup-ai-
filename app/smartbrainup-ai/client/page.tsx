@@ -398,8 +398,10 @@ export default function ClientArea() {
   }
 
   async function openBrain(b: SecondBrain) {
+    console.log('[openBrain] called with brain:', b.id, b.name)
     const { data: { session } } = await supabase.auth.getSession()
-    if (!session) return
+    console.log('[openBrain] session:', session ? 'found' : 'NULL')
+    if (!session) { alert('No session found - please log in again'); return }
 
     const { data: sb } = await supabase
       .from('second_brains')
