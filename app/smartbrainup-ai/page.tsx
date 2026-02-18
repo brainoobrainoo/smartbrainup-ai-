@@ -139,19 +139,21 @@ export default function HomePage() {
           </Container>
         </section>
         
-        {/* CTA Section - in basso */}
+        {/* CTA Section - in basso (hidden when user has active brain) */}
         <section className="pb-12 md:pb-16">
           <Container>
-            <div className="flex items-center gap-4 justify-end">
-              <span className="font-ui text-[12px] font-medium tracking-wide uppercase-force opacity-40">{hero.cta.label}</span>
-              <Link 
-                href="/start" 
-                className="relative flex items-center justify-center w-[55px] h-[55px] md:w-[75px] md:h-[75px] rounded-full overflow-hidden"
-              >
-                <span className="absolute inset-0 bg-[#3a3a3a] animate-pulse-soft rounded-full"></span>
-                <span className="relative z-10 font-ui text-[11px] md:text-[12px] font-bold tracking-wide text-white uppercase-force">TRY</span>
-              </Link>
-            </div>
+            {!hasActiveBrain && (
+              <div className="flex items-center gap-4 justify-end">
+                <span className="font-ui text-[12px] font-medium tracking-wide uppercase-force opacity-40">{hero.cta.label}</span>
+                <Link 
+                  href="/start" 
+                  className="relative flex items-center justify-center w-[55px] h-[55px] md:w-[75px] md:h-[75px] rounded-full overflow-hidden"
+                >
+                  <span className="absolute inset-0 bg-[#3a3a3a] animate-pulse-soft rounded-full"></span>
+                  <span className="relative z-10 font-ui text-[11px] md:text-[12px] font-bold tracking-wide text-white uppercase-force">TRY</span>
+                </Link>
+              </div>
+            )}
           </Container>
         </section>
 
