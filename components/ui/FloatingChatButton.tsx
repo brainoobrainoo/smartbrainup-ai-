@@ -89,7 +89,7 @@ export default function FloatingChatButton({
       style={{
         position: 'fixed',
         bottom: isMobile ? 'calc(15% + 170px)' : 'calc(18% + 255px)',
-        right: isMobile ? 'calc(8% + 25px)' : 'calc(10% + 490px)',
+        right: isMobile ? 'calc(8% + 25px)' : 'calc(10% + 290px)',
         zIndex: 999,
         width: `${outerSize}px`,
         height: `${outerSize}px`,
