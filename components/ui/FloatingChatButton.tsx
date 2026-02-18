@@ -65,16 +65,14 @@ export default function FloatingChatButton({
   const coreSize = isMobile ? 13 : 14
   const innerSize = isMobile ? 7 : 7
 
-  // Light group — 20% smaller on desktop
-  const lightOuterSize = isMobile ? 103 : 74
-  const lightMiddleSize = isMobile ? 28 : 21
-  const lightCoreSize = isMobile ? 10 : 10
-  const lightInnerSize = isMobile ? 5 : 5
+  // Light group — shrunk 20%
+  const lightOuterSize = isMobile ? 82 : 59
+  const lightMiddleSize = isMobile ? 22 : 17
+  const lightCoreSize = isMobile ? 8 : 8
+  const lightInnerSize = isMobile ? 4 : 4
 
   // Lens sizes
   const lensSize = isMobile ? 40 : 50
-  // Outer lens — triple diameter, half opacity
-  const outerLensSize = isMobile ? 120 : 150
 
   const outerBg = isMobile 
     ? 'radial-gradient(circle, rgba(255,255,255,0.18) 25%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0) 70%)'
@@ -114,24 +112,7 @@ export default function FloatingChatButton({
       }}
       aria-label="Open Second Brain Chat"
     >
-      {/* Outer lens — double size, half thickness */}
-      <div
-        style={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          width: `${outerLensSize}px`,
-          height: `${outerLensSize}px`,
-          borderRadius: '50%',
-          backgroundColor: 'transparent',
-          border: '0.25px solid #ffffff',
-          transform: 'translate(-50%, -50%)',
-          opacity: isMobile ? 0.28 : 0.33,
-          pointerEvents: 'none',
-        }}
-      />
-
-      {/* Inner lens — original */}
+      {/* Lens */}
       <div
         style={{
           position: 'absolute',
@@ -143,7 +124,7 @@ export default function FloatingChatButton({
           backgroundColor: 'transparent',
           border: '0.5px solid #ffffff',
           transform: 'translate(-50%, -50%)',
-          opacity: isMobile ? 0.75 : 0.85,
+          opacity: isMobile ? 0.56 : 0.64,
           pointerEvents: 'none',
         }}
       />
