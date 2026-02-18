@@ -9,6 +9,8 @@ import Container from '@/components/layout/Container'
 import Lottie from 'lottie-react'
 import sphereAnimation from '../../public/animations/SFERA_LOGO_B.json'
 import FloatingChatButton from '@/components/ui/FloatingChatButton'
+import { useAuth } from '@/lib/useAuth'
+import { createClient } from '@/lib/supabase/client'
 
 export default function HomePage() {
   const { hero, problem, solution, impact, platforms, cta } = homeContent
@@ -17,6 +19,33 @@ export default function HomePage() {
   const fullText = hero.headline.join('\n')
   const [displayedText, setDisplayedText] = useState('')
   const [currentIndex, setCurrentIndex] = useState(0)
+  const { user, isAuthenticated } = useAuth()
+  const [hasActiveBrain, setHasActiveBrain] = useState(false)
+
+  // Check if user has at least one Second Brain
+  useEffect(() => {
+    if (!isAuthenticated || !user) { setHasActiveBrain(false); return }
+    const supabase = createClient()
+    supabase
+      .from('second_brains')
+      .select('id')
+      .eq('user_id', user.id)
+      .limit(1)
+      .then(({ data }) => {
+        setHasActiveBrain(!!(data && data.length > 0))
+      })
+  }, [isAuthenticated, user])
+
+  // Open chat with session tokens
+  const handleOpenChat = async () => {
+    const supabase = createClient()
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) return
+    const url = new URL('https://secondbrain-chat.vercel.app')
+    url.searchParams.set('access_token', session.access_token)
+    url.searchParams.set('refresh_token', session.refresh_token)
+    window.location.href = url.toString()
+  }
 
   useEffect(() => {
     if (currentIndex < fullText.length) {
@@ -266,8 +295,8 @@ export default function HomePage() {
 
       {/* Floating Chat Button — visible only for users with active Second Brain */}
       <FloatingChatButton 
-        chatUrl="https://app.smartbrainup.ai/chat" 
-        show={true} // TODO: replace with Supabase session check
+        show={hasActiveBrain}
+        onClick={handleOpenChat}
       />
 
     </div>

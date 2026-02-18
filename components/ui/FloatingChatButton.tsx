@@ -5,11 +5,13 @@ import { useState, useEffect } from 'react'
 interface FloatingChatButtonProps {
   chatUrl?: string
   show?: boolean
+  onClick?: () => void
 }
 
 export default function FloatingChatButton({ 
   chatUrl = '/chat',
   show = true,
+  onClick,
 }: FloatingChatButtonProps) {
   const [visible, setVisible] = useState(false)
   const [mounted, setMounted] = useState(false)
@@ -78,7 +80,8 @@ export default function FloatingChatButton({
 
   return (
     <a
-      href={chatUrl}
+      href={onClick ? undefined : chatUrl}
+      onClick={onClick ? (e) => { e.preventDefault(); onClick(); } : undefined}
       style={{
         position: 'fixed',
         bottom: isMobile ? 'calc(15% + 190px)' : 'calc(18% + 290px)',
