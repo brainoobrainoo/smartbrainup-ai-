@@ -73,8 +73,8 @@ export default function FloatingChatButton({
 
   // Lens sizes
   const lensSize = isMobile ? 40 : 50
-  // Outer lens — double diameter, half border
-  const outerLensSize = isMobile ? 80 : 100
+  // Outer lens — triple diameter, half opacity
+  const outerLensSize = isMobile ? 120 : 150
 
   const outerBg = isMobile 
     ? 'radial-gradient(circle, rgba(255,255,255,0.18) 25%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0) 70%)'
@@ -126,7 +126,7 @@ export default function FloatingChatButton({
           backgroundColor: 'transparent',
           border: '0.25px solid #ffffff',
           transform: 'translate(-50%, -50%)',
-          opacity: isMobile ? 0.55 : 0.65,
+          opacity: isMobile ? 0.28 : 0.33,
           pointerEvents: 'none',
         }}
       />
