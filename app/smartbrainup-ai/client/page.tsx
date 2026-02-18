@@ -12,6 +12,7 @@ import { chatContent } from '@/content/smartbrainup-ai/chat'
 import { Phase2CollectedData } from '@/content/smartbrainup-ai/phase2'
 import { useAuth, updateDisplayName, signOut } from '@/lib/useAuth'
 import { supabase } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase/client'
 import '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css'
 import {
   MainContainer,
@@ -398,7 +399,8 @@ export default function ClientArea() {
   }
 
   function openBrain(b: SecondBrain) {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    const authClient = createClient()
+    authClient.auth.getSession().then(({ data: { session } }) => {
       if (!session) { alert('No session - please log in again'); return }
       const url = 'https://secondbrain-chat.vercel.app' +
         '?access_token=' + encodeURIComponent(session.access_token) +
