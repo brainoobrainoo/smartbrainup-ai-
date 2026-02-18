@@ -88,8 +88,8 @@ export default function FloatingChatButton({
       onClick={onClick ? (e) => { e.preventDefault(); onClick(); } : undefined}
       style={{
         position: 'fixed',
-        bottom: isMobile ? 'calc(15% + 170px)' : 'calc(18% + 280px)',
-        right: isMobile ? 'calc(8% + 30px)' : 'calc(10% + 360px)',
+        bottom: isMobile ? 'calc(15% + 185px)' : 'calc(18% + 270px)',
+        right: isMobile ? 'calc(8% + 25px)' : 'calc(10% + 490px)',
         zIndex: 999,
         width: `${outerSize}px`,
         height: `${outerSize}px`,
