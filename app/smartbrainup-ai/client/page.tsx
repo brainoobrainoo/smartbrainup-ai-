@@ -239,13 +239,19 @@ export default function ClientArea() {
       .from('assessments')
       .update({ card_color: color })
       .eq('id', parseInt(brainId))
-    // Sync to second_brains (using auth client)
+    // Sync to second_brains (using auth client) - convert key to hex
+    const COLOR_MAP: Record<string, string> = {
+      default: '#aeaeae', slate: '#8f99a8', ocean: '#9bb4c4',
+      sage: '#8a9070', sand: '#d0c078', rose: '#945c5c',
+      lavender: '#2d3f4e', charcoal: '#3a3a3a',
+    }
+    const hexColor = COLOR_MAP[color] || color
     const authClientColor = createClient()
     const { error: sbColorErr } = await authClientColor
       .from('second_brains')
-      .update({ color })
+      .update({ color: hexColor })
       .eq('assessment_id', parseInt(brainId))
-    console.log('[COLOR SYNC]', brainId, color, sbColorErr || 'OK')
+    console.log('[COLOR SYNC]', brainId, color, '->', hexColor, sbColorErr || 'OK')
     if (!error && user) {
       await fetchAssessments(user.id)
     }
