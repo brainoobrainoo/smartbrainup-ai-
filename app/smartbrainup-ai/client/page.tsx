@@ -227,7 +227,7 @@ export default function ClientArea() {
       .from('second_brains')
       .update({ name: newName })
       .eq('assessment_id', parseInt(brainId))
-    console.log('[RENAME SYNC]', brainId, newName, sbError || 'OK')
+
     if (!error && user) {
       await fetchAssessments(user.id)
     }
@@ -251,7 +251,7 @@ export default function ClientArea() {
       .from('second_brains')
       .update({ color: hexColor })
       .eq('assessment_id', parseInt(brainId))
-    console.log('[COLOR SYNC]', brainId, color, '->', hexColor, sbColorErr || 'OK')
+
     if (!error && user) {
       await fetchAssessments(user.id)
     }
@@ -343,7 +343,8 @@ export default function ClientArea() {
       if (latest) finalAssessmentId = latest.id
     }
 
-    await supabase.from('second_brains').insert([{
+    const authClientInsert = createClient()
+    await authClientInsert.from('second_brains').insert([{
       user_id: user.id,
       assessment_id: finalAssessmentId,
       name: savedBrainName,
