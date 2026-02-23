@@ -1,9 +1,5 @@
 import OpenAI from 'openai'
 
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-})
-
 const SYSTEM_PROMPT = `You are the AI-UP Second Brain™ assistant on SmartBrainUp.ai.
 
 Your role is to guide potential clients through understanding the AI-UP Second Brain™ method and help them start building their own Second Brain.
@@ -43,6 +39,10 @@ YOUR BEHAVIOR:
 - After every response, ask one targeted follow-up question to guide the client forward`
 
 export async function POST(req: Request) {
+  const client = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+  })
+
   const { messages } = await req.json()
 
   const stream = await client.chat.completions.create({
