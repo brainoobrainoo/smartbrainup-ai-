@@ -75,7 +75,7 @@ export default function StartPage() {
     setIsLoading(true)
 
     try {
-      const res = await fetch('/api/assistant', {
+      const res = await fetch('/api/public-chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

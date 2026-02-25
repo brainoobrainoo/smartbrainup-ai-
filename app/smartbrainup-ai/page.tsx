@@ -9,6 +9,7 @@ import Container from '@/components/layout/Container'
 import Lottie from 'lottie-react'
 import sphereAnimation from '../../public/animations/SFERA_LOGO_B.json'
 import FloatingChatButton from '@/components/ui/FloatingChatButton'
+import StartButton from '@/components/ui/StartButton'
 import { useAuth } from '@/lib/useAuth'
 import { createClient } from '@/lib/supabase/client'
 
@@ -299,6 +300,12 @@ export default function HomePage() {
       <FloatingChatButton 
         show={hasActiveBrain}
         onClick={handleOpenChat}
+      />
+
+      {/* Start Button — visible only for non-authenticated users */}
+      <StartButton 
+        show={!isAuthenticated}
+        href="/start"
       />
 
     </div>
