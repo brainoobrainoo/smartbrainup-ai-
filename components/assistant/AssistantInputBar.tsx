@@ -25,6 +25,9 @@ const C_NIGHT = {
   sendInactiveBg: 'rgba(255,255,255,0.2)',
   sendInactiveColor: 'rgba(255,255,255,0.4)',
   disclaimer: 'rgba(255,255,255,0.2)',
+  toastBg: 'rgba(255,255,255,0.12)',
+  toastText: '#ffffff',
+  toastBorder: 'rgba(255,255,255,0.08)',
 }
 
 const C_DAY = {
@@ -37,6 +40,9 @@ const C_DAY = {
   sendInactiveBg: 'rgba(37,37,37,0.12)',
   sendInactiveColor: 'rgba(37,37,37,0.3)',
   disclaimer: 'rgba(37,37,37,0.25)',
+  toastBg: 'rgba(0,0,0,0.06)',
+  toastText: '#252525',
+  toastBorder: 'rgba(0,0,0,0.06)',
 }
 
 // ── Real audio visualizer — reads actual microphone data ──
@@ -176,6 +182,35 @@ function LiveAudioBars({ stream, barColor }: { stream: MediaStream | null, barCo
   )
 }
 
+// ── TOAST COMPONENT ──
+function Toast({ message, isDayMode, visible }: { message: string, isDayMode: boolean, visible: boolean }) {
+  const C = isDayMode ? C_DAY : C_NIGHT
+  return (
+    <div style={{
+      position: 'fixed',
+      top: '80px',
+      left: '50%',
+      transform: `translateX(-50%) translateY(${visible ? '0' : '-20px'})`,
+      opacity: visible ? 1 : 0,
+      transition: 'opacity 0.3s ease, transform 0.3s ease',
+      pointerEvents: 'none',
+      zIndex: 100,
+      backgroundColor: C.toastBg,
+      color: C.toastText,
+      border: `1px solid ${C.toastBorder}`,
+      borderRadius: '12px',
+      padding: '10px 20px',
+      fontSize: '13px',
+      fontFamily: 'var(--font-inter), sans-serif',
+      backdropFilter: 'blur(12px)',
+      WebkitBackdropFilter: 'blur(12px)',
+      whiteSpace: 'nowrap',
+    }}>
+      {message}
+    </div>
+  )
+}
+
 // ── COMPONENT ──
 
 interface AssistantInputBarProps {
@@ -183,106 +218,96 @@ interface AssistantInputBarProps {
   isLoading: boolean
   isDayMode?: boolean
   onToggleTheme?: () => void
+  isIntakeMode?: boolean
+  onToggleIntake?: (value: boolean) => void
 }
 
-export default function AssistantInputBar({ onSend, isLoading, isDayMode = false, onToggleTheme }: AssistantInputBarProps) {
+export default function AssistantInputBar({ onSend, isLoading, isDayMode = false, onToggleTheme, isIntakeMode = false, onToggleIntake }: AssistantInputBarProps) {
   const C = isDayMode ? C_DAY : C_NIGHT
   const [input, setInput] = useState('')
   const [isRecording, setIsRecording] = useState(false)
   const [isTranscribing, setIsTranscribing] = useState(false)
   const [activeStream, setActiveStream] = useState<MediaStream | null>(null)
+  const [toastMessage, setToastMessage] = useState('')
+  const [toastVisible, setToastVisible] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
-  const audioChunksRef = useRef<Blob[]>([])
-  const streamRef = useRef<MediaStream | null>(null)
-  const mimeTypeRef = useRef<string>('audio/webm')
+  const chunksRef = useRef<Blob[]>([])
+  const toastTimerRef = useRef<NodeJS.Timeout | null>(null)
 
-  
-
-  // ── Auto-resize textarea ──
+  // ── TEXTAREA AUTO-RESIZE ──
   useLayoutEffect(() => {
-    const textarea = textareaRef.current
-    if (!textarea) return
-    textarea.style.height = 'auto'
-    textarea.style.height = Math.min(textarea.scrollHeight, parseInt(L.textarea.maxHeight)) + 'px'
+    const el = textareaRef.current
+    if (!el) return
+    el.style.height = '0'
+    el.style.height = Math.min(el.scrollHeight, parseInt(L.textarea.maxHeight)) + 'px'
   }, [input])
 
-  // ── VOICE RECORDING ──
+  // ── TOAST ──
+  const showToast = useCallback((msg: string) => {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current)
+    setToastMessage(msg)
+    setToastVisible(true)
+    toastTimerRef.current = setTimeout(() => {
+      setToastVisible(false)
+    }, 2500)
+  }, [])
+
+  // ── TOGGLE INTAKE ──
+  const handleToggleIntake = useCallback(() => {
+    if (isLoading || isTranscribing) return
+    const newValue = !isIntakeMode
+    onToggleIntake?.(newValue)
+    showToast(newValue ? 'Context Intake — active' : 'Informative mode')
+  }, [isIntakeMode, isLoading, isTranscribing, onToggleIntake, showToast])
+
+  // ── RECORDING ──
 
   const startRecording = useCallback(async () => {
+    if (isLoading || isTranscribing) return
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      streamRef.current = stream
       setActiveStream(stream)
-      audioChunksRef.current = []
-
-      const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
-        ? 'audio/webm;codecs=opus'
-        : MediaRecorder.isTypeSupported('audio/webm')
-          ? 'audio/webm'
-          : 'audio/mp4'
-
-      mimeTypeRef.current = mimeType
-      const mediaRecorder = new MediaRecorder(stream, { mimeType })
-      mediaRecorderRef.current = mediaRecorder
-
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) audioChunksRef.current.push(event.data)
-      }
-
-      mediaRecorder.start(250)
+      chunksRef.current = []
+      const recorder = new MediaRecorder(stream)
+      recorder.ondataavailable = (e) => { if (e.data.size > 0) chunksRef.current.push(e.data) }
+      mediaRecorderRef.current = recorder
+      recorder.start()
       setIsRecording(true)
     } catch (error) {
-      console.error('Microphone access denied:', error)
+      console.error('Mic access denied:', error)
     }
-  }, [])
-
-  const releaseRecorder = useCallback(() => {
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-      mediaRecorderRef.current.stop()
-    }
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop())
-      streamRef.current = null
-    }
-    setActiveStream(null)
-    setIsRecording(false)
-  }, [])
+  }, [isLoading, isTranscribing])
 
   const cancelRecording = useCallback(() => {
-    if (mediaRecorderRef.current) mediaRecorderRef.current.onstop = null
-    releaseRecorder()
-    audioChunksRef.current = []
-  }, [releaseRecorder])
+    if (mediaRecorderRef.current) {
+      mediaRecorderRef.current.ondataavailable = null
+      mediaRecorderRef.current.stop()
+    }
+    if (activeStream) activeStream.getTracks().forEach(t => t.stop())
+    setActiveStream(null)
+    setIsRecording(false)
+    chunksRef.current = []
+  }, [activeStream])
 
-  const confirmRecording = useCallback(() => {
-    if (!mediaRecorderRef.current || mediaRecorderRef.current.state === 'inactive') return
+  const confirmRecording = useCallback(async () => {
+    if (!mediaRecorderRef.current) return
 
-    const mimeType = mimeTypeRef.current
+    mediaRecorderRef.current.ondataavailable = async (e) => {
+      if (e.data.size > 0) chunksRef.current.push(e.data)
 
-    mediaRecorderRef.current.onstop = async () => {
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop())
-        streamRef.current = null
-      }
+      if (activeStream) activeStream.getTracks().forEach(t => t.stop())
       setActiveStream(null)
-
-      const audioBlob = new Blob(audioChunksRef.current, { type: mimeType })
-      audioChunksRef.current = []
-
-      if (audioBlob.size < 1000) return
 
       setIsTranscribing(true)
       try {
+        const blob = new Blob(chunksRef.current, { type: 'audio/webm' })
         const formData = new FormData()
-        const ext = mimeType.includes('mp4') ? 'mp4' : 'webm'
-        formData.append('audio', audioBlob, `recording.${ext}`)
-
+        formData.append('file', blob, 'recording.webm')
         const res = await fetch('/api/transcribe', { method: 'POST', body: formData })
-
         if (res.ok) {
           const data = await res.json()
-          if (data.text?.trim()) {
+          if (data.text) {
             setInput(prev => {
               const sep = prev.trim() ? ' ' : ''
               return prev + sep + data.text.trim()
@@ -299,7 +324,7 @@ export default function AssistantInputBar({ onSend, isLoading, isDayMode = false
 
     mediaRecorderRef.current.stop()
     setIsRecording(false)
-  }, [])
+  }, [activeStream])
 
   // ── SEND ──
 
@@ -327,6 +352,9 @@ export default function AssistantInputBar({ onSend, isLoading, isDayMode = false
   return (
     <div style={{ padding: L.containerPadding, paddingBottom: L.containerPaddingBottom, position: 'relative' }}>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+
+      {/* Toast */}
+      <Toast message={toastMessage} isDayMode={isDayMode} visible={toastVisible} />
 
       <div style={{ maxWidth: L.maxWidth, margin: '0 auto' }}>
         <div style={{
@@ -358,7 +386,7 @@ export default function AssistantInputBar({ onSend, isLoading, isDayMode = false
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Describe your situation..."
+                placeholder={isIntakeMode ? 'Answer the question...' : 'Describe your situation...'}
                 rows={1}
                 disabled={isLoading || isTranscribing}
                 style={{
@@ -430,6 +458,43 @@ export default function AssistantInputBar({ onSend, isLoading, isDayMode = false
                       <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
                     </svg>
                   )}
+                </button>
+
+                {/* ── INTAKE TOGGLE — centered ── */}
+                <button
+                  onClick={handleToggleIntake}
+                  disabled={isLoading || isTranscribing}
+                  aria-label={isIntakeMode ? 'Switch to informative' : 'Start intake'}
+                  style={{
+                    position: 'absolute',
+                    left: '50%',
+                    top: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    width: '55px',
+                    height: '22px',
+                    borderRadius: '11px',
+                    border: 'none',
+                    cursor: isLoading || isTranscribing ? 'not-allowed' : 'pointer',
+                    backgroundColor: isIntakeMode ? C.text : (isDayMode ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.15)'),
+                    opacity: isLoading || isTranscribing ? 0.4 : (isIntakeMode ? 0.9 : 0.4),
+                    transition: 'background-color 0.3s, opacity 0.3s',
+                    flexShrink: 0,
+                    padding: 0,
+                    outline: 'none',
+                    zIndex: 1,
+                  }}
+                >
+                  <div style={{
+                    position: 'absolute',
+                    top: '2px',
+                    left: isIntakeMode ? '35px' : '2px',
+                    width: '18px',
+                    height: '18px',
+                    borderRadius: '50%',
+                    backgroundColor: isIntakeMode ? (isDayMode ? '#ffffff' : '#252525') : (isDayMode ? '#ffffff' : '#252525'),
+                    transition: 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
+                  }} />
                 </button>
 
                 {/* Right side: mic + send */}

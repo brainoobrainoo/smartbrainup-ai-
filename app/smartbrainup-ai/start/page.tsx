@@ -26,6 +26,7 @@ export default function StartPage() {
   const [keyboardOffset, setKeyboardOffset] = useState(0)
   const [themeBottom, setThemeBottom] = useState(NIGHT_THEMES[0])
   const [isDayMode, setIsDayMode] = useState(false)
+  const [isIntakeMode, setIsIntakeMode] = useState(false)
 
   useEffect(() => {
     setThemeBottom(NIGHT_THEMES[Math.floor(Math.random() * NIGHT_THEMES.length)])
@@ -220,6 +221,8 @@ export default function StartPage() {
           onSend={handleSend}
           isLoading={isLoading}
           isDayMode={isDayMode}
+          isIntakeMode={isIntakeMode}
+          onToggleIntake={(v) => setIsIntakeMode(v)}
           onToggleTheme={() => {
             if (isDayMode) {
               setThemeBottom(NIGHT_THEMES[Math.floor(Math.random() * NIGHT_THEMES.length)])
