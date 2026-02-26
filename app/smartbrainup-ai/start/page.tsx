@@ -242,17 +242,7 @@ export default function StartPage() {
           isLoading={isLoading}
           isDayMode={isDayMode}
           isIntakeMode={isIntakeMode}
-          onToggleIntake={(v) => {
-            if (v && !isLoggedIn) {
-              router.push('/login')
-              return
-            }
-            if (v && isLoggedIn && (userCredits === null || userCredits <= 0)) {
-              // TODO: redirect to Stripe when ready
-              return
-            }
-            setIsIntakeMode(v)
-          }}
+          onToggleIntake={(v) => setIsIntakeMode(v)}
           onToggleTheme={() => {
             if (isDayMode) {
               setThemeBottom(NIGHT_THEMES[Math.floor(Math.random() * NIGHT_THEMES.length)])
