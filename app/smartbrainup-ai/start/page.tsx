@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import AssistantInputBar from '@/components/assistant/AssistantInputBar'
+import { createClient } from '@/lib/supabase/client'
+import { useRouter } from 'next/navigation'
 
 type Message = {
   role: 'user' | 'assistant'
@@ -27,10 +29,28 @@ export default function StartPage() {
   const [themeBottom, setThemeBottom] = useState(NIGHT_THEMES[0])
   const [isDayMode, setIsDayMode] = useState(false)
   const [isIntakeMode, setIsIntakeMode] = useState(false)
+  const [userCredits, setUserCredits] = useState<number | null>(null)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const router = useRouter()
 
   useEffect(() => {
     setThemeBottom(NIGHT_THEMES[Math.floor(Math.random() * NIGHT_THEMES.length)])
   }, [])
+
+  // ── CHECK AUTH ON MOUNT ──
+  useEffect(() => {
+    const checkAuth = async () => {
+      const sb = createClient()
+      const { data: { user } } = await sb.auth.getUser()
+      if (user) {
+        setIsLoggedIn(true)
+        const { data } = await sb.from('user_profiles').select('credits').eq('id', user.id).single()
+        if (data) setUserCredits(data.credits)
+      }
+    }
+    checkAuth()
+  }, [])
+
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const [isAtBottom, setIsAtBottom] = useState(true)
@@ -222,7 +242,17 @@ export default function StartPage() {
           isLoading={isLoading}
           isDayMode={isDayMode}
           isIntakeMode={isIntakeMode}
-          onToggleIntake={(v) => setIsIntakeMode(v)}
+          onToggleIntake={(v) => {
+            if (v && !isLoggedIn) {
+              router.push('/login')
+              return
+            }
+            if (v && isLoggedIn && (userCredits === null || userCredits <= 0)) {
+              // TODO: redirect to Stripe when ready
+              return
+            }
+            setIsIntakeMode(v)
+          }}
           onToggleTheme={() => {
             if (isDayMode) {
               setThemeBottom(NIGHT_THEMES[Math.floor(Math.random() * NIGHT_THEMES.length)])
