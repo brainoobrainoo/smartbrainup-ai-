@@ -16,7 +16,7 @@ export async function POST(req: Request) {
     model: 'gpt-4.1-mini',
     prompt: {
       id: process.env.OPENAI_PROMPT_ID_PUBLIC!,
-      version: '2',
+      version: '3',
     },
     input,
     stream: true,
