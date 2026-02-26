@@ -16,6 +16,7 @@ export default function StartButton({
   const [visible, setVisible] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [breathing, setBreathing] = useState(false)
+  const [glowing, setGlowing] = useState(false)
 
   useEffect(() => {
     setMounted(true)
@@ -25,6 +26,10 @@ export default function StartButton({
       const style = document.createElement('style')
       style.id = styleId
       style.textContent = `
+        @keyframes startInitialRotate {
+          0% { transform: rotate(45deg); }
+          100% { transform: rotate(0deg); }
+        }
         @keyframes startFloatWobble {
           0% { transform: translate(0px, 0px) rotate(0deg); }
           25% { transform: translate(18px, -5px) rotate(2.5deg); }
@@ -54,13 +59,12 @@ export default function StartButton({
         }
         @keyframes letterGlow {
           0% { opacity: 0; }
-          17% { opacity: 0; }
-          17.5% { opacity: 0.9; }
-          18.3% { opacity: 0; }
-          21.5% { opacity: 0.85; }
-          22.3% { opacity: 0; }
-          27% { opacity: 0.9; }
-          69% { opacity: 0.55; }
+          0.3% { opacity: 0.95; }
+          0.8% { opacity: 0; }
+          5% { opacity: 0.85; }
+          5.8% { opacity: 0; }
+          12% { opacity: 0.9; }
+          55% { opacity: 0.55; }
           100% { opacity: 0.55; }
         }
         @keyframes circleBreathe {
@@ -76,7 +80,8 @@ export default function StartButton({
     if (!show) return
     const timer = setTimeout(() => setVisible(true), 300)
     const breathTimer = setTimeout(() => setBreathing(true), 2500)
-    return () => { clearTimeout(timer); clearTimeout(breathTimer) }
+    const glowTimer = setTimeout(() => setGlowing(true), 7000)
+    return () => { clearTimeout(timer); clearTimeout(breathTimer); clearTimeout(glowTimer) }
   }, [show])
 
   if (!show || !mounted) return null
@@ -139,6 +144,21 @@ export default function StartButton({
       }}
       aria-label="Start"
     >
+      {/* Rotation wrapper — starts vertical, settles to horizontal */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          overflow: 'visible',
+          animation: 'startInitialRotate 6.5s ease-out forwards',
+        }}
+      >
       {/* Inner circle — concentric to START, fixed semi-transparent */}
       <div
         style={{
@@ -175,7 +195,7 @@ export default function StartButton({
           pointerEvents: 'none',
           zIndex: 2,
           filter: 'blur(3px)',
-          animation: breathing ? 'letterGlow 12s linear forwards' : 'none',
+          animation: glowing ? 'letterGlow 12s linear forwards' : 'none',
           opacity: 0,
         }}
       >
@@ -262,6 +282,7 @@ export default function StartButton({
             pointerEvents: 'none',
           }}
         />
+      </div>
       </div>
     </a>
   )
