@@ -27,7 +27,6 @@ const C_NIGHT = {
   disclaimer: 'rgba(255,255,255,0.2)',
   toastBg: 'rgba(255,255,255,0.12)',
   toastText: '#ffffff',
-  toastBorder: 'rgba(255,255,255,0.08)',
 }
 
 const C_DAY = {
@@ -42,7 +41,6 @@ const C_DAY = {
   disclaimer: 'rgba(37,37,37,0.25)',
   toastBg: 'rgba(0,0,0,0.06)',
   toastText: '#252525',
-  toastBorder: 'rgba(0,0,0,0.06)',
 }
 
 // ── Real audio visualizer — reads actual microphone data ──
@@ -187,17 +185,17 @@ function Toast({ message, isDayMode, visible }: { message: string, isDayMode: bo
   const C = isDayMode ? C_DAY : C_NIGHT
   return (
     <div style={{
-      position: 'fixed',
-      top: '80px',
+      position: 'absolute',
+      bottom: '100%',
       left: '50%',
-      transform: `translateX(-50%) translateY(${visible ? '0' : '-20px'})`,
+      transform: `translateX(-50%) translateY(${visible ? '0' : '8px'})`,
+      marginBottom: '12px',
       opacity: visible ? 1 : 0,
-      transition: 'opacity 0.3s ease, transform 0.3s ease',
+      transition: 'opacity 0.25s ease, transform 0.25s ease',
       pointerEvents: 'none',
       zIndex: 100,
       backgroundColor: C.toastBg,
       color: C.toastText,
-      border: `1px solid ${C.toastBorder}`,
       borderRadius: '12px',
       padding: '10px 20px',
       fontSize: '13px',
