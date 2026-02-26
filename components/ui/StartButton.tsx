@@ -80,7 +80,7 @@ export default function StartButton({
     if (!show) return
     const timer = setTimeout(() => setVisible(true), 300)
     const breathTimer = setTimeout(() => setBreathing(true), 2500)
-    const glowTimer = setTimeout(() => setGlowing(true), 7333)
+    const glowTimer = setTimeout(() => setGlowing(true), 7833)
     return () => { clearTimeout(timer); clearTimeout(breathTimer); clearTimeout(glowTimer) }
   }, [show])
 
