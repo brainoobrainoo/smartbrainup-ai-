@@ -27,7 +27,7 @@ export default function StartButton({
       style.id = styleId
       style.textContent = `
         @keyframes startInitialRotate {
-          0% { transform: rotate(45deg); }
+          0% { transform: rotate(35deg); }
           100% { transform: rotate(0deg); }
         }
         @keyframes startFloatWobble {
@@ -80,7 +80,7 @@ export default function StartButton({
     if (!show) return
     const timer = setTimeout(() => setVisible(true), 300)
     const breathTimer = setTimeout(() => setBreathing(true), 2500)
-    const glowTimer = setTimeout(() => setGlowing(true), 7000)
+    const glowTimer = setTimeout(() => setGlowing(true), 7333)
     return () => { clearTimeout(timer); clearTimeout(breathTimer); clearTimeout(glowTimer) }
   }, [show])
 
