@@ -11,8 +11,8 @@ export const licensingContent = {
       "one commitment"
     ],
     body: [
-      "The value is not in the platform",
-      "It's in the Second Brain"
+      "The value is not in the platform.",
+      "It's in the Second Brain."
     ]
   },
 
@@ -26,8 +26,8 @@ export const licensingContent = {
         body: [
           "Individual use",
           "",
-          "One persistent Second Brain",
-          "executed across supported AI platforms"
+          "One persistent operational architecture",
+          "Promptless execution inside your dashboard"
         ]
       },
       {
@@ -37,8 +37,8 @@ export const licensingContent = {
         body: [
           "Small teams",
           "",
-          "Separated Second Brains",
-          "for different roles"
+          "Separated operational architectures",
+          "Built for distinct roles"
         ]
       },
       {
@@ -48,8 +48,8 @@ export const licensingContent = {
         body: [
           "Functions and units",
           "",
-          "Scalable alignment",
-          "through multiple Second Brains"
+          "Structured alignment",
+          "Across multiple operational domains"
         ]
       },
       {
@@ -59,8 +59,8 @@ export const licensingContent = {
         body: [
           "Cross-functional deployment",
           "",
-          "Enterprise-grade use",
-          "of multiple Second Brains"
+          "Enterprise-grade operational architecture",
+          "Multiple persistent systems"
         ]
       }
     ],
@@ -69,48 +69,146 @@ export const licensingContent = {
       brains: "Unlimited",
       price: "Custom pricing",
       body: [
-        "PMF Dynamic™",
-        "semantic watermarking",
-        "API layer",
-        "dedicated onboarding"
+        "Governance and access control",
+        "API integration layer",
+        "Dedicated onboarding"
       ]
     }
   },
 
-  principles: {
-    section: "02 — LICENSING PRINCIPLES",
+  access: {
+    section: "02 — ACCESS & ACTIVATION",
     title: [
-      "The method is licensed",
-      "per Second Brain",
-      "not per user",
-      "not per platform"
+      "How access works"
     ],
-    body: [
-      "Each Second Brain represents",
-      "a discrete",
-      "persistent operational context",
-      "",
-      "Promptless execution",
-      "supported platforms",
-      "GPT · Claude · Gemini · Grok · Perplexity",
-      "",
-      "Deterministic interaction",
-      "independent from the execution surface",
-      "",
-      "Platforms change",
-      "the method remains",
-      "",
-      "The value is in the method"
+    intro: [
+      "The method is licensed per Second Brain.",
+      "Creating a Second Brain activates your operational environment."
     ],
-    link: {
-      text: "How licensing and IP protection work",
-      url: "SmartBrainUp.com / intellectual-property",
-      href: "https://smartbrainup.com/intellectual-property"
+    stepsLabel: "Access sequence",
+    steps: [
+      "Complete the structured intake.",
+      "Acquire one Second Brain license.",
+      "Your dashboard is activated.",
+      "Your first Second Brain becomes operational."
+    ],
+    note: "A dashboard is available only after at least one active Second Brain has been created."
+  },
+
+  subscription: {
+    section: "03 — SUBSCRIPTION & USAGE",
+    intro: [
+      "The creation of a Second Brain is licensed separately from ongoing usage.",
+      "",
+      "After activation, your environment includes:"
+    ],
+    features: [
+      "Access to Generic AI",
+      "Five advanced reasoning frameworks",
+    ],
+    frameworks: "Breakdown · Audit · Model · Calibrate · Reframe",
+    note: [
+      "Generic AI provides advanced reasoning tools.",
+      "It does not include personalized context or custom modules."
+    ],
+    launch: {
+      label: "LAUNCH PERIOD",
+      body: [
+        "Each new Second Brain license includes:",
+        "Two months of complimentary Basic subscription."
+      ],
+      during: [
+        "Generic AI is fully accessible",
+        "Core frameworks are available",
+        "No additional subscription fee is required"
+      ],
+      after: "After two months, an active subscription is required to continue using Generic AI."
     }
   },
 
+  subscriptionPlans: {
+    section: "04 — SUBSCRIPTION PLANS",
+    plans: [
+      {
+        name: "Basic",
+        monthly: "€19",
+        yearly: "€190",
+        badge: null,
+        features: [
+          "Generic AI access",
+          "Core frameworks included",
+          "Standard model",
+          "Controlled usage limits"
+        ]
+      },
+      {
+        name: "PRO",
+        subtitle: "Advanced Layer",
+        monthly: "€49",
+        yearly: "€490",
+        badge: "50% off first 2 months",
+        features: [
+          "Advanced model",
+          "Higher limits",
+          "Priority execution"
+        ]
+      },
+      {
+        name: "ELITE",
+        subtitle: "Executive",
+        monthly: "€129",
+        yearly: "€1,290",
+        badge: "50% off first 2 months",
+        features: [
+          "Top-tier model",
+          "Extended limits",
+          "Highest priority performance"
+        ]
+      }
+    ]
+  },
+
+  comparison: {
+    section: "05 — SECOND BRAIN vs GENERIC AI",
+    columns: ["Generic AI", "Second Brain"],
+    features: [
+      { label: "Advanced reasoning tools", generic: true, secondBrain: true },
+      { label: "Dedicated system prompt", generic: false, secondBrain: true },
+      { label: "Custom operational modules", generic: false, secondBrain: true },
+      { label: "Persistent context", generic: false, secondBrain: true },
+      { label: "Deterministic architecture", generic: false, secondBrain: true },
+    ],
+    notes: [
+      "The value of the Second Brain lies in its structure.",
+      "The value of the subscription lies in its continuous operational capacity."
+    ]
+  },
+
+  principles: {
+    section: "06 — STRUCTURAL PRINCIPLES",
+    title: [
+      "Licensing governs structure.",
+      "Subscription governs usage."
+    ],
+    body: [
+      "A Second Brain is a licensed asset.",
+      "It is created once.",
+      "It remains fixed.",
+      "It defines a persistent operational architecture.",
+      "",
+      "Generic AI provides advanced tools.",
+      "The Second Brain provides a dedicated system.",
+      "",
+      "The execution layer may evolve.",
+      "The architecture remains."
+    ]
+  },
+
   cta: {
-    title: "Start with the method",
+    title: [
+      "Start with the method",
+      "Create your Second Brain"
+    ],
     label: "B2B",
     button: "request access"
   }
