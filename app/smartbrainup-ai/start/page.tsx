@@ -255,6 +255,7 @@ export default function StartPage() {
             height: '72px',
             borderRadius: '50%',
             backgroundColor: isDayMode ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.08)',
+            border: isDayMode ? '1px solid rgba(0,0,0,0.5)' : '1px solid rgba(255,255,255,0.5)',
             color: isDayMode ? '#252525' : '#ffffff',
             fontFamily: 'var(--font-inter), sans-serif',
             fontSize: '11px',
