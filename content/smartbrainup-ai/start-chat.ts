@@ -18,8 +18,8 @@ export const startChatContent = {
     'Is my data protected?',
   ],
   welcomeOutro: 'Or ask anything you want.',
-  welcomeBuild: 'When you've seen enough, tap Build.',
+  welcomeBuild: "When you've seen enough, tap Build.",
   placeholder: 'Ask your question...',
   buildButton: 'build',
-  disclaimer: 'AI-UP Second Brain™',
+  disclaimer: 'AI-UP Second Brain\u2122',
 }
