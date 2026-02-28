@@ -94,19 +94,35 @@ export default function StartPage() {
 
   useEffect(() => {
     if (isAtBottom && messages.length > 0) {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+      const el = scrollContainerRef.current
+      if (el) {
+        // During streaming: instant snap (no competing animations)
+        // After streaming: smooth scroll
+        if (isLoading) {
+          el.scrollTop = el.scrollHeight
+        } else {
+          messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+        }
+      }
     }
-  }, [messages, isAtBottom])
+  }, [messages, isAtBottom, isLoading])
+
+  const [isScrolledDown, setIsScrolledDown] = useState(false)
 
   const handleScroll = useCallback(() => {
     const el = scrollContainerRef.current
     if (!el) return
     setIsAtBottom(el.scrollHeight - el.scrollTop - el.clientHeight < 100)
+    setIsScrolledDown(el.scrollTop > 200)
   }, [])
 
   // ── CHIP CLICK — fills input bar via ref, does NOT send ──
   const handleChipClick = useCallback((question: string) => {
     inputBarRef.current?.setInputText(question)
+  }, [])
+
+  const scrollToTop = useCallback(() => {
+    scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
   }, [])
 
   const handleSend = useCallback(async (text: string) => {
@@ -117,7 +133,10 @@ export default function StartPage() {
     setMessages(newMessages)
     setIsLoading(true)
     setIsAtBottom(true)
-    setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100)
+    setTimeout(() => {
+      const el = scrollContainerRef.current
+      if (el) el.scrollTop = el.scrollHeight
+    }, 50)
 
     try {
       const res = await fetch('/api/public-chat', {
@@ -334,12 +353,14 @@ export default function StartPage() {
         transition: 'padding-bottom 0.15s ease-out',
       }}>
 
-        {/* ── BUILD BUTTON — centered above the cloud ── */}
+        {/* ── BUILD BUTTON + SCROLL-TO-TOP — centered above the cloud ── */}
         <div style={{
           display: 'flex',
           justifyContent: 'center',
+          alignItems: 'center',
           paddingBottom: '12px',
           paddingTop: '8px',
+          position: 'relative',
         }}>
           {/* Outer concentric ring */}
           <div style={{
@@ -382,6 +403,33 @@ export default function StartPage() {
               {startChatContent.buildButton}
             </Link>
           </div>
+
+          {/* ── SCROLL TO TOP arrow — right of BUILD, same vertical center ── */}
+          <button
+            onClick={scrollToTop}
+            style={{
+              position: 'absolute',
+              right: '24px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '36px',
+              height: '36px',
+              borderRadius: '50%',
+              border: 'none',
+              backgroundColor: isDayMode ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.08)',
+              color: isDayMode ? '#252525' : '#ffffff',
+              cursor: 'pointer',
+              opacity: isScrolledDown ? 0.5 : 0,
+              pointerEvents: isScrolledDown ? 'auto' : 'none',
+              transition: 'opacity 0.3s ease',
+            }}
+            aria-label="Scroll to top"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="18 15 12 9 6 15" />
+            </svg>
+          </button>
         </div>
 
         <AssistantInputBar
