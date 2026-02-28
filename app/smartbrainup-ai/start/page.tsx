@@ -116,6 +116,8 @@ export default function StartPage() {
     const newMessages = [...messages, userMessage]
     setMessages(newMessages)
     setIsLoading(true)
+    setIsAtBottom(true)
+    setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100)
 
     try {
       const res = await fetch('/api/public-chat', {
@@ -261,7 +263,7 @@ export default function StartPage() {
                       fontSize: '13px',
                       lineHeight: 1.4,
                       cursor: isLoading ? 'default' : 'pointer',
-                      opacity: isLoading ? 0.3 : 0.55,
+                      opacity: isLoading ? 0.3 : 0.72,
                       transition: 'opacity 0.2s, background-color 0.2s',
                       whiteSpace: 'nowrap',
                     }}
@@ -272,7 +274,7 @@ export default function StartPage() {
                       }
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.opacity = isLoading ? '0.3' : '0.55'
+                      e.currentTarget.style.opacity = isLoading ? '0.3' : '0.72'
                       e.currentTarget.style.backgroundColor = isDayMode ? 'rgba(0,0,0,0.04)' : 'rgba(255,255,255,0.06)'
                     }}
                   >
