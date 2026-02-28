@@ -8,7 +8,7 @@ import Container from '@/components/layout/Container'
 import SecondBrainCard from '@/components/client/SecondBrainCard'
 import Phase2Assessment from '@/components/client/Phase2Assessment'
 import { clientContent, Section, SecondBrain, BillingItem } from '@/content/smartbrainup-ai/client'
-import { chatContent } from '@/content/smartbrainup-ai/chat'
+import { supportChatContent } from '@/content/smartbrainup-ai/support-chat'
 import { Phase2CollectedData } from '@/content/smartbrainup-ai/phase2'
 import { useAuth, updateDisplayName, signOut } from '@/lib/useAuth'
 import { supabase } from '@/lib/supabase'
@@ -371,7 +371,7 @@ export default function ClientArea() {
   }>>([
     {
       id: 'welcome',
-      message: chatContent.system.welcome,
+      message: supportChatContent.system.welcome,
       sender: 'assistant',
       direction: 'incoming' as const,
       timestamp: new Date(),
@@ -394,7 +394,7 @@ export default function ClientArea() {
       setIsTyping(false)
       setChatMessages(prev => [...prev, {
         id: `assistant-${Date.now()}`,
-        message: chatContent.mockResponses[responseIndex % chatContent.mockResponses.length],
+        message: supportChatContent.mockResponses[responseIndex % supportChatContent.mockResponses.length],
         sender: 'assistant',
         direction: 'incoming' as const,
         timestamp: new Date(),
