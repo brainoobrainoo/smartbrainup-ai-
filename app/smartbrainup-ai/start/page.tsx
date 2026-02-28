@@ -257,7 +257,9 @@ export default function StartPage() {
               {/* Welcome. */}
               <p>{startChatContent.welcomeLine1}</p>
               {/* Ask me anything about the method. */}
-              <p style={{ marginBottom: '16px' }}>{startChatContent.welcomeLine2}</p>
+              <p>{startChatContent.welcomeLine2}</p>
+              {/* When you've seen enough, tap Build. */}
+              <p style={{ marginBottom: '16px' }}>{startChatContent.welcomeLine3}</p>
 
               {/* Quick question chips — text aligned with paragraph, bubbles spill left */}
               <div style={{
@@ -303,8 +305,6 @@ export default function StartPage() {
               </div>
 
               {/* Or ask anything you want. */}
-              <p>{startChatContent.welcomeLine3}</p>
-              {/* When you've seen enough, tap Build. */}
               <p>{startChatContent.welcomeLine4}</p>
             </div>
           </div>

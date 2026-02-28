@@ -8,6 +8,7 @@
 export const startChatContent = {
   welcomeLine1: 'Welcome.',
   welcomeLine2: 'Ask me anything about the method.',
+  welcomeLine3: "When you've seen enough, tap Build.",
   quickQuestions: [
     'What is AI-UP Second Brain?',
     'How does it work?',
@@ -18,8 +19,7 @@ export const startChatContent = {
     'How much does it cost?',
     'Is my data protected?',
   ],
-  welcomeLine3: 'Or ask anything you want.',
-  welcomeLine4: "When you've seen enough, tap Build.",
+  welcomeLine4: 'Or ask anything you want.',
   placeholder: 'Ask your question...',
   buildButton: 'build',
   disclaimer: 'AI-UP Second Brain\u2122',
