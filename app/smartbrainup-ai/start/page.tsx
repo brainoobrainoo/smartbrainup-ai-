@@ -246,7 +246,7 @@ export default function StartPage() {
           display: 'flex',
           justifyContent: 'center',
           paddingBottom: '12px',
-          paddingTop: '4px',
+          paddingTop: '8px',
         }}>
           {/* Outer concentric ring */}
           <div style={{
