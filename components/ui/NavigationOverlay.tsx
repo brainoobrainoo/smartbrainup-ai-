@@ -6,11 +6,12 @@ import { useEffect } from 'react'
 export default function NavigationOverlay() {
   const pathname = usePathname()
 
+  // Remove class when new page loads
   useEffect(() => {
-    const el = document.getElementById('nav-overlay')
-    if (el) el.remove()
+    document.body.classList.remove('navigating')
   }, [pathname])
 
+  // On any internal link click, add class instantly
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       const link = (e.target as HTMLElement).closest('a[href]') as HTMLAnchorElement | null
@@ -18,14 +19,7 @@ export default function NavigationOverlay() {
       const href = link.getAttribute('href')
       if (!href || href.startsWith('#') || href === pathname) return
       if (href.startsWith('http') && !href.startsWith(window.location.origin)) return
-      if (document.getElementById('nav-overlay')) return
-
-      const div = document.createElement('div')
-      div.id = 'nav-overlay'
-      div.style.cssText = 'position:fixed;inset:0;background:#252525;z-index:99999;'
-      document.documentElement.appendChild(div)
-      // Force synchronous paint — browser MUST render before continuing
-      void div.offsetHeight
+      document.body.classList.add('navigating')
     }
     document.addEventListener('click', handler, true)
     return () => document.removeEventListener('click', handler, true)

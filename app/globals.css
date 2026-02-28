@@ -49,3 +49,17 @@ p, .body-text {
 .animate-pulse-soft {
   animation: pulseSoft 8s ease-in-out infinite;
 }
+
+/* Navigation overlay — pre-rendered, invisible until body gets .navigating */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: #252525;
+  z-index: 99999;
+  opacity: 0;
+  pointer-events: none;
+}
+body.navigating::after {
+  opacity: 1;
+}
