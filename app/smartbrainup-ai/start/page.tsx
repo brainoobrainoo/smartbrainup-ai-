@@ -252,10 +252,10 @@ export default function StartPage() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            width: '82px',
-            height: '82px',
+            width: '80px',
+            height: '80px',
             borderRadius: '50%',
-            border: isDayMode ? '1px solid rgba(0,0,0,0.25)' : '1px solid rgba(255,255,255,0.25)',
+            border: isDayMode ? '1px solid rgba(0,0,0,0.1)' : '1px solid rgba(255,255,255,0.1)',
           }}>
             <Link href="/build" style={{
               display: 'flex',
