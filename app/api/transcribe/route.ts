@@ -7,7 +7,7 @@ export async function POST(req: Request) {
     })
 
     const formData = await req.formData()
-    const audio = formData.get('audio') as File
+    const audio = formData.get('file') as File
 
     if (!audio) {
       return Response.json({ error: 'No audio file' }, { status: 400 })
