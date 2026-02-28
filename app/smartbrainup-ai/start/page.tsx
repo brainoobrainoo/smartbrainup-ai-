@@ -246,23 +246,24 @@ export default function StartPage() {
           display: 'flex',
           justifyContent: 'center',
           paddingBottom: '12px',
+          paddingTop: '4px',
         }}>
           {/* Outer concentric ring */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            width: '80px',
-            height: '80px',
+            width: '72px',
+            height: '72px',
             borderRadius: '50%',
-            border: isDayMode ? '1px solid rgba(0,0,0,0.1)' : '1px solid rgba(255,255,255,0.1)',
+            border: isDayMode ? '1px solid rgba(0,0,0,0.17)' : '1px solid rgba(255,255,255,0.17)',
           }}>
             <Link href="/build" style={{
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              width: '72px',
-              height: '72px',
+              width: '65px',
+              height: '65px',
               borderRadius: '50%',
               backgroundColor: isDayMode ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.08)',
               border: isDayMode ? '1px solid rgba(0,0,0,0.5)' : '1px solid rgba(255,255,255,0.5)',
