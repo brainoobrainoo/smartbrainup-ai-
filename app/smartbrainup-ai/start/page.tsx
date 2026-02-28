@@ -196,7 +196,7 @@ export default function StartPage() {
         <div style={{
           maxWidth: '680px',
           margin: '0 auto',
-          padding: '80px 24px 40px',
+          padding: '85px 24px 40px',
         }}>
           {messages.map((msg, i) => (
             <div key={i} style={{
@@ -253,8 +253,8 @@ export default function StartPage() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            width: '72px',
-            height: '72px',
+            width: '65px',
+            height: '65px',
             borderRadius: '50%',
             border: isDayMode ? '1px solid rgba(0,0,0,0.17)' : '1px solid rgba(255,255,255,0.17)',
           }}>
@@ -262,8 +262,8 @@ export default function StartPage() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              width: '65px',
-              height: '65px',
+              width: '58px',
+              height: '58px',
               borderRadius: '50%',
               backgroundColor: isDayMode ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.08)',
               border: isDayMode ? '1px solid rgba(0,0,0,0.5)' : '1px solid rgba(255,255,255,0.5)',
