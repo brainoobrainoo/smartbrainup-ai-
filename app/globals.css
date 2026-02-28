@@ -8,11 +8,26 @@
   box-sizing: border-box;
 }
 
+html {
+  background: #252525 !important;
+  color-scheme: dark;
+}
+
 body {
   color: #252525;
   background: #252525;
   min-height: 100vh;
   line-height: 1.4;
+}
+
+/* Anti-flash: prevent white frame during route transitions */
+html::before {
+  content: '';
+  display: block;
+  position: fixed;
+  inset: 0;
+  background: #252525;
+  z-index: -1;
 }
 
 /* Body text standard - use this class for all paragraph/description text */
