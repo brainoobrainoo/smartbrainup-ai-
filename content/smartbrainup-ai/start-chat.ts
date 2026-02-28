@@ -6,7 +6,19 @@
 // ═══════════════════════════════════════════════════════════
 
 export const startChatContent = {
-  welcomeMessage: "Welcome.\nAsk me anything about the method — how it works, what you get, how it's different.\n\nWhen you've seen enough, tap Build.",
+  welcomeIntro: 'Welcome. Ask me anything about the method.',
+  quickQuestions: [
+    'What is AI-UP Second Brain?',
+    'How does it work?',
+    'What do I get?',
+    'How is it different from ChatGPT?',
+    'Do I need technical skills?',
+    'Which AI platforms does it support?',
+    'How much does it cost?',
+    'Is my data protected?',
+  ],
+  welcomeOutro: 'Or ask anything you want.',
+  welcomeBuild: 'When you've seen enough, tap Build.',
   placeholder: 'Ask your question...',
   buildButton: 'build',
   disclaimer: 'AI-UP Second Brain™',

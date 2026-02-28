@@ -24,9 +24,7 @@ const NIGHT_THEMES = [
 ]
 
 export default function StartPage() {
-  const [messages, setMessages] = useState<Message[]>([
-    { role: 'assistant', content: startChatContent.welcomeMessage }
-  ])
+  const [messages, setMessages] = useState<Message[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [hasFaded, setHasFaded] = useState(false)
   const [keyboardOffset, setKeyboardOffset] = useState(0)
@@ -34,6 +32,7 @@ export default function StartPage() {
   const [isDayMode, setIsDayMode] = useState(false)
   const [userCredits, setUserCredits] = useState<number | null>(null)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [welcomeVisible, setWelcomeVisible] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
@@ -61,6 +60,12 @@ export default function StartPage() {
   // Trigger background fade after mount
   useEffect(() => {
     const timer = setTimeout(() => setHasFaded(true), 100)
+    return () => clearTimeout(timer)
+  }, [])
+
+  // Welcome fade-in
+  useEffect(() => {
+    const timer = setTimeout(() => setWelcomeVisible(true), 200)
     return () => clearTimeout(timer)
   }, [])
 
@@ -198,6 +203,76 @@ export default function StartPage() {
           margin: '0 auto',
           padding: '85px 24px 40px',
         }}>
+
+          {/* ── WELCOME BLOCK — fade in 2s ── */}
+          <div style={{
+            marginBottom: '24px',
+            opacity: welcomeVisible ? 1 : 0,
+            transition: 'opacity 2s ease',
+          }}>
+            <div style={{
+              maxWidth: '85%',
+              padding: '12px 0',
+              color: isDayMode ? '#252525' : '#ffffff',
+              fontFamily: 'var(--font-inter), sans-serif',
+              fontSize: '15px',
+              lineHeight: 1.6,
+              opacity: 0.85,
+            }}>
+              {/* Intro */}
+              <p style={{ marginBottom: '16px' }}>{startChatContent.welcomeIntro}</p>
+
+              {/* Quick question chips */}
+              <div style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: '8px',
+                marginBottom: '16px',
+              }}>
+                {startChatContent.quickQuestions.map((q, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => handleSend(q)}
+                    disabled={isLoading}
+                    style={{
+                      padding: '7px 14px',
+                      borderRadius: '20px',
+                      border: isDayMode ? '1px solid rgba(0,0,0,0.15)' : '1px solid rgba(255,255,255,0.20)',
+                      backgroundColor: isDayMode ? 'rgba(0,0,0,0.04)' : 'rgba(255,255,255,0.06)',
+                      color: isDayMode ? '#252525' : '#ffffff',
+                      fontFamily: 'var(--font-inter), sans-serif',
+                      fontSize: '13px',
+                      lineHeight: 1.4,
+                      cursor: isLoading ? 'default' : 'pointer',
+                      opacity: isLoading ? 0.4 : 0.7,
+                      transition: 'opacity 0.2s, background-color 0.2s',
+                      whiteSpace: 'nowrap',
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isLoading) {
+                        e.currentTarget.style.opacity = '1'
+                        e.currentTarget.style.backgroundColor = isDayMode ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.12)'
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.opacity = isLoading ? '0.4' : '0.7'
+                      e.currentTarget.style.backgroundColor = isDayMode ? 'rgba(0,0,0,0.04)' : 'rgba(255,255,255,0.06)'
+                    }}
+                  >
+                    {q}
+                  </button>
+                ))}
+              </div>
+
+              {/* Outro */}
+              <p style={{ marginBottom: '20px' }}>{startChatContent.welcomeOutro}</p>
+
+              {/* Build line */}
+              <p>{startChatContent.welcomeBuild}</p>
+            </div>
+          </div>
+
+          {/* ── CHAT MESSAGES ── */}
           {messages.map((msg, i) => (
             <div key={i} style={{
               marginBottom: '24px',
