@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useCallback, useEffect, useLayoutEffect, KeyboardEvent } from 'react'
+import { useState, useRef, useCallback, useEffect, useLayoutEffect, useImperativeHandle, forwardRef, KeyboardEvent } from 'react'
 
 // ── LAYOUT TOKENS — dimensions and spacing only ──
 const L = {
@@ -178,6 +178,10 @@ function LiveAudioBars({ stream, barColor }: { stream: MediaStream | null, barCo
 
 // ── COMPONENT ──
 
+export interface AssistantInputBarHandle {
+  setInputText: (text: string) => void
+}
+
 interface AssistantInputBarProps {
   onSend: (message: string) => void
   isLoading: boolean
@@ -185,11 +189,9 @@ interface AssistantInputBarProps {
   onToggleTheme?: () => void
   placeholder?: string
   disclaimer?: string
-  prefillText?: string
-  prefillSeq?: number
 }
 
-export default function AssistantInputBar({ onSend, isLoading, isDayMode = false, onToggleTheme, placeholder = 'Ask your question...', disclaimer = 'AI-UP Second Brain\u2122', prefillText, prefillSeq }: AssistantInputBarProps) {
+const AssistantInputBar = forwardRef<AssistantInputBarHandle, AssistantInputBarProps>(({ onSend, isLoading, isDayMode = false, onToggleTheme, placeholder = 'Ask your question...', disclaimer = 'AI-UP Second Brain\u2122' }, ref) => {
   const C = isDayMode ? C_DAY : C_NIGHT
   const [input, setInput] = useState('')
   const [isRecording, setIsRecording] = useState(false)
@@ -198,16 +200,14 @@ export default function AssistantInputBar({ onSend, isLoading, isDayMode = false
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const chunksRef = useRef<Blob[]>([])
-  const lastPrefillSeqRef = useRef(0)
 
-  // ── PREFILL FROM EXTERNAL (chip clicks) ──
-  useEffect(() => {
-    if (prefillSeq !== undefined && prefillSeq !== lastPrefillSeqRef.current && prefillText) {
-      setInput(prefillText)
-      lastPrefillSeqRef.current = prefillSeq
+  // ── EXPOSE setInputText TO PARENT ──
+  useImperativeHandle(ref, () => ({
+    setInputText: (text: string) => {
+      setInput(text)
       setTimeout(() => textareaRef.current?.focus(), 50)
     }
-  }, [prefillText, prefillSeq])
+  }))
 
   // ── TEXTAREA AUTO-RESIZE ──
   useLayoutEffect(() => {
@@ -465,4 +465,7 @@ export default function AssistantInputBar({ onSend, isLoading, isDayMode = false
       </div>
     </div>
   )
-}
+})
+
+AssistantInputBar.displayName = 'AssistantInputBar'
+export default AssistantInputBar

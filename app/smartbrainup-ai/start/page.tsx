@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import AssistantInputBar from '@/components/assistant/AssistantInputBar'
+import type { AssistantInputBarHandle } from '@/components/assistant/AssistantInputBar'
 import { createClient } from '@/lib/supabase/client'
 import { startChatContent } from '@/content/smartbrainup-ai/start-chat'
 
@@ -33,6 +34,7 @@ export default function StartPage() {
   const [userCredits, setUserCredits] = useState<number | null>(null)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [welcomeVisible, setWelcomeVisible] = useState(false)
+  const inputBarRef = useRef<AssistantInputBarHandle>(null)
   const router = useRouter()
 
   useEffect(() => {
@@ -69,6 +71,13 @@ export default function StartPage() {
     return () => clearTimeout(timer)
   }, [])
 
+  // ── SCROLL TO TOP ON MOUNT ──
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = 0
+    }
+  }, [])
+
   // Mobile keyboard detection via visualViewport
   useEffect(() => {
     const vv = window.visualViewport
@@ -84,7 +93,7 @@ export default function StartPage() {
   }, [])
 
   useEffect(() => {
-    if (isAtBottom) {
+    if (isAtBottom && messages.length > 0) {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
     }
   }, [messages, isAtBottom])
@@ -93,6 +102,11 @@ export default function StartPage() {
     const el = scrollContainerRef.current
     if (!el) return
     setIsAtBottom(el.scrollHeight - el.scrollTop - el.clientHeight < 100)
+  }, [])
+
+  // ── CHIP CLICK — fills input bar via ref, does NOT send ──
+  const handleChipClick = useCallback((question: string) => {
+    inputBarRef.current?.setInputText(question)
   }, [])
 
   const handleSend = useCallback(async (text: string) => {
@@ -219,43 +233,46 @@ export default function StartPage() {
               lineHeight: 1.6,
               opacity: 0.85,
             }}>
-              {/* Intro */}
-              <p style={{ marginBottom: '16px' }}>{startChatContent.welcomeIntro}</p>
+              {/* Welcome. */}
+              <p>{startChatContent.welcomeLine1}</p>
+              {/* Ask me anything about the method. */}
+              <p style={{ marginBottom: '16px' }}>{startChatContent.welcomeLine2}</p>
 
-              {/* Quick question chips */}
+              {/* Quick question chips — text aligned with paragraph, bubbles spill left */}
               <div style={{
                 display: 'flex',
                 flexWrap: 'wrap',
                 gap: '8px',
                 marginBottom: '16px',
+                marginLeft: '-14px',
               }}>
                 {startChatContent.quickQuestions.map((q, idx) => (
                   <button
                     key={idx}
-                    onClick={() => handleSend(q)}
+                    onClick={() => handleChipClick(q)}
                     disabled={isLoading}
                     style={{
                       padding: '7px 14px',
                       borderRadius: '20px',
-                      border: isDayMode ? '1px solid rgba(0,0,0,0.15)' : '1px solid rgba(255,255,255,0.20)',
+                      border: 'none',
                       backgroundColor: isDayMode ? 'rgba(0,0,0,0.04)' : 'rgba(255,255,255,0.06)',
                       color: isDayMode ? '#252525' : '#ffffff',
                       fontFamily: 'var(--font-inter), sans-serif',
                       fontSize: '13px',
                       lineHeight: 1.4,
                       cursor: isLoading ? 'default' : 'pointer',
-                      opacity: isLoading ? 0.4 : 0.7,
+                      opacity: isLoading ? 0.3 : 0.55,
                       transition: 'opacity 0.2s, background-color 0.2s',
                       whiteSpace: 'nowrap',
                     }}
                     onMouseEnter={(e) => {
                       if (!isLoading) {
-                        e.currentTarget.style.opacity = '1'
+                        e.currentTarget.style.opacity = '0.9'
                         e.currentTarget.style.backgroundColor = isDayMode ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.12)'
                       }
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.opacity = isLoading ? '0.4' : '0.7'
+                      e.currentTarget.style.opacity = isLoading ? '0.3' : '0.55'
                       e.currentTarget.style.backgroundColor = isDayMode ? 'rgba(0,0,0,0.04)' : 'rgba(255,255,255,0.06)'
                     }}
                   >
@@ -264,11 +281,10 @@ export default function StartPage() {
                 ))}
               </div>
 
-              {/* Outro */}
-              <p style={{ marginBottom: '20px' }}>{startChatContent.welcomeOutro}</p>
-
-              {/* Build line */}
-              <p>{startChatContent.welcomeBuild}</p>
+              {/* Or ask anything you want. */}
+              <p>{startChatContent.welcomeLine3}</p>
+              {/* When you've seen enough, tap Build. */}
+              <p>{startChatContent.welcomeLine4}</p>
             </div>
           </div>
 
@@ -367,6 +383,7 @@ export default function StartPage() {
         </div>
 
         <AssistantInputBar
+          ref={inputBarRef}
           onSend={handleSend}
           isLoading={isLoading}
           isDayMode={isDayMode}
