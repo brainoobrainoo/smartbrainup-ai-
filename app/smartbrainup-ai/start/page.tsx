@@ -319,6 +319,10 @@ export default function StartPage() {
         body:has(.start-chat) header a {
           color: ${isDayMode ? '#252525' : '#ffffff'} !important;
         }
+        body:has(.start-chat) header a[href="/client"] {
+          background-color: ${isDayMode ? '#252525' : '#ffffff'} !important;
+          color: ${isDayMode ? '#ffffff' : '#252525'} !important;
+        }
         body:has(.start-chat) header button span {
           background-color: ${isDayMode ? '#252525' : '#ffffff'} !important;
         }

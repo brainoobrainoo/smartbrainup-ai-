@@ -54,10 +54,11 @@ export default function Header({ logo, links, variant = 'dark' }: HeaderProps) {
           {isAuthenticated && user && (
             <Link
               href="/client"
-              className="md:hidden absolute left-10 w-[35px] h-[35px] rounded-full
-                         bg-white flex items-center justify-center
-                         text-[11px] font-semibold tracking-[0.04em] text-[#1a1a1a]
-                         cursor-pointer flex-shrink-0 no-underline"
+              className={`md:hidden absolute left-10 w-[35px] h-[35px] rounded-full
+                         flex items-center justify-center
+                         text-[11px] font-semibold tracking-[0.04em]
+                         cursor-pointer flex-shrink-0 no-underline
+                         ${variant === 'dark' ? 'bg-white text-[#252525]' : 'bg-[#252525] text-white'}`}
             >
               {getInitials(user)}
             </Link>
@@ -98,11 +99,12 @@ export default function Header({ logo, links, variant = 'dark' }: HeaderProps) {
             {isAuthenticated && user ? (
               <Link
                 href="/client"
-                className="w-[35px] h-[35px] rounded-full bg-white
+                className={`w-[35px] h-[35px] rounded-full
                            flex items-center justify-center
-                           text-[11px] font-semibold tracking-[0.04em] text-[#1a1a1a]
+                           text-[11px] font-semibold tracking-[0.04em]
                            cursor-pointer flex-shrink-0 no-underline
-                           hover:opacity-90 transition-opacity"
+                           hover:opacity-90 transition-opacity
+                           ${variant === 'dark' ? 'bg-white text-[#252525]' : 'bg-[#252525] text-white'}`}
               >
                 {getInitials(user)}
               </Link>
