@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 
 interface StartButtonProps {
   href?: string
@@ -113,37 +114,34 @@ export default function StartButton({
   const svgWidth = isMobile ? 83 : 108
   const svgHeight = isMobile ? 24 : 31
 
-  return (
-    <a
-      href={onClick ? undefined : href}
-      onClick={onClick ? (e) => { e.preventDefault(); onClick(); } : undefined}
-      style={{
-        position: 'fixed',
-        bottom: isMobile ? 'calc(15% + 165px)' : 'calc(18% + 300px)',
-        right: isMobile ? 'calc(8% + 40px)' : 'calc(10% + 320px)',
-        zIndex: 999,
-        width: `${outerSize}px`,
-        height: `${outerSize}px`,
-        borderRadius: '50%',
-        background: 'transparent',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        textDecoration: 'none',
-        border: 'none',
-        boxShadow: 'none',
-        overflow: 'visible',
-        opacity: visible ? 1 : 0,
-        transition: breathing ? 'none' : 'opacity 2s ease-in',
-        animation: visible 
-          ? breathing 
-            ? 'startFloatWobble 12s ease-in-out infinite, startBreathe 3s ease-in-out infinite'
-            : 'startFloatWobble 12s ease-in-out infinite'
-          : 'none',
-        cursor: 'pointer',
-      }}
-      aria-label="Start"
-    >
+  const wrapperStyle: React.CSSProperties = {
+    position: 'fixed',
+    bottom: isMobile ? 'calc(15% + 165px)' : 'calc(18% + 300px)',
+    right: isMobile ? 'calc(8% + 40px)' : 'calc(10% + 320px)',
+    zIndex: 999,
+    width: `${outerSize}px`,
+    height: `${outerSize}px`,
+    borderRadius: '50%',
+    background: 'transparent',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    textDecoration: 'none',
+    border: 'none',
+    boxShadow: 'none',
+    overflow: 'visible',
+    opacity: visible ? 1 : 0,
+    transition: breathing ? 'none' : 'opacity 2s ease-in',
+    animation: visible 
+      ? breathing 
+        ? 'startFloatWobble 12s ease-in-out infinite, startBreathe 3s ease-in-out infinite'
+        : 'startFloatWobble 12s ease-in-out infinite'
+      : 'none',
+    cursor: 'pointer',
+  }
+
+  const innerContent = (
+    <>
       {/* Rotation wrapper — starts vertical, settles to horizontal */}
       <div
         style={{
@@ -284,6 +282,31 @@ export default function StartButton({
         />
       </div>
       </div>
-    </a>
+    </>
+  )
+
+  // onClick = custom action (e.g. FloatingChatButton), use <a>
+  // no onClick = navigation, use Next.js <Link> (no reload, no flash)
+  if (onClick) {
+    return (
+      <a
+        href={undefined}
+        onClick={(e) => { e.preventDefault(); onClick(); }}
+        style={wrapperStyle}
+        aria-label="Start"
+      >
+        {innerContent}
+      </a>
+    )
+  }
+
+  return (
+    <Link
+      href={href}
+      style={wrapperStyle}
+      aria-label="Start"
+    >
+      {innerContent}
+    </Link>
   )
 }
