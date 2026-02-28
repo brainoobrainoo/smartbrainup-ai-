@@ -185,9 +185,11 @@ interface AssistantInputBarProps {
   onToggleTheme?: () => void
   placeholder?: string
   disclaimer?: string
+  prefillText?: string
+  prefillSeq?: number
 }
 
-export default function AssistantInputBar({ onSend, isLoading, isDayMode = false, onToggleTheme, placeholder = 'Ask your question...', disclaimer = 'AI-UP Second Brain™' }: AssistantInputBarProps) {
+export default function AssistantInputBar({ onSend, isLoading, isDayMode = false, onToggleTheme, placeholder = 'Ask your question...', disclaimer = 'AI-UP Second Brain\u2122', prefillText, prefillSeq }: AssistantInputBarProps) {
   const C = isDayMode ? C_DAY : C_NIGHT
   const [input, setInput] = useState('')
   const [isRecording, setIsRecording] = useState(false)
@@ -196,6 +198,16 @@ export default function AssistantInputBar({ onSend, isLoading, isDayMode = false
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const chunksRef = useRef<Blob[]>([])
+  const lastPrefillSeqRef = useRef(0)
+
+  // ── PREFILL FROM EXTERNAL (chip clicks) ──
+  useEffect(() => {
+    if (prefillSeq !== undefined && prefillSeq !== lastPrefillSeqRef.current && prefillText) {
+      setInput(prefillText)
+      lastPrefillSeqRef.current = prefillSeq
+      setTimeout(() => textareaRef.current?.focus(), 50)
+    }
+  }, [prefillText, prefillSeq])
 
   // ── TEXTAREA AUTO-RESIZE ──
   useLayoutEffect(() => {

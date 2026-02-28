@@ -1,313 +1,420 @@
 'use client'
 
-// app/smartbrainup-ai/page.tsx
-
+import { useState, useRef, useEffect, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
-import { homeContent } from '@/content/smartbrainup-ai/home'
-import Container from '@/components/layout/Container'
-import Lottie from 'lottie-react'
-import sphereAnimation from '../../public/animations/SFERA_LOGO_B.json'
-import FloatingChatButton from '@/components/ui/FloatingChatButton'
-import StartButton from '@/components/ui/StartButton'
-import { useAuth } from '@/lib/useAuth'
+import AssistantInputBar from '@/components/assistant/AssistantInputBar'
 import { createClient } from '@/lib/supabase/client'
+import { startChatContent } from '@/content/smartbrainup-ai/start-chat'
 
-export default function HomePage() {
-  const { hero, problem, solution, impact, platforms, cta } = homeContent
+type Message = {
+  role: 'user' | 'assistant'
+  content: string
+}
 
-  // Typewriter effect
-  const fullText = hero.headline.join('\n')
-  const [displayedText, setDisplayedText] = useState('')
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const { user, isAuthenticated } = useAuth()
-  const [hasActiveBrain, setHasActiveBrain] = useState(false)
+// ── Night themes — bottom gradient colors (top always #252525) ──
+const NIGHT_THEMES = [
+  '#656c73', // oceano
+  '#60706d', // verde acqua
+  '#5f7064', // verde prato
+  '#736f60', // giallo sabbia
+  '#807b68', // giallo girasole
+  '#776457', // arancio
+  '#8c7d7b', // rosa porcellino
+]
 
-  // Check if user has at least one Second Brain
+export default function StartPage() {
+  const [messages, setMessages] = useState<Message[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [hasFaded, setHasFaded] = useState(false)
+  const [keyboardOffset, setKeyboardOffset] = useState(0)
+  const [themeBottom, setThemeBottom] = useState(NIGHT_THEMES[0])
+  const [isDayMode, setIsDayMode] = useState(false)
+  const [userCredits, setUserCredits] = useState<number | null>(null)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [welcomeVisible, setWelcomeVisible] = useState(false)
+  const [prefillData, setPrefillData] = useState({ text: '', seq: 0 })
+  const router = useRouter()
+
   useEffect(() => {
-    if (!isAuthenticated || !user) { setHasActiveBrain(false); return }
-    const supabase = createClient()
-    supabase
-      .from('second_brains')
-      .select('id')
-      .eq('user_id', user.id)
-      .limit(1)
-      .then(({ data }) => {
-        setHasActiveBrain(!!(data && data.length > 0))
+    setThemeBottom(NIGHT_THEMES[Math.floor(Math.random() * NIGHT_THEMES.length)])
+  }, [])
+
+  // ── CHECK AUTH ON MOUNT ──
+  useEffect(() => {
+    const checkAuth = async () => {
+      const sb = createClient()
+      const { data: { user } } = await sb.auth.getUser()
+      if (user) {
+        setIsLoggedIn(true)
+        const { data } = await sb.from('user_profiles').select('credits').eq('id', user.id).single()
+        if (data) setUserCredits(data.credits)
+      }
+    }
+    checkAuth()
+  }, [])
+
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const [isAtBottom, setIsAtBottom] = useState(true)
+
+  // Trigger background fade after mount
+  useEffect(() => {
+    const timer = setTimeout(() => setHasFaded(true), 100)
+    return () => clearTimeout(timer)
+  }, [])
+
+  // Welcome fade-in
+  useEffect(() => {
+    const timer = setTimeout(() => setWelcomeVisible(true), 200)
+    return () => clearTimeout(timer)
+  }, [])
+
+  // Mobile keyboard detection via visualViewport
+  useEffect(() => {
+    const vv = window.visualViewport
+    if (!vv) return
+
+    const onResize = () => {
+      const offset = window.innerHeight - vv.height
+      setKeyboardOffset(offset > 50 ? offset : 0)
+    }
+
+    vv.addEventListener('resize', onResize)
+    return () => vv.removeEventListener('resize', onResize)
+  }, [])
+
+  useEffect(() => {
+    if (isAtBottom) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [messages, isAtBottom])
+
+  const handleScroll = useCallback(() => {
+    const el = scrollContainerRef.current
+    if (!el) return
+    setIsAtBottom(el.scrollHeight - el.scrollTop - el.clientHeight < 100)
+  }, [])
+
+  // ── CHIP CLICK — fills input bar, does not send ──
+  const handleChipClick = useCallback((question: string) => {
+    setPrefillData(prev => ({ text: question, seq: prev.seq + 1 }))
+  }, [])
+
+  const handleSend = useCallback(async (text: string) => {
+    if (!text.trim() || isLoading) return
+
+    const userMessage: Message = { role: 'user', content: text.trim() }
+    const newMessages = [...messages, userMessage]
+    setMessages(newMessages)
+    setIsLoading(true)
+
+    try {
+      const res = await fetch('/api/public-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: newMessages.map(m => ({ role: m.role, content: m.content })),
+        }),
       })
-  }, [isAuthenticated, user])
 
-  // Open chat with session tokens
-  const handleOpenChat = async () => {
-    const supabase = createClient()
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) return
-    const url = new URL('https://secondbrain-chat.vercel.app')
-    url.searchParams.set('access_token', session.access_token)
-    url.searchParams.set('refresh_token', session.refresh_token)
-    window.location.href = url.toString()
-  }
+      if (!res.ok) throw new Error('Request failed')
 
-  useEffect(() => {
-    if (currentIndex < fullText.length) {
-      const currentChar = fullText[currentIndex]
-      
-      // Delay variabile per effetto umano
-      let delay = 45 + Math.random() * 35 // base: 45-80ms per lettera
-      
-      if (currentChar === ' ') {
-        delay = 70 + Math.random() * 50 // spazi: 70-120ms
-      } else if (currentChar === '\n') {
-        delay = 700 + Math.random() * 400 // nuova riga: 700-1100ms
+      const reader = res.body?.getReader()
+      if (!reader) throw new Error('No stream')
+
+      const decoder = new TextDecoder()
+      let assistantContent = ''
+
+      setMessages(prev => [...prev, { role: 'assistant', content: '' }])
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        assistantContent += decoder.decode(value, { stream: true })
+        setMessages(prev => {
+          const updated = [...prev]
+          updated[updated.length - 1] = { role: 'assistant', content: assistantContent }
+          return updated
+        })
       }
-      
-      const timer = setTimeout(() => {
-        setDisplayedText(prev => prev + currentChar)
-        setCurrentIndex(prev => prev + 1)
-      }, delay)
-      
-      return () => clearTimeout(timer)
+    } catch (error) {
+      console.error('Chat error:', error)
+      setMessages(prev => [...prev, { role: 'assistant', content: 'Something went wrong. Please try again.' }])
+    } finally {
+      setIsLoading(false)
     }
-  }, [currentIndex, fullText])
-
-  // Helper to render body with proper spacing
-  const renderBody = (lines: string[], opacity: string = "opacity-60") => {
-    const blocks: string[][] = []
-    let currentBlock: string[] = []
-    
-    lines.forEach((line) => {
-      if (line === "") {
-        if (currentBlock.length > 0) {
-          blocks.push(currentBlock)
-          currentBlock = []
-        }
-      } else {
-        currentBlock.push(line)
-      }
-    })
-    if (currentBlock.length > 0) {
-      blocks.push(currentBlock)
-    }
-
-    return (
-      <div className="space-y-5">
-        {blocks.map((block, blockIndex) => (
-          <p key={blockIndex} className={`text-[17px] md:text-[18px] font-normal leading-[1.15] ${opacity}`}>
-            {block.map((line, lineIndex) => (
-              <span key={lineIndex} className="block">{line}</span>
-            ))}
-          </p>
-        ))}
-      </div>
-    )
-  }
+  }, [messages, isLoading])
 
   return (
-    <div className="min-h-screen bg-[#252525] overflow-x-hidden">
-      
-      {/* Gradient zone: Hero + CTA */}
-      <div style={{ background: 'linear-gradient(to bottom, #252525 0%, #252525 80px, #5a5a5a 100%)' }} className="text-white min-h-[100dvh] flex flex-col">
-        
-        {/* Hero Section - occupa tutto lo spazio disponibile */}
-        <section className="flex-1 flex flex-col justify-center pt-16 pb-[250px] md:pb-[350px]">
-          <Container>
-            <div className="flex flex-col items-center text-center">
-              
-              {/* Sfera logo */}
-              <div className="mb-9">
-                <Lottie 
-                  animationData={sphereAnimation}
-                  loop={true}
-                  className="w-[65px] h-[65px] md:w-[95px] md:h-[95px]"
-                />
-              </div>
-              
-              {/* Headline con typewriter - altezza fissa per 3 righe */}
-              <div className="h-[60px] md:h-[66px]">
-                <p className="text-[17px] md:text-[18px] font-normal leading-[1.15] opacity-70">
-                  {displayedText.split('\n').map((line, index) => (
-                    <span key={index} className="block">
-                      {line}
-                      {index === displayedText.split('\n').length - 1 && currentIndex < fullText.length && (
-                        <span className="animate-pulse">|</span>
-                      )}
-                    </span>
-                  ))}
-                </p>
-              </div>
-              
-            </div>
-          </Container>
-        </section>
-        
-        {/* CTA Section - in basso (hidden when user has active brain) */}
-        <section className="pb-12 md:pb-16">
-          <Container>
-            {!hasActiveBrain && (
-              <div className="flex items-center gap-4 justify-end">
-                <span className="font-ui text-[12px] font-medium tracking-wide uppercase-force opacity-40">{hero.cta.label}</span>
-                <Link 
-                  href="/start" 
-                  className="relative flex items-center justify-center w-[55px] h-[55px] md:w-[75px] md:h-[75px] rounded-full overflow-hidden"
-                >
-                  <span className="absolute inset-0 bg-[#3a3a3a] animate-pulse-soft rounded-full"></span>
-                  <span className="relative z-10 font-ui text-[11px] md:text-[12px] font-bold tracking-wide text-white uppercase-force">TRY</span>
-                </Link>
-              </div>
-            )}
-          </Container>
-        </section>
+    <div className="start-chat" style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      zIndex: 40,
+      display: 'flex',
+      flexDirection: 'column',
+      background: isDayMode
+        ? '#ffffff'
+        : `linear-gradient(to bottom, #252525 0%, #252525 80px, ${themeBottom} 100%)`,
+    }}>
 
+      {/* Dark overlay — fades out over 5s, hidden in day mode */}
+      <div style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: 'linear-gradient(to bottom, #252525 0%, #252525 80px, #3a3a3a 100%)',
+        opacity: (hasFaded || isDayMode) ? 0 : 1,
+        transition: isDayMode ? 'none' : 'opacity 5s ease',
+        pointerEvents: 'none',
+        zIndex: 0,
+      }} />
+
+      {/* Header spacer */}
+      <div style={{ height: '67px', flexShrink: 0, position: 'relative', zIndex: 1 }} />
+
+      {/* Messages area */}
+      <div style={{ position: 'relative', flex: 1, minHeight: 0, zIndex: 1, overflow: 'hidden' }}>
+        {/* Fade top */}
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: '80px',
+          background: `linear-gradient(to bottom, ${isDayMode ? '#ffffff' : '#252525'} 0%, transparent 100%)`,
+          zIndex: 10,
+          pointerEvents: 'none',
+        }} />
+
+        <div
+          ref={scrollContainerRef}
+          onScroll={handleScroll}
+          style={{
+            height: '100%',
+            overflowY: 'auto',
+            overflowX: 'hidden',
+            WebkitOverflowScrolling: 'touch',
+            maskImage: 'linear-gradient(to bottom, black 0%, black 85%, transparent 100%)',
+            WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 85%, transparent 100%)',
+          }}
+        >
+        <div style={{
+          maxWidth: '680px',
+          margin: '0 auto',
+          padding: '85px 24px 40px',
+        }}>
+
+          {/* ── WELCOME BLOCK — fade in 2s ── */}
+          <div style={{
+            marginBottom: '24px',
+            opacity: welcomeVisible ? 1 : 0,
+            transition: 'opacity 2s ease',
+          }}>
+            <div style={{
+              maxWidth: '85%',
+              padding: '12px 0',
+              color: isDayMode ? '#252525' : '#ffffff',
+              fontFamily: 'var(--font-inter), sans-serif',
+              fontSize: '15px',
+              lineHeight: 1.6,
+              opacity: 0.85,
+            }}>
+              {/* Intro */}
+              <p style={{ marginBottom: '16px' }}>{startChatContent.welcomeIntro}</p>
+
+              {/* Quick question chips — text aligned with paragraph, bubbles spill left */}
+              <div style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: '8px',
+                marginBottom: '16px',
+                marginLeft: '-14px',
+              }}>
+                {startChatContent.quickQuestions.map((q, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => handleChipClick(q)}
+                    disabled={isLoading}
+                    style={{
+                      padding: '7px 14px',
+                      borderRadius: '20px',
+                      border: isDayMode ? '1px solid rgba(0,0,0,0.15)' : '1px solid rgba(255,255,255,0.20)',
+                      backgroundColor: isDayMode ? 'rgba(0,0,0,0.04)' : 'rgba(255,255,255,0.06)',
+                      color: isDayMode ? '#252525' : '#ffffff',
+                      fontFamily: 'var(--font-inter), sans-serif',
+                      fontSize: '13px',
+                      lineHeight: 1.4,
+                      cursor: isLoading ? 'default' : 'pointer',
+                      opacity: isLoading ? 0.3 : 0.55,
+                      transition: 'opacity 0.2s, background-color 0.2s',
+                      whiteSpace: 'nowrap',
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isLoading) {
+                        e.currentTarget.style.opacity = '0.9'
+                        e.currentTarget.style.backgroundColor = isDayMode ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.12)'
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.opacity = isLoading ? '0.3' : '0.55'
+                      e.currentTarget.style.backgroundColor = isDayMode ? 'rgba(0,0,0,0.04)' : 'rgba(255,255,255,0.06)'
+                    }}
+                  >
+                    {q}
+                  </button>
+                ))}
+              </div>
+
+              {/* Outro */}
+              <p style={{ marginBottom: '20px' }}>{startChatContent.welcomeOutro}</p>
+
+              {/* Build line */}
+              <p>{startChatContent.welcomeBuild}</p>
+            </div>
+          </div>
+
+          {/* ── CHAT MESSAGES ── */}
+          {messages.map((msg, i) => (
+            <div key={i} style={{
+              marginBottom: '24px',
+              display: 'flex',
+              justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start',
+            }}>
+              <div style={{
+                maxWidth: '85%',
+                padding: msg.role === 'user' ? '12px 16px' : '12px 0',
+                borderRadius: msg.role === 'user' ? '18px 18px 4px 18px' : '0',
+                backgroundColor: msg.role === 'user'
+                  ? (isDayMode ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.08)')
+                  : 'transparent',
+                color: isDayMode ? '#252525' : '#ffffff',
+                fontFamily: 'var(--font-inter), sans-serif',
+                fontSize: '15px',
+                lineHeight: 1.6,
+                whiteSpace: 'pre-wrap',
+                wordBreak: 'break-word',
+                opacity: msg.role === 'user' ? 0.95 : 0.85,
+              }}>
+                {msg.content}
+                {msg.role === 'assistant' && isLoading && i === messages.length - 1 && !msg.content && (
+                  <span style={{ opacity: 0.3 }}>...</span>
+                )}
+              </div>
+            </div>
+          ))}
+
+          <div ref={messagesEndRef} />
+        </div>
       </div>
-      {/* End gradient zone */}
-
-      {/* Problem */}
-      <section className="relative py-16 md:py-32 bg-white">
-        <Container>
-          <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-8">{problem.section}</p>
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            
-            <div className="lg:col-span-5">
-              <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em]">
-                {Array.isArray(problem.title) ? (
-                  problem.title.map((line, index) => (
-                    <span key={index} className="block">{line}</span>
-                  ))
-                ) : (
-                  problem.title
-                )}
-              </h2>
-            </div>
-            
-            <div className="lg:col-span-6 lg:col-start-7">
-              {renderBody(problem.body)}
-            </div>
-            
-          </div>
-        </Container>
-      </section>
-
-      {/* Solution - white background */}
-      <section className="relative py-16 md:py-32 bg-white">
-        <Container>
-          <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-8">{solution.section}</p>
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            
-            <div className="lg:col-span-5">
-              <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em]">
-                {Array.isArray(solution.title) ? (
-                  solution.title.map((line, index) => (
-                    <span key={index} className="block">{line}</span>
-                  ))
-                ) : (
-                  solution.title
-                )}
-              </h2>
-            </div>
-            
-            <div className="lg:col-span-6 lg:col-start-7">
-              {renderBody(solution.body)}
-            </div>
-            
-          </div>
-        </Container>
-      </section>
-
-      {/* Impact - card style */}
-      <section className="relative py-16 md:py-32 bg-white">
-        <Container>
-          <div className="bg-[#f7f7f7] rounded-[4px] p-6 pt-14 md:p-16 relative">
-            
-            <span className="absolute top-6 right-6 font-ui text-[10px] tracking-widest uppercase opacity-30">{impact.section}</span>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center">
-              
-              <div>
-                <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em]">{impact.title}</h2>
-              </div>
-              
-              <div>
-                <div className="space-y-3">
-                  {impact.items.map((item, index) => (
-                    <p key={index} className="text-[16px] md:text-[18px] font-normal leading-[1.4] opacity-70">
-                      {item}
-                    </p>
-                  ))}
-                </div>
-              </div>
-              
-            </div>
-          </div>
-        </Container>
-      </section>
-
-      {/* DARK ZONE: Platforms */}
-      <div className="w-full text-white" style={{ background: 'linear-gradient(to bottom, #484848 0%, #2f2f2f 100%)' }}>
-        <section className="py-16 md:py-32">
-          <Container>
-            <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-8">{platforms.section}</p>
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-              
-              <div className="lg:col-span-5">
-                <h2 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em]">
-                  {Array.isArray(platforms.title) ? (
-                    platforms.title.map((line, index) => (
-                      <span key={index} className="block">{line}</span>
-                    ))
-                  ) : (
-                    platforms.title
-                  )}
-                </h2>
-              </div>
-              
-              <div className="lg:col-span-6 lg:col-start-7">
-                <div className="space-y-5">
-                  {/* First paragraph block */}
-                  <p className="text-[17px] md:text-[18px] font-normal leading-[1.15] opacity-70">
-                    {platforms.body.map((line, index) => (
-                      <span key={index} className="block">{line}</span>
-                    ))}
-                  </p>
-                  {/* Platform list - separate block */}
-                  <p className="text-[17px] md:text-[18px] font-normal leading-[1.15] opacity-70">
-                    {platforms.list}
-                  </p>
-                </div>
-              </div>
-              
-            </div>
-          </Container>
-        </section>
       </div>
 
-      {/* CTA - gradient to footer */}
-      <section className="w-full text-white py-24 md:py-32" style={{ background: 'linear-gradient(to bottom, #2f2f2f 0%, #1a1a1a 100%)' }}>
-        <Container>
-          <div className="flex items-center gap-4 justify-end">
-            <span className="font-ui text-[12px] font-medium tracking-wide uppercase-force opacity-40">{cta.label}</span>
-            <Link 
-              href="/start" 
-              className="relative flex items-center justify-center w-[55px] h-[55px] md:w-[75px] md:h-[75px] rounded-full overflow-hidden"
-            >
-              <span className="absolute inset-0 bg-[#3a3a3a] animate-pulse-soft rounded-full"></span>
-              <span className="relative z-10 font-ui text-[11px] md:text-[12px] font-bold tracking-wide text-white uppercase-force">TRY</span>
+      {/* Build button + Input bar — rises with keyboard on mobile */}
+      <div style={{
+        flexShrink: 0,
+        position: 'relative',
+        zIndex: 1,
+        paddingBottom: keyboardOffset > 0 ? `${keyboardOffset}px` : 'env(safe-area-inset-bottom)',
+        transition: 'padding-bottom 0.15s ease-out',
+      }}>
+
+        {/* ── BUILD BUTTON — centered above the cloud ── */}
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          paddingBottom: '12px',
+          paddingTop: '8px',
+        }}>
+          {/* Outer concentric ring */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '65px',
+            height: '65px',
+            borderRadius: '50%',
+            border: isDayMode ? '1px solid rgba(0,0,0,0.17)' : '1px solid rgba(255,255,255,0.17)',
+          }}>
+            <Link href="/build" style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '58px',
+              height: '58px',
+              borderRadius: '50%',
+              backgroundColor: isDayMode ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.08)',
+              border: isDayMode ? '1px solid rgba(0,0,0,0.5)' : '1px solid rgba(255,255,255,0.5)',
+              color: isDayMode ? '#252525' : '#ffffff',
+              fontFamily: 'var(--font-inter), sans-serif',
+              fontSize: '12px',
+              fontWeight: 500,
+              letterSpacing: '0.06em',
+              textTransform: 'uppercase' as const,
+              textDecoration: 'none',
+              cursor: 'pointer',
+              transition: 'background-color 0.2s, opacity 0.2s',
+              opacity: 0.6,
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.opacity = '1'
+              e.currentTarget.style.backgroundColor = isDayMode ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.14)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.opacity = '0.6'
+              e.currentTarget.style.backgroundColor = isDayMode ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.08)'
+            }}>
+              {startChatContent.buildButton}
             </Link>
           </div>
-        </Container>
-      </section>
+        </div>
 
-      {/* Floating Chat Button — visible only for users with active Second Brain */}
-      <FloatingChatButton 
-        show={hasActiveBrain}
-        onClick={handleOpenChat}
-      />
+        <AssistantInputBar
+          onSend={handleSend}
+          isLoading={isLoading}
+          isDayMode={isDayMode}
+          placeholder={startChatContent.placeholder}
+          disclaimer={startChatContent.disclaimer}
+          prefillText={prefillData.text}
+          prefillSeq={prefillData.seq}
+          onToggleTheme={() => {
+            if (isDayMode) {
+              setThemeBottom(NIGHT_THEMES[Math.floor(Math.random() * NIGHT_THEMES.length)])
+              setHasFaded(false)
+              setTimeout(() => setHasFaded(true), 100)
+            }
+            setIsDayMode(!isDayMode)
+          }}
+        />
+      </div>
 
-      {/* Start Button — visible only for non-authenticated users */}
-      <StartButton 
-        show={!isAuthenticated}
-        href="/start"
-      />
-
+      {/* Scoped styles — header + burger + mobile menu */}
+      <style>{`
+        body:has(.start-chat) header {
+          background: transparent !important;
+          backdrop-filter: none !important;
+        }
+        body:has(.start-chat) header *,
+        body:has(.start-chat) header button,
+        body:has(.start-chat) header a {
+          color: ${isDayMode ? '#252525' : '#ffffff'} !important;
+        }
+        body:has(.start-chat) header a[href="/client"] {
+          background-color: ${isDayMode ? '#252525' : '#ffffff'} !important;
+          color: ${isDayMode ? '#ffffff' : '#252525'} !important;
+        }
+        body:has(.start-chat) header button span {
+          background-color: ${isDayMode ? '#252525' : '#ffffff'} !important;
+        }
+        body:has(.start-chat) header nav {
+          background: ${isDayMode ? '#ffffff' : '#252525'} !important;
+          border-color: ${isDayMode ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)'} !important;
+        }
+      `}</style>
     </div>
   )
 }
