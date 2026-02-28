@@ -103,7 +103,7 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-white overflow-x-hidden">
+    <div className="min-h-screen bg-[#252525] overflow-x-hidden">
       
       {/* Gradient zone: Hero + CTA */}
       <div style={{ background: 'linear-gradient(to bottom, #252525 0%, #252525 80px, #5a5a5a 100%)' }} className="text-white min-h-[100dvh] flex flex-col">
@@ -214,7 +214,7 @@ export default function HomePage() {
       </section>
 
       {/* Impact - card style */}
-      <section className="relative py-16 md:py-32">
+      <section className="relative py-16 md:py-32 bg-white">
         <Container>
           <div className="bg-[#f7f7f7] rounded-[4px] p-6 pt-14 md:p-16 relative">
             
