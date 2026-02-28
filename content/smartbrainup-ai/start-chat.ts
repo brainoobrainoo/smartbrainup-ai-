@@ -9,5 +9,5 @@ export const startChatContent = {
   welcomeMessage: "Welcome.\nAsk me anything about the method — how it works, what you get, how it's different.\n\nWhen you've seen enough, tap Build.",
   placeholder: 'Ask your question...',
   buildButton: 'build',
-  disclaimer: 'AI-UP Second Brain™ may produce inaccurate information.',
+  disclaimer: 'AI-UP Second Brain™',
 }

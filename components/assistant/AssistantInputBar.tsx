@@ -187,7 +187,7 @@ interface AssistantInputBarProps {
   disclaimer?: string
 }
 
-export default function AssistantInputBar({ onSend, isLoading, isDayMode = false, onToggleTheme, placeholder = 'Ask your question...', disclaimer = 'AI-UP Second Brain™ may produce inaccurate information.' }: AssistantInputBarProps) {
+export default function AssistantInputBar({ onSend, isLoading, isDayMode = false, onToggleTheme, placeholder = 'Ask your question...', disclaimer = 'AI-UP Second Brain™' }: AssistantInputBarProps) {
   const C = isDayMode ? C_DAY : C_NIGHT
   const [input, setInput] = useState('')
   const [isRecording, setIsRecording] = useState(false)
@@ -294,8 +294,14 @@ export default function AssistantInputBar({ onSend, isLoading, isDayMode = false
   })
 
   return (
-    <div style={{ padding: L.containerPadding, paddingBottom: L.containerPaddingBottom, position: 'relative' }}>
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    <div className="assistant-input-wrap" style={{ padding: L.containerPadding, paddingBottom: L.containerPaddingBottom, position: 'relative' }}>
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @media (max-width: 767px) {
+          .assistant-input-wrap { padding-bottom: 7px !important; }
+          .assistant-input-wrap .assistant-disclaimer { margin-top: 6px !important; }
+        }
+      `}</style>
 
       <div style={{ maxWidth: L.maxWidth, margin: '0 auto' }}>
         <div style={{
@@ -437,7 +443,7 @@ export default function AssistantInputBar({ onSend, isLoading, isDayMode = false
         </div>
 
         {/* Disclaimer */}
-        <p style={{
+        <p className="assistant-disclaimer" style={{
           textAlign: 'center', fontSize: L.disclaimer.fontSize,
           color: C.disclaimer, marginTop: L.disclaimer.marginTop,
           transition: 'none',
