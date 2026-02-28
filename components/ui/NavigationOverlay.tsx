@@ -1,46 +1,37 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 
 export default function NavigationOverlay() {
   const pathname = usePathname()
-  const [show, setShow] = useState(false)
 
-  // Hide overlay when new page loads
+  // Remove overlay when new page loads
   useEffect(() => {
-    setShow(false)
+    const el = document.getElementById('nav-overlay')
+    if (el) el.remove()
   }, [pathname])
 
-  // Intercept all internal link clicks → show dark overlay instantly
+  // Intercept clicks — direct DOM, no React state, instant
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       const link = (e.target as HTMLElement).closest('a[href]') as HTMLAnchorElement | null
       if (!link) return
-      // Only internal links (same origin, not external, not anchor)
       const href = link.getAttribute('href')
       if (!href) return
       if (href.startsWith('http') && !href.startsWith(window.location.origin)) return
-      if (href.startsWith('#')) return
-      // Same page link — skip
-      if (href === pathname) return
-      setShow(true)
+      if (href.startsWith('#') || href === pathname) return
+      // Already exists
+      if (document.getElementById('nav-overlay')) return
+      // Inject overlay directly into DOM — synchronous, zero delay
+      const div = document.createElement('div')
+      div.id = 'nav-overlay'
+      div.style.cssText = 'position:fixed;inset:0;background:#252525;z-index:99999;pointer-events:none;'
+      document.body.appendChild(div)
     }
     document.addEventListener('click', handler, true)
     return () => document.removeEventListener('click', handler, true)
   }, [pathname])
 
-  if (!show) return null
-
-  return (
-    <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        background: '#252525',
-        zIndex: 99999,
-        pointerEvents: 'none',
-      }}
-    />
-  )
+  return null
 }
