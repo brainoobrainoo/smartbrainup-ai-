@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import AssistantInputBar from '@/components/assistant/AssistantInputBar'
 import { createClient } from '@/lib/supabase/client'
+import { startChatContent } from '@/content/smartbrainup-ai/start-chat'
 
 type Message = {
   role: 'user' | 'assistant'
@@ -22,11 +23,9 @@ const NIGHT_THEMES = [
   '#8c7d7b', // rosa porcellino
 ]
 
-const WELCOME_MESSAGE = "Welcome. This is guidance. Ask what you need. When you're ready, tap Build."
-
 export default function StartPage() {
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'assistant', content: WELCOME_MESSAGE }
+    { role: 'assistant', content: startChatContent.welcomeMessage }
   ])
   const [isLoading, setIsLoading] = useState(false)
   const [hasFaded, setHasFaded] = useState(false)
@@ -275,7 +274,7 @@ export default function StartPage() {
             e.currentTarget.style.opacity = '0.6'
             e.currentTarget.style.backgroundColor = isDayMode ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.08)'
           }}>
-            build
+            {startChatContent.buildButton}
           </Link>
         </div>
 
@@ -283,6 +282,8 @@ export default function StartPage() {
           onSend={handleSend}
           isLoading={isLoading}
           isDayMode={isDayMode}
+          placeholder={startChatContent.placeholder}
+          disclaimer={startChatContent.disclaimer}
           onToggleTheme={() => {
             if (isDayMode) {
               setThemeBottom(NIGHT_THEMES[Math.floor(Math.random() * NIGHT_THEMES.length)])

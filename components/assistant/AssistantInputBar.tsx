@@ -25,8 +25,6 @@ const C_NIGHT = {
   sendInactiveBg: 'rgba(255,255,255,0.2)',
   sendInactiveColor: 'rgba(255,255,255,0.4)',
   disclaimer: 'rgba(255,255,255,0.2)',
-  toastBg: 'rgba(255,255,255,0.12)',
-  toastText: '#ffffff',
 }
 
 const C_DAY = {
@@ -39,8 +37,6 @@ const C_DAY = {
   sendInactiveBg: 'rgba(37,37,37,0.12)',
   sendInactiveColor: 'rgba(37,37,37,0.3)',
   disclaimer: 'rgba(37,37,37,0.25)',
-  toastBg: 'rgba(0,0,0,0.06)',
-  toastText: '#252525',
 }
 
 // ── Real audio visualizer — reads actual microphone data ──
@@ -187,9 +183,11 @@ interface AssistantInputBarProps {
   isLoading: boolean
   isDayMode?: boolean
   onToggleTheme?: () => void
+  placeholder?: string
+  disclaimer?: string
 }
 
-export default function AssistantInputBar({ onSend, isLoading, isDayMode = false, onToggleTheme }: AssistantInputBarProps) {
+export default function AssistantInputBar({ onSend, isLoading, isDayMode = false, onToggleTheme, placeholder = 'Ask your question...', disclaimer = 'AI-UP Second Brain™ may produce inaccurate information.' }: AssistantInputBarProps) {
   const C = isDayMode ? C_DAY : C_NIGHT
   const [input, setInput] = useState('')
   const [isRecording, setIsRecording] = useState(false)
@@ -329,7 +327,7 @@ export default function AssistantInputBar({ onSend, isLoading, isDayMode = false
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Ask your question..."
+                placeholder={placeholder}
                 rows={1}
                 disabled={isLoading || isTranscribing}
                 style={{
@@ -444,7 +442,7 @@ export default function AssistantInputBar({ onSend, isLoading, isDayMode = false
           color: C.disclaimer, marginTop: L.disclaimer.marginTop,
           transition: 'none',
         }}>
-          AI-UP Second Brain™ may produce inaccurate information.
+          {disclaimer}
         </p>
       </div>
     </div>
