@@ -48,13 +48,13 @@ export default function Header({ logo, links, variant = 'dark' }: HeaderProps) {
   return (
     <>
       <header className={`fixed top-0 left-0 right-0 z-50 w-full ${bgColor}`}>
-        <div className="max-w-[1200px] mx-auto px-10 md:px-12 py-5 flex items-center justify-center md:justify-between relative">
+        <div className="max-w-[1200px] mx-auto px-10 lg:px-12 py-5 flex items-center justify-center lg:justify-between relative">
 
           {/* ═══ MOBILE LEFT: Avatar (logged in) ═══ */}
           {isAuthenticated && user && (
             <Link
               href="/client"
-              className={`md:hidden absolute left-10 w-[35px] h-[35px] rounded-full
+              className={`lg:hidden absolute left-10 w-[35px] h-[35px] rounded-full
                          flex items-center justify-center
                          text-[11px] font-semibold tracking-[0.04em]
                          cursor-pointer flex-shrink-0 no-underline
@@ -74,13 +74,13 @@ export default function Header({ logo, links, variant = 'dark' }: HeaderProps) {
 
           {/* Desktop — vertical separator */}
           <span
-            className={`hidden md:block absolute left-1/2 -translate-x-1/2 w-[1.5px] h-[22px] ${
+            className={`hidden lg:block absolute left-1/2 -translate-x-1/2 w-[1.5px] h-[22px] ${
               variant === 'dark' ? 'bg-white/50' : 'bg-black/50'
             }`}
           />
 
           {/* ═══ DESKTOP NAV — right ═══ */}
-          <nav className="hidden md:flex items-center gap-6">
+          <nav className="hidden lg:flex items-center gap-6">
             {links.map((link) => (
               <Link
                 key={link.href}
@@ -120,7 +120,7 @@ export default function Header({ logo, links, variant = 'dark' }: HeaderProps) {
           </nav>
 
           {/* ═══ MOBILE RIGHT: Burger (always) ═══ */}
-          <div className="md:hidden absolute right-10">
+          <div className="lg:hidden absolute right-10">
             <button
               className="flex flex-col justify-center items-center w-8 h-8"
               onClick={() => setMenuOpen(!menuOpen)}
@@ -142,7 +142,7 @@ export default function Header({ logo, links, variant = 'dark' }: HeaderProps) {
 
         {/* ═══ MOBILE DROPDOWN ═══ */}
         {menuOpen && (
-          <nav className={`md:hidden ${bgColor} border-t ${borderColor} px-10 py-6`}>
+          <nav className={`lg:hidden ${bgColor} border-t ${borderColor} px-10 py-6`}>
             <div className="flex flex-col gap-4">
               {links.map((link) => (
                 <Link
