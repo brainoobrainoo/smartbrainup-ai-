@@ -17,12 +17,12 @@ export default function SmartBrainUpAILayout({
   const isChat = pathname.endsWith('/chat')
 
   return (
-    <div className={`min-h-screen flex flex-col ${isChat ? 'bg-[#252525]' : ''}`}>
+    <div className="min-h-screen flex flex-col" style={{ background: '#252525' }}>
       
       <Header logo={navigationAi.logo} links={navigationAi.links} />
 
       {/* Spacer per compensare l'header fixed - non serve su chat */}
-      {!isChat && <div className="h-[21px] md:h-0"></div>}
+      {!isChat && <div className="h-[21px] xl:h-0"></div>}
 
       <main className="flex-1 relative">
         {children}
