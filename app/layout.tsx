@@ -40,7 +40,6 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${crimson.variable} ${inter.variable}`} style={{ background: '#252525' }}>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: `document.documentElement.style.background='#252525';document.documentElement.style.colorScheme='dark';` }} />
         <style dangerouslySetInnerHTML={{ __html: `html,body{background:#252525!important}` }} />
       </head>
       <body className="font-editorial font-normal" style={{ background: '#252525' }}>

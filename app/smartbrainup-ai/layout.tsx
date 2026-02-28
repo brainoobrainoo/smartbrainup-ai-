@@ -5,7 +5,6 @@ import { usePathname } from 'next/navigation'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import { navigationAi } from '@/content/smartbrainup-ai/navigation'
-import NavigationOverlay from '@/components/ui/NavigationOverlay'
 
 const ScrollToTop = dynamic(() => import('@/components/ui/ScrollToTop'), { ssr: false })
 
@@ -19,8 +18,6 @@ export default function SmartBrainUpAILayout({
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: '#252525' }}>
-      
-      <NavigationOverlay />
 
       <Header logo={navigationAi.logo} links={navigationAi.links} />
 
