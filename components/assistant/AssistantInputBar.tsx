@@ -180,35 +180,6 @@ function LiveAudioBars({ stream, barColor }: { stream: MediaStream | null, barCo
   )
 }
 
-// ── TOAST COMPONENT ──
-function Toast({ message, isDayMode, visible }: { message: string, isDayMode: boolean, visible: boolean }) {
-  const C = isDayMode ? C_DAY : C_NIGHT
-  return (
-    <div style={{
-      position: 'absolute',
-      bottom: '100%',
-      left: '50%',
-      transform: `translateX(-50%) translateY(${visible ? '0' : '8px'})`,
-      marginBottom: '12px',
-      opacity: visible ? 1 : 0,
-      transition: 'opacity 0.25s ease, transform 0.25s ease',
-      pointerEvents: 'none',
-      zIndex: 100,
-      backgroundColor: C.toastBg,
-      color: C.toastText,
-      borderRadius: '12px',
-      padding: '10px 20px',
-      fontSize: '13px',
-      fontFamily: 'var(--font-inter), sans-serif',
-      backdropFilter: 'blur(12px)',
-      WebkitBackdropFilter: 'blur(12px)',
-      whiteSpace: 'nowrap',
-    }}>
-      {message}
-    </div>
-  )
-}
-
 // ── COMPONENT ──
 
 interface AssistantInputBarProps {
@@ -216,22 +187,17 @@ interface AssistantInputBarProps {
   isLoading: boolean
   isDayMode?: boolean
   onToggleTheme?: () => void
-  isIntakeMode?: boolean
-  onToggleIntake?: (value: boolean) => void
 }
 
-export default function AssistantInputBar({ onSend, isLoading, isDayMode = false, onToggleTheme, isIntakeMode = false, onToggleIntake }: AssistantInputBarProps) {
+export default function AssistantInputBar({ onSend, isLoading, isDayMode = false, onToggleTheme }: AssistantInputBarProps) {
   const C = isDayMode ? C_DAY : C_NIGHT
   const [input, setInput] = useState('')
   const [isRecording, setIsRecording] = useState(false)
   const [isTranscribing, setIsTranscribing] = useState(false)
   const [activeStream, setActiveStream] = useState<MediaStream | null>(null)
-  const [toastMessage, setToastMessage] = useState('')
-  const [toastVisible, setToastVisible] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const chunksRef = useRef<Blob[]>([])
-  const toastTimerRef = useRef<NodeJS.Timeout | null>(null)
 
   // ── TEXTAREA AUTO-RESIZE ──
   useLayoutEffect(() => {
@@ -240,24 +206,6 @@ export default function AssistantInputBar({ onSend, isLoading, isDayMode = false
     el.style.height = '0'
     el.style.height = Math.min(el.scrollHeight, parseInt(L.textarea.maxHeight)) + 'px'
   }, [input])
-
-  // ── TOAST ──
-  const showToast = useCallback((msg: string) => {
-    if (toastTimerRef.current) clearTimeout(toastTimerRef.current)
-    setToastMessage(msg)
-    setToastVisible(true)
-    toastTimerRef.current = setTimeout(() => {
-      setToastVisible(false)
-    }, 2500)
-  }, [])
-
-  // ── TOGGLE INTAKE ──
-  const handleToggleIntake = useCallback(() => {
-    if (isLoading || isTranscribing) return
-    const newValue = !isIntakeMode
-    onToggleIntake?.(newValue)
-    showToast(newValue ? 'Context Intake — active' : 'Informative mode')
-  }, [isIntakeMode, isLoading, isTranscribing, onToggleIntake, showToast])
 
   // ── RECORDING ──
 
@@ -351,9 +299,6 @@ export default function AssistantInputBar({ onSend, isLoading, isDayMode = false
     <div style={{ padding: L.containerPadding, paddingBottom: L.containerPaddingBottom, position: 'relative' }}>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
 
-      {/* Toast */}
-      <Toast message={toastMessage} isDayMode={isDayMode} visible={toastVisible} />
-
       <div style={{ maxWidth: L.maxWidth, margin: '0 auto' }}>
         <div style={{
           backgroundColor: C.cloud,
@@ -384,7 +329,7 @@ export default function AssistantInputBar({ onSend, isLoading, isDayMode = false
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder={isIntakeMode ? 'Answer the question...' : 'Describe your situation...'}
+                placeholder="Ask your question..."
                 rows={1}
                 disabled={isLoading || isTranscribing}
                 style={{
@@ -399,7 +344,7 @@ export default function AssistantInputBar({ onSend, isLoading, isDayMode = false
           )}
 
           {/* Icons row */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: L.iconsRow.padding, position: 'relative' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: L.iconsRow.padding }}>
             {isRecording ? (
               <>
                 {/* Cancel */}
@@ -456,43 +401,6 @@ export default function AssistantInputBar({ onSend, isLoading, isDayMode = false
                       <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
                     </svg>
                   )}
-                </button>
-
-                {/* ── INTAKE TOGGLE — centered ── */}
-                <button
-                  onClick={handleToggleIntake}
-                  disabled={isLoading || isTranscribing}
-                  aria-label={isIntakeMode ? 'Switch to informative' : 'Start intake'}
-                  style={{
-                    position: 'absolute',
-                    left: '50%',
-                    top: '50%',
-                    transform: 'translate(-50%, -50%)',
-                    width: '55px',
-                    height: '22px',
-                    borderRadius: '11px',
-                    border: 'none',
-                    cursor: isLoading || isTranscribing ? 'not-allowed' : 'pointer',
-                    backgroundColor: isIntakeMode ? C.text : (isDayMode ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.15)'),
-                    opacity: isLoading || isTranscribing ? 0.4 : (isIntakeMode ? 0.9 : 0.4),
-                    transition: 'background-color 0.3s, opacity 0.3s',
-                    flexShrink: 0,
-                    padding: 0,
-                    outline: 'none',
-                    zIndex: 1,
-                  }}
-                >
-                  <div style={{
-                    position: 'absolute',
-                    top: '2px',
-                    left: isIntakeMode ? '35px' : '2px',
-                    width: '18px',
-                    height: '18px',
-                    borderRadius: '50%',
-                    backgroundColor: isIntakeMode ? (isDayMode ? '#ffffff' : '#252525') : (isDayMode ? '#ffffff' : '#252525'),
-                    transition: 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
-                  }} />
                 </button>
 
                 {/* Right side: mic + send */}

@@ -1,9 +1,10 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import AssistantInputBar from '@/components/assistant/AssistantInputBar'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
 
 type Message = {
   role: 'user' | 'assistant'
@@ -21,14 +22,17 @@ const NIGHT_THEMES = [
   '#8c7d7b', // rosa porcellino
 ]
 
+const WELCOME_MESSAGE = "Welcome. This is guidance. Ask what you need. When you're ready, tap Build."
+
 export default function StartPage() {
-  const [messages, setMessages] = useState<Message[]>([])
+  const [messages, setMessages] = useState<Message[]>([
+    { role: 'assistant', content: WELCOME_MESSAGE }
+  ])
   const [isLoading, setIsLoading] = useState(false)
   const [hasFaded, setHasFaded] = useState(false)
   const [keyboardOffset, setKeyboardOffset] = useState(0)
   const [themeBottom, setThemeBottom] = useState(NIGHT_THEMES[0])
   const [isDayMode, setIsDayMode] = useState(false)
-  const [isIntakeMode, setIsIntakeMode] = useState(false)
   const [userCredits, setUserCredits] = useState<number | null>(null)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const router = useRouter()
@@ -229,7 +233,7 @@ export default function StartPage() {
       </div>
       </div>
 
-      {/* Input bar — rises with keyboard on mobile */}
+      {/* Build button + Input bar — rises with keyboard on mobile */}
       <div style={{
         flexShrink: 0,
         position: 'relative',
@@ -237,12 +241,48 @@ export default function StartPage() {
         paddingBottom: keyboardOffset > 0 ? `${keyboardOffset}px` : 'env(safe-area-inset-bottom)',
         transition: 'padding-bottom 0.15s ease-out',
       }}>
+
+        {/* ── BUILD BUTTON — centered above the cloud ── */}
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          paddingBottom: '12px',
+        }}>
+          <Link href="/build" style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '72px',
+            height: '72px',
+            borderRadius: '50%',
+            backgroundColor: isDayMode ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.08)',
+            color: isDayMode ? '#252525' : '#ffffff',
+            fontFamily: 'var(--font-inter), sans-serif',
+            fontSize: '11px',
+            fontWeight: 500,
+            letterSpacing: '0.06em',
+            textTransform: 'uppercase' as const,
+            textDecoration: 'none',
+            cursor: 'pointer',
+            transition: 'background-color 0.2s, opacity 0.2s',
+            opacity: 0.6,
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.opacity = '1'
+            e.currentTarget.style.backgroundColor = isDayMode ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.14)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.opacity = '0.6'
+            e.currentTarget.style.backgroundColor = isDayMode ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.08)'
+          }}>
+            build
+          </Link>
+        </div>
+
         <AssistantInputBar
           onSend={handleSend}
           isLoading={isLoading}
           isDayMode={isDayMode}
-          isIntakeMode={isIntakeMode}
-          onToggleIntake={(v) => setIsIntakeMode(v)}
           onToggleTheme={() => {
             if (isDayMode) {
               setThemeBottom(NIGHT_THEMES[Math.floor(Math.random() * NIGHT_THEMES.length)])
