@@ -138,22 +138,19 @@ async function handleLicensingPurchase(
 
   console.log(`[Webhook] Licensing: ${email} → ${licensingInfo.name} (${licensingInfo.credits} credits)`)
 
-  const { error: upsertError } = await supabaseAdmin
+  const { error: updateError } = await supabaseAdmin
     .from('user_profiles')
-    .upsert(
-      {
-        email,
-        stripe_customer_id: customerId,
-        credits: licensingInfo.credits,
-        licensing_status: 'active',
-        purchased_at: new Date().toISOString(),
-      },
-      { onConflict: 'email' }
-    )
+    .update({
+      stripe_customer_id: customerId,
+      credits: licensingInfo.credits,
+      licensing_status: 'active',
+      purchased_at: new Date().toISOString(),
+    })
+    .eq('email', email)
 
-  if (upsertError) {
-    console.error('[Webhook] Upsert error:', upsertError.message)
-    throw upsertError
+  if (updateError) {
+    console.error('[Webhook] Update error:', updateError.message)
+    throw updateError
   }
 
   await createBasicTrial(customerId, email)
@@ -258,21 +255,18 @@ async function handleSubscriptionPurchase(
 
   await supabaseAdmin
     .from('user_profiles')
-    .upsert(
-      {
-        email,
-        stripe_customer_id: customerId,
-        subscription_id: subscriptionId,
-        subscription_plan: subInfo.plan,
-        subscription_interval: subInfo.interval,
-        subscription_status: sub.status,
-        trial_end: sub.trial_end,
-        current_period_end: sub.current_period_end,
-        discount_applied: discountApplied,
-        discount_end: discountEnd,
-      },
-      { onConflict: 'email' }
-    )
+    .update({
+      stripe_customer_id: customerId,
+      subscription_id: subscriptionId,
+      subscription_plan: subInfo.plan,
+      subscription_interval: subInfo.interval,
+      subscription_status: sub.status,
+      trial_end: sub.trial_end,
+      current_period_end: sub.current_period_end,
+      discount_applied: discountApplied,
+      discount_end: discountEnd,
+    })
+    .eq('email', email)
 }
 
 // --- INVOICE PAID ---
