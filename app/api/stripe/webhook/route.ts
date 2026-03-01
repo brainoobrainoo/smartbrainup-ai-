@@ -100,11 +100,22 @@ function getSubFields(sub: any) {
 
 async function handleCheckoutCompleted(session: any) {
   const customerEmail = session.customer_details?.email as string | undefined
-  const customerId = session.customer as string
+  let customerId = session.customer as string | null
 
   if (!customerEmail) {
     console.error('[Webhook] No customer email in session')
     return
+  }
+
+  // If no customer was created by Stripe (common with Payment Links in payment mode),
+  // create one so we can attach subscriptions later
+  if (!customerId) {
+    const customer = await stripe.customers.create({
+      email: customerEmail,
+      name: session.customer_details?.name || undefined,
+    })
+    customerId = customer.id
+    console.log(`[Webhook] Created Stripe customer for ${customerEmail}: ${customerId}`)
   }
 
   if (session.mode === 'payment') {
