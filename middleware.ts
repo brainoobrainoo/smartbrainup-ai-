@@ -68,11 +68,14 @@ export async function middleware(request: NextRequest) {
     surface = 'brainoo'
   } else if (surfaceParam === 'smartbrainup-com') {
     surface = 'smartbrainup-com'
-  } else if (host.includes('smartbrainup-com') || host.includes('smartbrainup.com')) {
+  } else if (host.includes('smartbrainup.com') || host.includes('smartbrainup-com')) {
     surface = 'smartbrainup-com'
-  } else if (host.includes('brainoo')) {
+  } else if (host.includes('smartbrainup.ai') || host.includes('smartbrainup-ai') || host.includes('smartbrainup')) {
+    surface = 'smartbrainup-ai'
+  } else if (host.includes('brainoo.ai') || host === 'brainoo') {
     surface = 'brainoo'
   }
+  // Any unknown host (Vercel preview URLs) → smartbrainup-ai by default
 
   const url = request.nextUrl.clone()
   url.pathname = '/' + surface + (pathname === '/' ? '' : pathname)
