@@ -472,7 +472,7 @@ export default function ClientArea() {
       <div
         className="hidden md:block fixed top-[67px] left-0 right-0 z-40 bg-white"
       >
-        <div className="max-w-[1200px] mx-auto px-10 md:px-12 flex items-center gap-6 pt-5 pb-3">
+        <div className="max-w-[880px] mx-auto px-10 xl:px-12 flex items-center gap-6 pt-5 pb-3">
           {clientTabs.map((tab) => (
             <button
               key={tab.key}
@@ -481,8 +481,8 @@ export default function ClientArea() {
                 font-ui text-[13px] bg-transparent border-0
                 cursor-pointer transition-opacity
                 ${activeNav === tab.key
-                  ? 'font-medium text-[#1a1a1a] opacity-100'
-                  : 'font-normal text-[#1a1a1a] opacity-35 hover:opacity-60'
+                  ? 'font-medium text-[#1a1a1a] opacity-90'
+                  : 'font-normal text-[#1a1a1a] opacity-50 hover:opacity-80'
                 }
               `}
             >
@@ -571,7 +571,7 @@ export default function ClientArea() {
 
             {/* Active brain cards */}
             {activeBrains.length > 0 && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-5">
+              <div className="flex flex-col gap-4 mb-5">
                 {activeBrains.map((b) => (
                   <SecondBrainCard
                     key={b.id}
@@ -586,80 +586,54 @@ export default function ClientArea() {
 
             {/* ── Incomplete brain cards ── */}
             {incompleteBrains.length > 0 && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-5">
+              <div className="flex flex-col gap-4 mb-5">
                 {incompleteBrains.map((b) => (
                   <div
                     key={b.id}
-                    className="rounded-[4px] p-6 flex flex-col min-h-[260px]"
+                    className="rounded-[4px] p-6 min-h-[140px] flex flex-col md:flex-row md:items-center md:justify-between gap-4"
                     style={{ background: 'linear-gradient(to bottom, #ededed 0%, #c9c9c9 100%)' }}
                   >
-                    {/* Top label */}
-                    <p className="font-ui text-[11px] font-medium tracking-widest uppercase text-[#1a1a1a]/35 mb-4">
-                      Second Brain {b.num}
-                    </p>
-
-                    {/* Editable name */}
-                    <div className="mb-auto">
-                      {editingBrainId === b.id ? (
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="text"
-                            value={editingBrainName}
-                            onChange={(e) => setEditingBrainName(e.target.value)}
-                            onKeyDown={(e) => { if (e.key === 'Enter') handleRenameBrain(b.id) }}
-                            autoFocus
-                            className="text-[16px] font-normal border-0 border-b border-[#1a1a1a]/20
-                                       bg-transparent outline-none w-full rounded-none text-[#1a1a1a]/70"
-                          />
-                          <button
-                            onClick={() => handleRenameBrain(b.id)}
-                            disabled={savingBrainName}
-                            className="font-ui text-[10px] font-medium tracking-widest uppercase
-                                       text-[#1a1a1a]/50 hover:text-[#1a1a1a]/80
-                                       bg-transparent border-0 cursor-pointer whitespace-nowrap"
-                          >
-                            {savingBrainName ? '...' : 'save'}
-                          </button>
-                        </div>
-                      ) : (
-                        <p className="text-[18px] font-normal text-[#1a1a1a]/60">
-                          {b.name}
-                        </p>
-                      )}
+                    {/* Left — label + name */}
+                    <div className="flex-1">
+                      <p className="font-ui text-[11px] font-medium tracking-widest uppercase text-[#1a1a1a]/35 mb-1">
+                        Second Brain {b.num}
+                      </p>
+                      <p className="text-[18px] font-normal text-[#1a1a1a]/60">
+                        {b.name}
+                      </p>
                     </div>
 
-                    {/* Action buttons */}
-                    <div className="mt-4">
+                    {/* Right — buttons */}
+                    <div>
                       {contactBrainId === b.id ? (
-                        <>
-                          <p className="text-[16px] text-[#1a1a1a]/45 text-center mb-2">
+                        <div className="flex flex-col items-center gap-2">
+                          <p className="text-[14px] text-[#1a1a1a]/45 text-center">
                             Phase 2 activation requires a license
                           </p>
                           <a
                             href="mailto:info@smartbrainup.com"
-                            className="block text-[16px] text-[#1a1a1a]/60 text-center mb-4
-                                       hover:text-[#1a1a1a]/80 transition-colors"
+                            className="text-[14px] text-[#1a1a1a]/60 hover:text-[#1a1a1a]/80 transition-colors"
                           >
                             info@smartbrainup.com
                           </a>
                           <button
                             onClick={() => setContactBrainId(null)}
-                            className="w-full py-2.5 bg-[#1a1a1a]/[0.06] hover:bg-[#1a1a1a]/[0.12]
-                                       rounded-[4px] font-ui text-[11px] font-medium tracking-widest
+                            className="py-2 px-5 bg-[#1a1a1a]/[0.06] hover:bg-[#1a1a1a]/[0.12]
+                                       rounded-[4px] font-ui text-[10px] font-medium tracking-widest
                                        uppercase text-[#1a1a1a]/50 border-0 cursor-pointer transition-colors"
                           >
                             Back
                           </button>
-                        </>
+                        </div>
                       ) : deletingBrainId === b.id ? (
-                        <>
-                          <p className="text-[16px] text-[#1a1a1a]/45 text-center mb-3">
-                            This will delete all progress. Are you sure?
+                        <div className="flex flex-col items-center gap-2">
+                          <p className="text-[14px] text-[#1a1a1a]/45 text-center">
+                            Delete all progress?
                           </p>
                           <div className="flex gap-3">
                             <button
                               onClick={() => handleDeleteBrain(b.id)}
-                              className="flex-1 py-2.5 bg-red-500/10 hover:bg-red-500/20
+                              className="py-2 px-5 bg-red-500/10 hover:bg-red-500/20
                                          rounded-[4px] font-ui text-[10px] font-medium tracking-widest
                                          uppercase text-red-600/70 border-0 cursor-pointer transition-colors"
                             >
@@ -667,38 +641,27 @@ export default function ClientArea() {
                             </button>
                             <button
                               onClick={() => setDeletingBrainId(null)}
-                              className="flex-1 py-2.5 bg-[#1a1a1a]/[0.06] hover:bg-[#1a1a1a]/[0.12]
+                              className="py-2 px-5 bg-[#1a1a1a]/[0.06] hover:bg-[#1a1a1a]/[0.12]
                                          rounded-[4px] font-ui text-[10px] font-medium tracking-widest
                                          uppercase text-[#1a1a1a]/50 border-0 cursor-pointer transition-colors"
                             >
                               No
                             </button>
                           </div>
-                        </>
+                        </div>
                       ) : (
                         <div className="flex gap-3">
                           <button
                             onClick={() => credits > 0 ? handleStartPhase2(b) : setContactBrainId(b.id)}
-                            className="flex-1 py-2.5 bg-[#1a1a1a]/[0.08] hover:bg-[#1a1a1a]/[0.15]
+                            className="py-2.5 px-6 bg-[#1a1a1a]/[0.08] hover:bg-[#1a1a1a]/[0.15]
                                        rounded-[4px] font-ui text-[10px] font-medium tracking-widest
                                        uppercase text-[#1a1a1a]/60 border-0 cursor-pointer transition-colors"
                           >
                             Complete
                           </button>
                           <button
-                            onClick={() => {
-                              setEditingBrainId(b.id)
-                              setEditingBrainName(b.name === 'Second Brain' ? '' : b.name)
-                            }}
-                            className="flex-1 py-2.5 bg-[#1a1a1a]/[0.06] hover:bg-[#1a1a1a]/[0.12]
-                                       rounded-[4px] font-ui text-[10px] font-medium tracking-widest
-                                       uppercase text-[#1a1a1a]/50 border-0 cursor-pointer transition-colors"
-                          >
-                            Rename
-                          </button>
-                          <button
                             onClick={() => setDeletingBrainId(b.id)}
-                            className="flex-1 py-2.5 bg-[#1a1a1a]/[0.06] hover:bg-red-500/10
+                            className="py-2.5 px-6 bg-[#1a1a1a]/[0.06] hover:bg-red-500/10
                                        rounded-[4px] font-ui text-[10px] font-medium tracking-widest
                                        uppercase text-[#1a1a1a]/50 hover:text-red-600/60
                                        border-0 cursor-pointer transition-colors"
@@ -714,20 +677,18 @@ export default function ClientArea() {
             )}
 
             {/* New brain */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <button
-                onClick={() => router.push('/start')}
-                className="rounded-[4px] bg-[#f7f7f7] hover:bg-[#f0f0f0]
-                           transition-colors duration-200
-                           flex flex-col items-center justify-center min-h-[260px]
-                           cursor-pointer border-0"
-              >
-                <span className="text-[24px] text-[#1a1a1a]/30 mb-2">+</span>
-                <span className="font-ui text-[11px] font-medium tracking-widest uppercase text-[#1a1a1a]/45">
-                  New Second Brain
-                </span>
-              </button>
-            </div>
+            <button
+              onClick={() => router.push('/start')}
+              className="w-full rounded-[4px] bg-[#f7f7f7] hover:bg-[#f0f0f0]
+                         transition-colors duration-200
+                         flex items-center justify-center gap-3 p-6 min-h-[140px]
+                         cursor-pointer border-0"
+            >
+              <span className="text-[20px] text-[#1a1a1a]/30">+</span>
+              <span className="font-ui text-[11px] font-medium tracking-widest uppercase text-[#1a1a1a]/45">
+                New Second Brain
+              </span>
+            </button>
           </Container>
         )}
 

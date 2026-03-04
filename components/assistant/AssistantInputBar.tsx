@@ -4,7 +4,7 @@ import { useState, useRef, useCallback, useEffect, useLayoutEffect, useImperativ
 
 // ── LAYOUT TOKENS — dimensions and spacing only ──
 const L = {
-  maxWidth: '680px',
+  maxWidth: '880px',
   containerPadding: '0 16px',
   containerPaddingBottom: '12px',
   cloud: { borderRadius: '24px' },
@@ -310,12 +310,13 @@ const AssistantInputBar = forwardRef<AssistantInputBarHandle, AssistantInputBarP
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
         @media (max-width: 767px) {
+          .assistant-input-inner { padding: 0 !important; }
           .assistant-input-wrap { padding-bottom: 7px !important; }
           .assistant-input-wrap .assistant-disclaimer { margin-top: 6px !important; }
         }
       `}</style>
 
-      <div style={{ maxWidth: L.maxWidth, margin: '0 auto' }}>
+      <div className="assistant-input-inner" style={{ maxWidth: L.maxWidth, margin: '0 auto', padding: '0 30px' }}>
         <div style={{
           backgroundColor: C.cloud,
           borderRadius: L.cloud.borderRadius,

@@ -86,7 +86,7 @@ export default function SecondBrainCard({ brain, onOpen, onRename, onColorChange
   if (editing) {
     return (
       <div
-        className="rounded-[4px] p-6 min-h-[260px] flex flex-col"
+        className="rounded-[4px] p-6 flex flex-col"
         style={{ background: getGradient(brain.cardColor) }}
       >
         {/* Name input */}
@@ -147,13 +147,13 @@ export default function SecondBrainCard({ brain, onOpen, onRename, onColorChange
 
   return (
     <div
-      className="rounded-[4px] p-6 min-h-[260px] flex flex-col
+      className="rounded-[4px] p-6 min-h-[140px] flex flex-col md:flex-row md:items-center gap-4 md:gap-6
                  text-left transition-all duration-200
                  relative border-0"
       style={{ background: getGradient(brain.cardColor) }}
     >
       {/* Sphere */}
-      <div className="mb-4">
+      <div className="flex-shrink-0">
         {sphereData ? (
           <Lottie
             animationData={sphereData}
@@ -166,38 +166,42 @@ export default function SecondBrainCard({ brain, onOpen, onRename, onColorChange
         )}
       </div>
 
-      <p className={`font-ui text-[11px] font-medium tracking-widest uppercase ${textSecondary} mb-2`}>
-        Second Brain {brain.num}
-      </p>
-
-      <h3 className={`text-[20px] font-normal tracking-[-0.01em] ${textPrimary} mb-2`}>
-        {brain.name}
-      </h3>
-
-      <p className={`text-[15px] leading-[1.4] ${textBody} mb-auto`}>
-        {brain.context.length > 90
-          ? brain.context.slice(0, 90) + '…'
-          : brain.context}
-      </p>
-
-      <div className="flex gap-1.5 mt-4 mb-4">
-        {brain.platforms.map((p) => (
-          <span
-            key={p}
-            className={`font-ui text-[10px] font-medium tracking-[0.06em]
-                       uppercase px-2.5 py-0.5 border ${borderColor}
-                       rounded-[3px] ${textSecondary}`}
-          >
-            {p}
-          </span>
-        ))}
+      {/* Text — label, name, context, platforms */}
+      <div className="flex-1 min-w-0">
+        <p className={`font-ui text-[11px] font-medium tracking-widest uppercase ${textSecondary} mb-1`}>
+          Second Brain {brain.num}
+        </p>
+        <h3 className={`text-[20px] font-normal tracking-[-0.01em] ${textPrimary} mb-1`}>
+          {brain.name}
+        </h3>
+        {brain.context && (
+          <p className={`text-[14px] leading-[1.4] ${textBody} mb-2`}>
+            {brain.context.length > 120
+              ? brain.context.slice(0, 120) + '…'
+              : brain.context}
+          </p>
+        )}
+        {brain.platforms.length > 0 && (
+          <div className="flex gap-1.5">
+            {brain.platforms.map((p) => (
+              <span
+                key={p}
+                className={`font-ui text-[10px] font-medium tracking-[0.06em]
+                           uppercase px-2.5 py-0.5 border ${borderColor}
+                           rounded-[3px] ${textSecondary}`}
+              >
+                {p}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* Action buttons */}
-      <div className="flex gap-3">
+      {/* Action buttons — right side */}
+      <div className="flex gap-3 flex-shrink-0">
         <button
           onClick={() => onOpen(brain)}
-          className={`flex-1 py-2.5 ${isLight ? 'bg-[#1a1a1a]/[0.08] hover:bg-[#1a1a1a]/[0.15] text-[#1a1a1a]/60' : 'bg-white/[0.1] hover:bg-white/[0.18] text-white/70'}
+          className={`py-2.5 px-6 ${isLight ? 'bg-[#1a1a1a]/[0.08] hover:bg-[#1a1a1a]/[0.15] text-[#1a1a1a]/60' : 'bg-white/[0.1] hover:bg-white/[0.18] text-white/70'}
                      rounded-[4px] font-ui text-[10px] font-medium tracking-widest
                      uppercase border-0 cursor-pointer transition-colors`}
         >
@@ -205,7 +209,7 @@ export default function SecondBrainCard({ brain, onOpen, onRename, onColorChange
         </button>
         <button
           onClick={() => { setEditing(true); setEditName(brain.name) }}
-          className={`flex-1 py-2.5 ${isLight ? 'bg-[#1a1a1a]/[0.06] hover:bg-[#1a1a1a]/[0.12] text-[#1a1a1a]/50' : 'bg-white/[0.06] hover:bg-white/[0.12] text-white/50'}
+          className={`py-2.5 px-6 ${isLight ? 'bg-[#1a1a1a]/[0.06] hover:bg-[#1a1a1a]/[0.12] text-[#1a1a1a]/50' : 'bg-white/[0.06] hover:bg-white/[0.12] text-white/50'}
                      rounded-[4px] font-ui text-[10px] font-medium tracking-widest
                      uppercase border-0 cursor-pointer transition-colors`}
         >

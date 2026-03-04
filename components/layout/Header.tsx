@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { useAuth, signOut } from '@/lib/useAuth'
 
@@ -20,13 +20,36 @@ type HeaderProps = {
   logo: string
   links: NavLink[]
   variant?: 'dark' | 'light'
+  theme?: 'dark' | 'light'
+  onThemeToggle?: () => void
 }
 
-export default function Header({ logo, links, variant = 'dark' }: HeaderProps) {
+const SunIcon = ({ size = 15 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="5"/>
+    <line x1="12" y1="1" x2="12" y2="3"/>
+    <line x1="12" y1="21" x2="12" y2="23"/>
+    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+    <line x1="1" y1="12" x2="3" y2="12"/>
+    <line x1="21" y1="12" x2="23" y2="12"/>
+    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+  </svg>
+)
+
+const MoonIcon = ({ size = 15 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+  </svg>
+)
+
+export default function Header({ logo, links, variant = 'dark', theme, onThemeToggle }: HeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false)
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const { isAuthenticated, user } = useAuth()
+  const headerRef = useRef<HTMLElement>(null)
 
   const surface = searchParams.get('surface')
   const buildHref = (href: string) => {
@@ -34,9 +57,22 @@ export default function Header({ logo, links, variant = 'dark' }: HeaderProps) {
     return href
   }
 
+  // Close on route change
   useEffect(() => {
     setMenuOpen(false)
   }, [pathname])
+
+  // Close on click outside
+  useEffect(() => {
+    if (!menuOpen) return
+    const handleClick = (e: MouseEvent) => {
+      if (headerRef.current && !headerRef.current.contains(e.target as Node)) {
+        setMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [menuOpen])
 
   const bgColor = variant === 'dark' ? 'bg-[#252525]' : 'bg-white'
   const textColor = variant === 'dark' ? 'text-white' : 'text-[#1a1a1a]'
@@ -47,8 +83,8 @@ export default function Header({ logo, links, variant = 'dark' }: HeaderProps) {
 
   return (
     <>
-      <header className={`fixed top-0 left-0 right-0 z-50 w-full ${bgColor}`}>
-        <div className="max-w-[1200px] mx-auto px-10 xl:px-12 py-5 flex items-center justify-center xl:justify-between relative">
+      <header ref={headerRef} className={`fixed top-0 left-0 right-0 z-50 w-full ${bgColor}`}>
+        <div className="max-w-[880px] mx-auto px-10 xl:px-12 py-5 flex items-center justify-center xl:justify-between relative">
 
           {/* ═══ MOBILE LEFT: Avatar (logged in) ═══ */}
           {isAuthenticated && user && (
@@ -72,13 +108,6 @@ export default function Header({ logo, links, variant = 'dark' }: HeaderProps) {
             {logo}
           </Link>
 
-          {/* Desktop — vertical separator */}
-          <span
-            className={`hidden xl:block absolute left-1/2 -translate-x-1/2 w-[1.5px] h-[22px] ${
-              variant === 'dark' ? 'bg-white/50' : 'bg-black/50'
-            }`}
-          />
-
           {/* ═══ DESKTOP NAV — right ═══ */}
           <nav className="hidden xl:flex items-center gap-6">
             {links.map((link) => (
@@ -94,6 +123,17 @@ export default function Header({ logo, links, variant = 'dark' }: HeaderProps) {
                 {link.label.toLowerCase()}
               </Link>
             ))}
+
+            {/* Desktop theme toggle — same opacity as nav links */}
+            {onThemeToggle && (
+              <button
+                onClick={onThemeToggle}
+                className={`flex items-center justify-center ${textColor} opacity-60 hover:opacity-90 transition-opacity`}
+                aria-label="Toggle theme"
+              >
+                {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
+              </button>
+            )}
 
             {/* Desktop auth element */}
             {isAuthenticated && user ? (
@@ -119,7 +159,7 @@ export default function Header({ logo, links, variant = 'dark' }: HeaderProps) {
             )}
           </nav>
 
-          {/* ═══ MOBILE RIGHT: Burger (always) ═══ */}
+          {/* ═══ MOBILE RIGHT: Burger only ═══ */}
           <div className="xl:hidden absolute right-10">
             <button
               className="flex flex-col justify-center items-center w-8 h-8"
@@ -159,12 +199,29 @@ export default function Header({ logo, links, variant = 'dark' }: HeaderProps) {
                 </Link>
               ))}
 
-              {/* Sign in or Sign out */}
+              {/* Divider */}
               <div
                 className={`h-px my-1 ${
                   variant === 'dark' ? 'bg-white/[0.06]' : 'bg-black/[0.06]'
                 }`}
               />
+
+              {/* Theme toggle — before sign in/out */}
+              {onThemeToggle && (
+                <button
+                  onClick={() => {
+                    onThemeToggle()
+                    setMenuOpen(false)
+                  }}
+                  className={`font-ui text-[13px] ${textColor} font-normal
+                             opacity-50 hover:opacity-80 transition-opacity
+                             bg-transparent border-0 text-left cursor-pointer p-0`}
+                >
+                  {theme === 'dark' ? 'light mode' : 'dark mode'}
+                </button>
+              )}
+
+              {/* Sign in or Sign out */}
               {isAuthenticated ? (
                 <button
                   onClick={() => {

@@ -8,13 +8,16 @@ import { homeContent } from '@/content/smartbrainup-ai/home'
 import Container from '@/components/layout/Container'
 import Lottie from 'lottie-react'
 import sphereAnimation from '../../public/animations/SFERA_LOGO_B.json'
+import sphereAnimationLight from '../../public/animations/SFERA_LOGO_B_bianco.json'
 import FloatingChatButton from '@/components/ui/FloatingChatButton'
 import StartButton from '@/components/ui/StartButton'
 import { useAuth } from '@/lib/useAuth'
 import { createClient } from '@/lib/supabase/client'
+import { useTheme } from '@/lib/ThemeContext'
 
 export default function HomePage() {
   const { hero, problem, solution, impact, platforms, cta } = homeContent
+  const { theme } = useTheme()
 
   // Typewriter effect
   const fullText = hero.headline.join('\n')
@@ -103,10 +106,16 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#252525] overflow-x-hidden">
+    <div className={`min-h-screen ${theme === 'dark' ? 'bg-[#252525]' : 'bg-white'} overflow-x-hidden`}>
       
-      {/* Gradient zone: Hero + CTA */}
-      <div style={{ background: 'linear-gradient(to bottom, #252525 0%, #252525 80px, #5a5a5a 100%)' }} className="text-white min-h-[100dvh] flex flex-col">
+      {/* Gradient zone: Hero */}
+      <div 
+        style={{ background: theme === 'dark' 
+          ? 'linear-gradient(to bottom, #252525 0%, #252525 80px, #5a5a5a 100%)' 
+          : '#ffffff' 
+        }} 
+        className={`${theme === 'dark' ? 'text-white' : 'text-[#1a1a1a]'} min-h-[100dvh] flex flex-col`}
+      >
         
         {/* Hero Section - occupa tutto lo spazio disponibile */}
         <section className="flex-1 flex flex-col justify-center pt-16 pb-[250px] md:pb-[350px]">
@@ -116,7 +125,7 @@ export default function HomePage() {
               {/* Sfera logo */}
               <div className="mb-9">
                 <Lottie 
-                  animationData={sphereAnimation}
+                  animationData={theme === 'dark' ? sphereAnimation : sphereAnimationLight}
                   loop={true}
                   className="w-[65px] h-[65px] md:w-[95px] md:h-[95px]"
                 />
@@ -124,7 +133,7 @@ export default function HomePage() {
               
               {/* Headline con typewriter - altezza fissa per 3 righe */}
               <div className="h-[60px] md:h-[66px]">
-                <p className="text-[17px] md:text-[18px] font-normal leading-[1.15] opacity-70">
+                <p className={`text-[17px] md:text-[18px] font-normal leading-[1.15] ${theme === 'dark' ? 'opacity-70' : 'opacity-80'}`}>
                   {displayedText.split('\n').map((line, index) => (
                     <span key={index} className="block">
                       {line}
@@ -135,26 +144,15 @@ export default function HomePage() {
                   ))}
                 </p>
               </div>
+
+              {/* Start Button — centered under headline, in-flow */}
+              {!isAuthenticated && (
+                <div className="mt-[-1px] md:mt-[15px] ml-[170px]">
+                  <StartButton show={!isAuthenticated} href="/start" variant={theme === 'dark' ? 'light' : 'dark'} />
+                </div>
+              )}
               
             </div>
-          </Container>
-        </section>
-        
-        {/* CTA Section - in basso (hidden when user has active brain) */}
-        <section className="pb-12 md:pb-16">
-          <Container>
-            {!hasActiveBrain && (
-              <div className="flex items-center gap-4 justify-end">
-                <span className="font-ui text-[12px] font-medium tracking-wide uppercase-force opacity-40">{hero.cta.label}</span>
-                <Link 
-                  href="/start" 
-                  className="relative flex items-center justify-center w-[55px] h-[55px] md:w-[75px] md:h-[75px] rounded-full overflow-hidden"
-                >
-                  <span className="absolute inset-0 bg-[#3a3a3a] animate-pulse-soft rounded-full"></span>
-                  <span className="relative z-10 font-ui text-[11px] md:text-[12px] font-bold tracking-wide text-white uppercase-force">TRY</span>
-                </Link>
-              </div>
-            )}
           </Container>
         </section>
 
@@ -300,12 +298,6 @@ export default function HomePage() {
       <FloatingChatButton 
         show={hasActiveBrain}
         onClick={handleOpenChat}
-      />
-
-      {/* Start Button — visible only for non-authenticated users */}
-      <StartButton 
-        show={!isAuthenticated}
-        href="/start"
       />
 
     </div>

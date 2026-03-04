@@ -7,17 +7,24 @@ interface StartButtonProps {
   href?: string
   show?: boolean
   onClick?: () => void
+  variant?: 'light' | 'dark'
 }
 
 export default function StartButton({ 
   href = '/start',
   show = true,
   onClick,
+  variant = 'light',
 }: StartButtonProps) {
   const [visible, setVisible] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [breathing, setBreathing] = useState(false)
   const [glowing, setGlowing] = useState(false)
+
+  // Colors based on variant
+  const strokeColor = variant === 'light' ? '#ffffff' : '#1a1a1a'
+  const circleColor = variant === 'light' ? '#ffffff' : '#1a1a1a'
+  const rgbaBase = variant === 'light' ? '255,255,255' : '0,0,0'
 
   useEffect(() => {
     setMounted(true)
@@ -60,13 +67,13 @@ export default function StartButton({
         }
         @keyframes letterGlow {
           0% { opacity: 0; }
-          0.3% { opacity: 0.95; }
+          0.3% { opacity: 0.61; }
           0.8% { opacity: 0; }
-          5% { opacity: 0.85; }
+          5% { opacity: 0.54; }
           5.8% { opacity: 0; }
-          12% { opacity: 0.9; }
-          55% { opacity: 0.55; }
-          100% { opacity: 0.55; }
+          12% { opacity: 0.58; }
+          55% { opacity: 0.40; }
+          100% { opacity: 0.40; }
         }
         @keyframes circleBreathe {
           0% { opacity: 0.20; }
@@ -103,22 +110,19 @@ export default function StartButton({
 
   // Light group backgrounds — +10%
   const outerBg = isMobile 
-    ? 'radial-gradient(circle, rgba(255,255,255,0.050) 25%, rgba(255,255,255,0.014) 50%, rgba(255,255,255,0) 70%)'
-    : 'radial-gradient(circle, rgba(255,255,255,0.099) 15%, rgba(255,255,255,0.022) 40%, rgba(255,255,255,0) 60%)'
+    ? `radial-gradient(circle, rgba(${rgbaBase},0.050) 25%, rgba(${rgbaBase},0.014) 50%, rgba(${rgbaBase},0) 70%)`
+    : `radial-gradient(circle, rgba(${rgbaBase},0.099) 15%, rgba(${rgbaBase},0.022) 40%, rgba(${rgbaBase},0) 60%)`
 
   const middleBg = isMobile
-    ? 'radial-gradient(circle, rgba(255,255,255,0.116) 15%, rgba(255,255,255,0.033) 45%, rgba(255,255,255,0) 75%)'
-    : 'radial-gradient(circle, rgba(255,255,255,0.199) 15%, rgba(255,255,255,0.058) 45%, rgba(255,255,255,0) 75%)'
+    ? `radial-gradient(circle, rgba(${rgbaBase},0.116) 15%, rgba(${rgbaBase},0.033) 45%, rgba(${rgbaBase},0) 75%)`
+    : `radial-gradient(circle, rgba(${rgbaBase},0.199) 15%, rgba(${rgbaBase},0.058) 45%, rgba(${rgbaBase},0) 75%)`
 
-  // SVG text size — +20%: mobile 57→68, desktop 74→89
+  // SVG text size
   const svgWidth = isMobile ? 83 : 108
   const svgHeight = isMobile ? 24 : 31
 
   const wrapperStyle: React.CSSProperties = {
-    position: 'fixed',
-    bottom: isMobile ? 'calc(15% + 165px)' : 'calc(18% + 300px)',
-    right: isMobile ? 'calc(8% + 40px)' : 'calc(10% + 320px)',
-    zIndex: 999,
+    position: 'relative',
     width: `${outerSize}px`,
     height: `${outerSize}px`,
     borderRadius: '50%',
@@ -167,7 +171,7 @@ export default function StartButton({
           height: `${innerCircleSize}px`,
           borderRadius: '50%',
           backgroundColor: 'transparent',
-          border: '0.5px solid #ffffff',
+          border: `0.5px solid ${circleColor}`,
           transform: 'translate(-50%, -50%)',
           opacity: 0.20,
           animation: breathing ? 'circleBreathe 12s ease-in-out infinite' : 'none',
@@ -181,7 +185,7 @@ export default function StartButton({
         height={svgHeight}
         viewBox="0 0 45 11"
         fill="none"
-        stroke="#ffffff"
+        stroke={strokeColor}
         strokeWidth="1.2"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -216,7 +220,7 @@ export default function StartButton({
         height={svgHeight}
         viewBox="0 0 45 11"
         fill="none"
-        stroke="#ffffff"
+        stroke={strokeColor}
         strokeWidth="0.223"
         strokeLinecap="round"
         strokeLinejoin="round"

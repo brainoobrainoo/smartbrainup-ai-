@@ -3,9 +3,10 @@
 // app/smartbrainup-ai/licensing/page.tsx
 
 import Link from 'next/link'
-import { useEffect, useState, ReactNode } from 'react'
+import { ReactNode } from 'react'
 import { licensingContent } from '@/content/smartbrainup-ai/licensing'
 import Container from '@/components/layout/Container'
+import { useTheme } from '@/lib/ThemeContext'
 
 // Parse **bold** markers into JSX
 function parseBold(text: string): ReactNode {
@@ -17,20 +18,11 @@ function parseBold(text: string): ReactNode {
 }
 
 export default function LicensingPage() {
-  const { hero, pricing, access, subscription, subscriptionPlans, comparison, principles, cta } = licensingContent
+  const { pricing, access, subscription, subscriptionPlans, comparison, principles, cta } = licensingContent
+  const { theme } = useTheme()
+  const isLight = theme === 'light'
 
-  const [showFirst, setShowFirst] = useState(false)
-  const [showSecond, setShowSecond] = useState(false)
-
-  useEffect(() => {
-    const timerFirst = setTimeout(() => setShowFirst(true), 10)
-    const timerSecond = setTimeout(() => setShowSecond(true), 500)
-
-    return () => {
-      clearTimeout(timerFirst)
-      clearTimeout(timerSecond)
-    }
-  }, [])
+  // unused hero fade states removed
 
   // Helper to render body with proper spacing — LARGER sizes
   const renderBody = (lines: string[], opacity: string = "opacity-60") => {
@@ -102,91 +94,132 @@ export default function LicensingPage() {
       {/* Animation styles */}
       <style jsx>{`
         @keyframes pulse-link {
-          0%, 100% {
-            opacity: 0.4;
-          }
-          50% {
-            opacity: 1;
-          }
+          0%, 100% { opacity: 0.4; }
+          50% { opacity: 1; }
         }
         .animate-pulse-link {
           animation: pulse-link 4s ease-in-out infinite;
         }
       `}</style>
-      
-      {/* Hero - DARK zone — UNTOUCHED */}
-      <div className="relative w-full overflow-hidden text-white" style={{ background: 'linear-gradient(to bottom, #252525 0%, #161616 100%)' }}>
-        
-        <section className="relative z-10 pt-20 md:pt-32 pb-24 md:pb-40">
+
+      {/* ============================================ */}
+      {/* SECOND BRAIN PLANS — dark gradient, clean     */}
+      {/* ============================================ */}
+      <div className={isLight ? 'text-[#1a1a1a]' : 'text-white'} style={{ background: isLight ? '#ffffff' : 'linear-gradient(to bottom, #252525 0%, #5a5a5a 100%)' }}>
+        <section className="relative pt-28 md:pt-36 pb-16 md:pb-32">
           <Container>
-            <div className="relative">
-              <p className="font-ui text-[11px] font-medium tracking-widest uppercase mb-4">
-                <span className="opacity-100 uppercase-force">{hero.badge.primary}</span>
-                <span className="opacity-50 uppercase-force"> {hero.badge.secondary}</span>
-              </p>
-              
-              <h1 className="text-[42px] md:text-[64px] font-normal leading-[1.0] tracking-[-0.02em] mb-8">
-                <span 
-                  className="block"
-                  style={{ 
-                    opacity: showFirst ? 1 : 0.08,
-                    transition: 'opacity 4s cubic-bezier(0.4, 0, 0.2, 1)'
-                  }}
+
+            <p className="font-ui text-[11px] font-medium tracking-widest uppercase mb-10 md:mb-14">
+              <span className={`${isLight ? 'opacity-90' : 'opacity-100'} uppercase-force`}>AI-UP Second Brain™</span>
+              <span className={`${isLight ? 'opacity-40' : 'opacity-40'} uppercase-force`}> License</span>
+            </p>
+
+            <div className="flex flex-col">
+
+              {pricing.plans.map((plan, index) => (
+                <div
+                  key={index}
+                  className={`group py-8 md:py-10 border-b ${isLight ? 'border-black/[0.08]' : 'border-white/[0.06]'}`}
                 >
-                  {hero.title[0]}
-                </span>
-                <span 
-                  className="block"
-                  style={{ 
-                    opacity: showSecond ? 1 : 0.03,
-                    transition: 'opacity 4s cubic-bezier(0.4, 0, 0.2, 1)'
-                  }}
-                >
-                  {hero.title[1]}
-                </span>
-              </h1>
-              
-              <div className="max-w-[560px]">
-                {renderBody(hero.body, "opacity-70")}
+                  <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 md:gap-8">
+
+                    <div className="flex-1">
+                      <p className="text-[21px] md:text-[27px] font-normal leading-[1.2] opacity-90">{plan.brains}</p>
+                      <div className="mt-2">
+                        {plan.body.filter((l: string) => l !== '').map((line: string, li: number) => (
+                          <p key={li} className={`text-[15px] md:text-[18px] font-normal leading-[1.4] ${isLight ? 'opacity-50' : 'opacity-40'}`}>{parseBold(line)}</p>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Mobile */}
+                    <div className="flex md:hidden flex-col">
+                      <p className="text-[12px] font-normal opacity-30 mb-1">one-time</p>
+                      <div className="flex items-center justify-between">
+                        <p className="text-[28px] font-normal leading-[1.1] tracking-[-0.01em]">{plan.price}</p>
+                        <button
+                          onClick={() => {/* TODO: checkout */}}
+                          className={`px-5 py-2.5 rounded-full
+                                     border ${isLight ? 'border-black/15 bg-black/[0.05] hover:bg-black/[0.10]' : 'border-white/25 bg-white/[0.08] hover:bg-white/[0.15]'}
+                                     text-[12px] font-medium tracking-wide uppercase
+                                     opacity-80 hover:opacity-100
+                                     transition-all duration-300`}
+                        >
+                          Select
+                        </button>
+                      </div>
+                    </div>
+                    {/* Desktop */}
+                    <div className="hidden md:flex flex-col items-end flex-shrink-0">
+                      <p className="text-[13px] font-normal opacity-30 mb-1">one-time</p>
+                      <p className="text-[42px] font-normal leading-[1.1] tracking-[-0.01em]">{plan.price}</p>
+                      <button
+                        onClick={() => {/* TODO: checkout */}}
+                        className={`mt-4 px-7 py-3 rounded-full
+                                   border ${isLight ? 'border-black/15 bg-black/[0.05] hover:bg-black/[0.10]' : 'border-white/25 bg-white/[0.08] hover:bg-white/[0.15]'}
+                                   text-[13px] font-medium tracking-wide uppercase
+                                   opacity-80 hover:opacity-100
+                                   transition-all duration-300`}
+                      >
+                        Select
+                      </button>
+                    </div>
+
+                  </div>
+                </div>
+              ))}
+
+              {/* Enterprise row */}
+              <div className={`group py-8 md:py-10 border-b ${isLight ? 'border-black/[0.08]' : 'border-white/[0.06]'}`}>
+                <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 md:gap-8">
+
+                  <div className="flex-1">
+                    <p className="text-[21px] md:text-[27px] font-normal leading-[1.2] opacity-90">{pricing.enterprise.brains}</p>
+                    <div className="mt-2">
+                      {pricing.enterprise.body.filter((l: string) => l !== '').map((line: string, li: number) => (
+                        <p key={li} className={`text-[15px] md:text-[18px] font-normal leading-[1.4] ${isLight ? 'opacity-50' : 'opacity-40'}`}>{parseBold(line)}</p>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Mobile */}
+                  <div className="flex md:hidden flex-col">
+                    <div className="flex items-center justify-between">
+                      <p className="text-[28px] font-normal leading-[1.1] tracking-[-0.01em]">{pricing.enterprise.price}</p>
+                      <Link
+                        href="/contact"
+                        className={`px-5 py-2.5 rounded-full
+                                   border ${isLight ? 'border-black/15 bg-black/[0.05] hover:bg-black/[0.10]' : 'border-white/25 bg-white/[0.08] hover:bg-white/[0.15]'}
+                                   text-[12px] font-medium tracking-wide uppercase
+                                   opacity-80 hover:opacity-100
+                                   transition-all duration-300`}
+                      >
+                        Contact
+                      </Link>
+                    </div>
+                  </div>
+                  {/* Desktop */}
+                  <div className="hidden md:flex flex-col items-end flex-shrink-0">
+                    <p className="text-[42px] font-normal leading-[1.1] tracking-[-0.01em]">{pricing.enterprise.price}</p>
+                    <Link
+                      href="/contact"
+                      className={`mt-4 px-7 py-3 rounded-full
+                                 border ${isLight ? 'border-black/15 bg-black/[0.05] hover:bg-black/[0.10]' : 'border-white/25 bg-white/[0.08] hover:bg-white/[0.15]'}
+                                 text-[13px] font-medium tracking-wide uppercase
+                                 opacity-80 hover:opacity-100
+                                 transition-all duration-300`}
+                    >
+                      Contact
+                    </Link>
+                  </div>
+
+                </div>
               </div>
+
             </div>
           </Container>
         </section>
-
       </div>
-
-      {/* ============================================ */}
-      {/* 01 — PRICING PLANS (Licensing - one time) */}
-      {/* ============================================ */}
-      <section className="relative py-16 md:py-32">
-        <Container>
-          <p className="font-ui text-[13px] font-medium tracking-widest uppercase opacity-50 mb-12">{pricing.section}</p>
-
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            
-            {/* 4 cards in 2x2 grid - left side */}
-            <div className="lg:col-span-7 grid grid-cols-1 md:grid-cols-2 gap-6">
-              {pricing.plans.map((plan, index) => (
-                <div key={index} className="rounded-[4px] p-8 md:p-10 min-h-[300px]" style={{ background: 'linear-gradient(to bottom, #f7f7f7 0%, #efefef 100%)' }}>
-                  <p className="font-ui text-[13px] font-medium tracking-widest uppercase opacity-50 mb-2">{plan.name}</p>
-                  <p className="text-[17px] font-normal opacity-60 mb-4">{plan.brains}</p>
-                  <p className="text-[34px] md:text-[40px] font-normal leading-[1.1] tracking-[-0.01em] mb-6">{plan.price}</p>
-                  {renderCardBody(plan.body)}
-                </div>
-              ))}
-            </div>
-
-            {/* Enterprise card - right side */}
-            <div className="lg:col-span-5 rounded-[4px] p-8 md:p-10 min-h-[300px] flex flex-col justify-center" style={{ background: 'linear-gradient(to bottom, #f7f7f7 0%, #efefef 100%)' }}>
-              <p className="font-ui text-[13px] font-medium tracking-widest uppercase opacity-50 mb-2">{pricing.enterprise.name}</p>
-              <p className="text-[17px] font-normal opacity-60 mb-4">{pricing.enterprise.brains}</p>
-              <p className="text-[34px] md:text-[40px] font-normal leading-[1.1] tracking-[-0.01em] mb-6">{pricing.enterprise.price}</p>
-              {renderCardBody(pricing.enterprise.body)}
-            </div>
-
-          </div>
-        </Container>
-      </section>
 
       {/* ============================================ */}
       {/* 02 — ACCESS & ACTIVATION */}
@@ -279,13 +312,6 @@ export default function LicensingPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {subscriptionPlans.plans.map((plan, index) => (
               <div key={index} className="relative rounded-[4px] p-8 md:p-10 min-h-[360px]" style={{ background: 'linear-gradient(to bottom, #f7f7f7 0%, #efefef 100%)' }}>
-                
-                {/* Badge */}
-                {plan.badge && (
-                  <span className="absolute top-7 right-7 font-ui text-[11px] font-semibold tracking-wider uppercase px-3 py-1.5 rounded-[2px] bg-[#1a1a1a] text-white">
-                    {plan.badge}
-                  </span>
-                )}
                 
                 <p className="font-ui text-[14px] font-medium tracking-widest uppercase opacity-50 mb-1">{plan.name}</p>
                 {'subtitle' in plan && plan.subtitle && (
