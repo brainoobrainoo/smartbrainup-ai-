@@ -20,6 +20,7 @@ export const licensingContent = {
     section: "01 — PRICING PLANS",
     plans: [
       {
+        key: "single",
         name: "Single",
         brains: "1 Second Brain",
         price: "€1,997",
@@ -31,6 +32,7 @@ export const licensingContent = {
         ]
       },
       {
+        key: "team",
         name: "Team",
         brains: "3 Second Brains",
         price: "€4,997",
@@ -42,6 +44,7 @@ export const licensingContent = {
         ]
       },
       {
+        key: "department",
         name: "Department",
         brains: "5 Second Brains",
         price: "€7,997",
@@ -53,6 +56,7 @@ export const licensingContent = {
         ]
       },
       {
+        key: "organization",
         name: "Organization",
         brains: "10 Second Brains",
         price: "€14,997",

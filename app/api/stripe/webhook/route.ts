@@ -149,7 +149,7 @@ async function handleLicensingPurchase(
 
   console.log(`[Webhook] Licensing: ${email} → ${licensingInfo.name} (${licensingInfo.credits} credits)`)
 
-  const { error: updateError } = await supabaseAdmin
+  const { data: updatedRows, error: updateError } = await supabaseAdmin
     .from('user_profiles')
     .update({
       stripe_customer_id: customerId,
@@ -158,10 +158,43 @@ async function handleLicensingPurchase(
       purchased_at: new Date().toISOString(),
     })
     .eq('email', email)
+    .select('id')
 
   if (updateError) {
     console.error('[Webhook] Update error:', updateError.message)
     throw updateError
+  }
+
+  // Nessun account trovato → salva in pending_credits
+  if (!updatedRows || updatedRows.length === 0) {
+    console.log(`[Webhook] No user profile found for ${email} → saving to pending_credits`)
+
+    const creditsToplan: Record<number, { plan: string; brains: number }> = {
+      1:  { plan: 'single',       brains: 1  },
+      3:  { plan: 'team',         brains: 3  },
+      5:  { plan: 'department',   brains: 5  },
+      10: { plan: 'organization', brains: 10 },
+    }
+    const planInfo = creditsToplan[licensingInfo.credits] ?? { plan: 'single', brains: 1 }
+
+    const { error: pendingError } = await supabaseAdmin
+      .from('pending_credits')
+      .insert({
+        email,
+        plan: planInfo.plan,
+        brains_count: planInfo.brains,
+        stripe_session: session.id,
+        stripe_amount: session.amount_total ?? null,
+        status: 'pending',
+      })
+
+    if (pendingError) {
+      console.error('[Webhook] Failed to save pending_credits:', pendingError.message)
+      throw pendingError
+    }
+
+    console.log(`[Webhook] Pending credits saved for ${email}: ${planInfo.brains} brains`)
+    return // non creare il trial — l'utente non ha ancora un account
   }
 
   await createBasicTrial(customerId, email)

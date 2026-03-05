@@ -3,7 +3,7 @@
 // app/smartbrainup-ai/licensing/page.tsx
 
 import Link from 'next/link'
-import { ReactNode } from 'react'
+import { ReactNode, useState } from 'react'
 import { licensingContent } from '@/content/smartbrainup-ai/licensing'
 import Container from '@/components/layout/Container'
 import { useTheme } from '@/lib/ThemeContext'
@@ -18,9 +18,28 @@ function parseBold(text: string): ReactNode {
 }
 
 export default function LicensingPage() {
+  const [loadingPlan, setLoadingPlan] = useState<string | null>(null)
   const { pricing, access, subscription, subscriptionPlans, comparison, principles, cta } = licensingContent
   const { theme } = useTheme()
   const isLight = theme === 'light'
+
+  const handleCheckout = async (planKey: string) => {
+    if (loadingPlan) return
+    setLoadingPlan(planKey)
+    try {
+      const res = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan: planKey }),
+      })
+      const data = await res.json()
+      if (data.url) window.location.href = data.url
+    } catch (e) {
+      console.error('Checkout error:', e)
+    } finally {
+      setLoadingPlan(null)
+    }
+  }
 
   // unused hero fade states removed
 
@@ -138,14 +157,15 @@ export default function LicensingPage() {
                       <div className="flex items-center justify-between">
                         <p className="text-[28px] font-normal leading-[1.1] tracking-[-0.01em]">{plan.price}</p>
                         <button
-                          onClick={() => {/* TODO: checkout */}}
+                          onClick={() => handleCheckout((plan as any).key)}
+                          disabled={loadingPlan === (plan as any).key}
                           className={`px-5 py-2.5 rounded-full
                                      border ${isLight ? 'border-black/15 bg-black/[0.05] hover:bg-black/[0.10]' : 'border-white/25 bg-white/[0.08] hover:bg-white/[0.15]'}
                                      text-[12px] font-medium tracking-wide uppercase
                                      opacity-80 hover:opacity-100
                                      transition-all duration-300`}
                         >
-                          Select
+                          {loadingPlan === (plan as any).key ? '...' : 'Select'}
                         </button>
                       </div>
                     </div>
@@ -154,14 +174,15 @@ export default function LicensingPage() {
                       <p className="text-[13px] font-normal opacity-30 mb-1">one-time</p>
                       <p className="text-[42px] font-normal leading-[1.1] tracking-[-0.01em]">{plan.price}</p>
                       <button
-                        onClick={() => {/* TODO: checkout */}}
+                        onClick={() => handleCheckout((plan as any).key)}
+                        disabled={loadingPlan === (plan as any).key}
                         className={`mt-4 px-7 py-3 rounded-full
                                    border ${isLight ? 'border-black/15 bg-black/[0.05] hover:bg-black/[0.10]' : 'border-white/25 bg-white/[0.08] hover:bg-white/[0.15]'}
                                    text-[13px] font-medium tracking-wide uppercase
                                    opacity-80 hover:opacity-100
                                    transition-all duration-300`}
                       >
-                        Select
+                        {loadingPlan === (plan as any).key ? '...' : 'Select'}
                       </button>
                     </div>
 

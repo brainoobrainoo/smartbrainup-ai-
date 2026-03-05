@@ -16,9 +16,10 @@ const PAYMENT_LINKS: Record<string, string> = {
 
 export async function POST(request: NextRequest) {
   try {
-    const { planKey } = await request.json()
+    const { plan, planKey } = await request.json()
+    const key = plan || planKey
 
-    const url = PAYMENT_LINKS[planKey]
+    const url = PAYMENT_LINKS[key]
     if (!url) {
       return NextResponse.json({ error: 'Invalid plan' }, { status: 400 })
     }
