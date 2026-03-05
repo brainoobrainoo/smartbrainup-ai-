@@ -5,6 +5,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import AssistantInputBar from '@/components/assistant/AssistantInputBar'
+import BuildChatButton from '@/components/ui/BuildChatButton'
 import type { AssistantInputBarHandle } from '@/components/assistant/AssistantInputBar'
 import { createClient } from '@/lib/supabase/client'
 import { startChatContent } from '@/content/smartbrainup-ai/start-chat'
@@ -1252,29 +1253,13 @@ export default function StartPage() {
         }}>
           {/* Outer ring */}
           {!isFinalComplete && (
-          <div style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            width: '65px', height: '65px', borderRadius: '50%',
-            border: isDayMode ? '1px solid rgba(0,0,0,0.17)' : '1px solid rgba(255,255,255,0.17)',
-          }}>
-            <button
-              onClick={buildMode ? handleBackToChat : handleBuildClick}
-              style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                width: '58px', height: '58px', borderRadius: '50%',
-                backgroundColor: isDayMode ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.08)',
-                border: isDayMode ? '1px solid rgba(0,0,0,0.5)' : '1px solid rgba(255,255,255,0.5)',
-                color: textColor, fontFamily: 'var(--font-inter), sans-serif',
-                fontSize: '12px', fontWeight: 500, letterSpacing: '0.06em',
-                textTransform: 'uppercase' as const, cursor: 'pointer',
-                transition: 'background-color 0.2s, opacity 0.2s', opacity: 0.6,
-              }}
-              onMouseEnter={canHover ? (e) => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.backgroundColor = isDayMode ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.14)' } : undefined}
-              onMouseLeave={canHover ? (e) => { e.currentTarget.style.opacity = '0.6'; e.currentTarget.style.backgroundColor = isDayMode ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.08)' } : undefined}
-            >
-              {buildMode ? 'chat' : startChatContent.buildButton}
-            </button>
-          </div>
+            <div style={{ marginTop: '3px' }}>
+              <BuildChatButton
+                isBuildMode={buildMode}
+                isDayMode={isDayMode}
+                onClick={buildMode ? handleBackToChat : handleBuildClick}
+              />
+            </div>
           )}
 
           {/* Scroll to top */}

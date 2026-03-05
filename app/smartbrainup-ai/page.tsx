@@ -147,7 +147,7 @@ export default function HomePage() {
 
               {/* Start Button — centered under headline, in-flow */}
               {!isAuthenticated && (
-                <div className="mt-[-1px] md:mt-[15px] ml-[170px]">
+                <div className="mt-[6px] md:mt-[-1px] ml-[145px] md:ml-[170px]">
                   <StartButton show={!isAuthenticated} href="/start" variant={theme === 'dark' ? 'light' : 'dark'} />
                 </div>
               )}

@@ -197,7 +197,7 @@ export default function StartButton({
           pointerEvents: 'none',
           zIndex: 2,
           filter: 'blur(3px)',
-          animation: glowing ? 'letterGlow 12s linear forwards' : 'none',
+          animation: glowing && variant === 'light' ? 'letterGlow 12s linear forwards' : 'none',
           opacity: 0,
         }}
       >
@@ -221,7 +221,7 @@ export default function StartButton({
         viewBox="0 0 45 11"
         fill="none"
         stroke={strokeColor}
-        strokeWidth="0.223"
+        strokeWidth={variant === 'dark' ? "0.35" : "0.223"}
         strokeLinecap="round"
         strokeLinejoin="round"
         style={{
@@ -231,8 +231,8 @@ export default function StartButton({
           transform: 'translate(-50%, -50%)',
           pointerEvents: 'none',
           zIndex: 3,
-          animation: breathing ? 'letterBreathe 12s ease-in-out infinite' : 'none',
-          opacity: breathing ? undefined : 0.45,
+          animation: breathing && variant === 'light' ? 'letterBreathe 12s ease-in-out infinite' : 'none',
+          opacity: variant === 'dark' ? 1 : (breathing ? undefined : 0.45),
         }}
       >
         {/* S */}

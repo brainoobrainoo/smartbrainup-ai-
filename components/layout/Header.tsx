@@ -104,6 +104,7 @@ export default function Header({ logo, links, variant = 'dark', theme, onThemeTo
           <Link
             href={buildHref('/')}
             className={`font-editorial text-[18px] font-normal ${textColor} tracking-[-0.01em]`}
+            style={{ touchAction: 'manipulation', padding: '8px 4px', margin: '-8px -4px' }}
           >
             {logo}
           </Link>
@@ -182,7 +183,11 @@ export default function Header({ logo, links, variant = 'dark', theme, onThemeTo
 
         {/* ═══ MOBILE DROPDOWN ═══ */}
         {menuOpen && (
-          <nav className={`xl:hidden ${bgColor} border-t ${borderColor} px-10 py-6`}>
+          <nav className={`xl:hidden ${bgColor} border-t ${borderColor} px-10 py-6`}
+          style={variant === 'light' ? {
+            background: 'linear-gradient(to bottom, #ffffff 0%, #f0f0f0 100%)'
+          } : undefined}
+        >
             <div className="flex flex-col gap-4">
               {links.map((link) => (
                 <Link
@@ -217,7 +222,7 @@ export default function Header({ logo, links, variant = 'dark', theme, onThemeTo
                              opacity-50 hover:opacity-80 transition-opacity
                              bg-transparent border-0 text-left cursor-pointer p-0`}
                 >
-                  {theme === 'dark' ? 'light mode' : 'dark mode'}
+                  {theme === 'dark' ? 'light' : 'dark'}
                 </button>
               )}
 
