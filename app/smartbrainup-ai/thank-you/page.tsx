@@ -4,7 +4,7 @@
 
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useTheme } from '@/lib/ThemeContext'
 import Container from '@/components/layout/Container'
 import Lottie from 'lottie-react'
@@ -18,7 +18,7 @@ const PLAN_LABELS: Record<string, { brains: number; label: string }> = {
   organization: { brains: 10, label: '10 Second Brains' },
 }
 
-export default function ThankYouPage() {
+function ThankYouContent() {
   const { theme } = useTheme()
   const isDark = theme === 'dark'
   const searchParams = useSearchParams()
@@ -40,7 +40,6 @@ export default function ThankYouPage() {
       <Container>
         <div className="flex flex-col items-center text-center py-24 md:py-32">
 
-          {/* Sfera */}
           <div className="mb-10">
             <Lottie
               animationData={isDark ? sphereAnimation : sphereAnimationLight}
@@ -49,22 +48,18 @@ export default function ThankYouPage() {
             />
           </div>
 
-          {/* Badge */}
           <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-40 mb-8">
             AI-UP Second Brain™
           </p>
 
-          {/* Title */}
           <h1 className="text-[28px] md:text-[40px] font-normal leading-[1.05] tracking-[-0.01em] mb-5">
             Purchase confirmed.
           </h1>
 
-          {/* Plan info */}
           <p className={`text-[16px] md:text-[18px] font-normal leading-[1.5] mb-3 ${isDark ? 'opacity-60' : 'opacity-50'}`}>
             {planInfo.label} — ready to be configured.
           </p>
 
-          {/* Body — cambia in base al contesto */}
           <p className={`text-[15px] md:text-[16px] font-normal leading-[1.6] max-w-[420px] mb-14 ${isDark ? 'opacity-40' : 'opacity-40'}`}>
             {hasPhase1
               ? 'Your purchase is confirmed. Continue where you left off.'
@@ -72,17 +67,11 @@ export default function ThankYouPage() {
             }
           </p>
 
-          {/* CTA — uno solo, quello giusto */}
           <div className="flex flex-col sm:flex-row items-center gap-4">
             {hasPhase1 ? (
               <Link
                 href="/start?checkout=success"
-                className={`px-8 py-3.5 rounded-full text-[13px] font-medium tracking-wide uppercase
-                           transition-all duration-200 no-underline
-                           ${isDark
-                             ? 'bg-white text-[#1a1a1a] hover:bg-white/90'
-                             : 'bg-[#1a1a1a] text-white hover:bg-[#333]'
-                           }`}
+                className={`px-8 py-3.5 rounded-full text-[13px] font-medium tracking-wide uppercase transition-all duration-200 no-underline ${isDark ? 'bg-white text-[#1a1a1a] hover:bg-white/90' : 'bg-[#1a1a1a] text-white hover:bg-[#333]'}`}
               >
                 Continue
               </Link>
@@ -90,23 +79,13 @@ export default function ThankYouPage() {
               <>
                 <Link
                   href="/login"
-                  className={`px-8 py-3.5 rounded-full text-[13px] font-medium tracking-wide uppercase
-                             transition-all duration-200 no-underline
-                             ${isDark
-                               ? 'bg-white text-[#1a1a1a] hover:bg-white/90'
-                               : 'bg-[#1a1a1a] text-white hover:bg-[#333]'
-                             }`}
+                  className={`px-8 py-3.5 rounded-full text-[13px] font-medium tracking-wide uppercase transition-all duration-200 no-underline ${isDark ? 'bg-white text-[#1a1a1a] hover:bg-white/90' : 'bg-[#1a1a1a] text-white hover:bg-[#333]'}`}
                 >
                   Create account
                 </Link>
                 <Link
                   href="/login"
-                  className={`px-8 py-3.5 rounded-full text-[13px] font-medium tracking-wide uppercase
-                             transition-all duration-200 no-underline
-                             ${isDark
-                               ? 'border border-white/20 text-white/60 hover:text-white hover:border-white/40'
-                               : 'border border-black/15 text-[#1a1a1a]/50 hover:text-[#1a1a1a] hover:border-black/30'
-                             }`}
+                  className={`px-8 py-3.5 rounded-full text-[13px] font-medium tracking-wide uppercase transition-all duration-200 no-underline ${isDark ? 'border border-white/20 text-white/60 hover:text-white hover:border-white/40' : 'border border-black/15 text-[#1a1a1a]/50 hover:text-[#1a1a1a] hover:border-black/30'}`}
                 >
                   Sign in
                 </Link>
@@ -114,7 +93,6 @@ export default function ThankYouPage() {
             )}
           </div>
 
-          {/* Footer note */}
           <p className={`text-[12px] font-normal mt-14 ${isDark ? 'opacity-25' : 'opacity-30'}`}>
             Check your email for a confirmation from Stripe.
           </p>
@@ -122,5 +100,13 @@ export default function ThankYouPage() {
         </div>
       </Container>
     </div>
+  )
+}
+
+export default function ThankYouPage() {
+  return (
+    <Suspense fallback={null}>
+      <ThankYouContent />
+    </Suspense>
   )
 }
