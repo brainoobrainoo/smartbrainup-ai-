@@ -1002,8 +1002,7 @@ export default function StartPage() {
           {buildMode && (
             <div style={{ opacity: buildVisible ? 1 : 0, transition: 'opacity 0.8s ease' }}>
 
-              {/* ── INTRO ── only show if Phase 2 not yet active or has Phase 1 history */}
-              {!(isPhase2Active && buildChatHistory.length === 0) && (
+              {/* ── INTRO ── */}
               <div style={{ marginBottom: '32px', display: 'flex', justifyContent: 'flex-start' }}>
                 <div style={assistantStyle}>
                   {startChatContent.buildIntro.split('\n').map((line, i) => (
@@ -1014,7 +1013,6 @@ export default function StartPage() {
                   ))}
                 </div>
               </div>
-              )}
 
               {/* ── HISTORY: answered pairs ── */}
               {buildChatHistory.map((pair, i) => {
@@ -1205,21 +1203,7 @@ export default function StartPage() {
               {/* ── PHASE 2 INTRO (when Phase 2 just started, no entries yet) ── */}
               {isPhase2Active && !buildChatHistory.some(e => e.phase === 2) && editingIndex === null && (
                 <>
-                  {/* Phase 1 complete marker */}
-                  <div style={{
-                    display: 'flex', flexDirection: 'column', alignItems: 'center',
-                    textAlign: 'center', padding: '40px 0 48px',
-                  }}>
-                    <div style={{
-                      color: textColor, fontFamily: 'var(--font-inter), sans-serif',
-                      fontSize: '15px', lineHeight: 1.8, opacity: 0.85,
-                    }}>
-                      <p>{startChatContent.buildComplete}</p>
-                      <p>{startChatContent.buildCompleteDetail}</p>
-                      <p style={{ opacity: 0.5 }}>{startChatContent.buildCompleteSub}</p>
-                    </div>
-                  </div>
-                  {/* Phase 2 intro */}
+                  {/* Phase 2 intro — Phase 1 done marker hidden when coming from Stripe */}
                   <div style={{ marginBottom: '32px', display: 'flex', justifyContent: 'flex-start' }}>
                     <div style={assistantStyle}>
                       {startChatContent.phase2Intro.split('\n').map((line, li) => (
