@@ -187,7 +187,7 @@ export default function Header({ logo, links, variant = 'dark', theme, onThemeTo
             className={`xl:hidden border-t ${borderColor} px-10 py-6`}
             style={{
               background: variant === 'light'
-                ? 'linear-gradient(to bottom, #ffffff 0%, #f5f5f5 100%)'
+                ? 'linear-gradient(to bottom, #ffffff 0%, #e8e8e8 100%)'
                 : '#252525',
               position: 'relative',
               zIndex: 100,
