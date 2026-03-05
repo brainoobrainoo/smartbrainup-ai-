@@ -76,7 +76,7 @@ export default function Header({ logo, links, variant = 'dark', theme, onThemeTo
 
   const bgColor = variant === 'dark' ? 'bg-[#252525]' : 'bg-white'
   const textColor = variant === 'dark' ? 'text-white' : 'text-[#1a1a1a]'
-  const borderColor = variant === 'dark' ? 'border-white/10' : 'border-[#e8e8e8]'
+  const borderColor = variant === 'dark' ? 'border-white/10' : 'border-[#f5f5f5]'
   const lineColor = variant === 'dark' ? 'bg-white' : 'bg-[#1a1a1a]'
 
   const isActive = (href: string) => pathname === href
@@ -187,7 +187,7 @@ export default function Header({ logo, links, variant = 'dark', theme, onThemeTo
             className={`xl:hidden border-t ${borderColor} px-10 py-6`}
             style={{
               background: variant === 'light'
-                ? 'linear-gradient(to bottom, #ffffff 0%, #e8e8e8 100%)'
+                ? 'linear-gradient(to bottom, #ffffff 0%, #f5f5f5 100%)'
                 : '#252525',
               position: 'relative',
               zIndex: 100,
