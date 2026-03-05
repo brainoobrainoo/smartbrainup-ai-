@@ -67,7 +67,21 @@ export default function StartPage() {
     if (checkout === 'success') {
       // Clean URL
       window.history.replaceState({}, '', '/start')
-      // Re-check credits — webhook may have already updated them
+      // If Phase 1 data exists in localStorage, jump directly to Phase 2
+      try {
+        const saved = localStorage.getItem('phase1_results')
+        if (saved) {
+          const parsed = JSON.parse(saved)
+          setCollectedData(parsed)
+          setIsAssessmentComplete(true)
+          setIsPricingVisible(false)
+          setBuildMode(true)
+          setIsPhase2Active(true)
+          setCurrentQuestionId(phase2StartQuestionId)
+          return
+        }
+      } catch {}
+      // Fallback: re-check credits for logged-in users
       const recheck = async () => {
         const sb = createClient()
         const { data: { user } } = await sb.auth.getUser()
@@ -76,7 +90,6 @@ export default function StartPage() {
           const { data } = await sb.from('user_profiles').select('credits').eq('id', user.id).single()
           if (data && data.credits > 0) {
             setUserCredits(data.credits)
-            // If Phase 1 was already complete, go to Phase 2
             setIsAssessmentComplete(true)
             setIsPricingVisible(false)
             setIsPhase2Active(true)
