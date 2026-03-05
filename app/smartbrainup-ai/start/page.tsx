@@ -75,9 +75,11 @@ export default function StartPage() {
           setCollectedData(parsed)
           setIsAssessmentComplete(true)
           setIsPricingVisible(false)
+          setInputBarVisible(false)
           setBuildMode(true)
           setIsPhase2Active(true)
           setCurrentQuestionId(phase2StartQuestionId)
+          setTimeout(() => setBuildVisible(true), 100)
           return
         }
       } catch {}
