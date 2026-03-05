@@ -722,6 +722,8 @@ export default function StartPage() {
       })
       const { url, error } = await res.json()
       if (error || !url) throw new Error(error || 'No URL')
+      // Save phase1 data again right before redirect — guarantees localStorage is set
+      try { localStorage.setItem('phase1_results', JSON.stringify(collectedData)) } catch {}
       window.location.href = url
     } catch (err) {
       console.error('[Checkout] Failed:', err)
