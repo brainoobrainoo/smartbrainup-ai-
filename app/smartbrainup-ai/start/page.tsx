@@ -1002,7 +1002,8 @@ export default function StartPage() {
           {buildMode && (
             <div style={{ opacity: buildVisible ? 1 : 0, transition: 'opacity 0.8s ease' }}>
 
-              {/* ── INTRO ── */}
+              {/* ── INTRO ── only show if Phase 2 not yet active or has Phase 1 history */}
+              {!(isPhase2Active && buildChatHistory.length === 0) && (
               <div style={{ marginBottom: '32px', display: 'flex', justifyContent: 'flex-start' }}>
                 <div style={assistantStyle}>
                   {startChatContent.buildIntro.split('\n').map((line, i) => (
@@ -1013,6 +1014,7 @@ export default function StartPage() {
                   ))}
                 </div>
               </div>
+              )}
 
               {/* ── HISTORY: answered pairs ── */}
               {buildChatHistory.map((pair, i) => {
