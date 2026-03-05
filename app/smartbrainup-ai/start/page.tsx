@@ -79,7 +79,11 @@ export default function StartPage() {
           setBuildMode(true)
           setIsPhase2Active(true)
           setCurrentQuestionId(phase2StartQuestionId)
-          setTimeout(() => setBuildVisible(true), 100)
+          setTimeout(() => {
+            setBuildVisible(true)
+            if (scrollContainerRef.current) scrollContainerRef.current.scrollTop = 0
+            window.scrollTo(0, 0)
+          }, 100)
           return
         }
       } catch {}
