@@ -277,6 +277,11 @@ export default function StartPage() {
       setTimeout(() => {
         scrollContainerRef.current?.scrollTo({ top: scrollContainerRef.current.scrollHeight, behavior: 'smooth' })
       }, 400)
+    } else if (isPhase2Active && !buildChatHistory.some((e: any) => e.phase === 2)) {
+      // Phase 2 just started — scroll to top so user sees the intro
+      setTimeout(() => {
+        if (scrollContainerRef.current) scrollContainerRef.current.scrollTop = 0
+      }, 150)
     } else {
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
