@@ -183,11 +183,14 @@ export default function Header({ logo, links, variant = 'dark', theme, onThemeTo
 
         {/* ═══ MOBILE DROPDOWN ═══ */}
         {menuOpen && (
-          <nav className={`xl:hidden ${bgColor} border-t ${borderColor} px-10 py-6`}
-          style={variant === 'light' ? {
-            background: 'linear-gradient(to bottom, #ffffff 0%, #f0f0f0 100%)'
-          } : undefined}
-        >
+          <nav
+            className={`xl:hidden border-t ${borderColor} px-10 py-6`}
+            style={{
+              background: variant === 'light'
+                ? 'linear-gradient(to bottom, #ffffff 0%, #f5f5f5 100%)'
+                : '#252525'
+            }}
+          >
             <div className="flex flex-col gap-4">
               {links.map((link) => (
                 <Link
