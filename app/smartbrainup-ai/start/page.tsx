@@ -119,6 +119,17 @@ export default function StartPage() {
   const [isPricingVisible, setIsPricingVisible] = useState(false)
   const [isPricingLoading, setIsPricingLoading] = useState<string | null>(null)
 
+  // Reset loading state quando l'utente torna dalla pagina Stripe
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        setIsPricingLoading(null)
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibility)
+    return () => document.removeEventListener('visibilitychange', handleVisibility)
+  }, [])
+
   const question = buildMode && !isAssessmentComplete && !isPhase2Active && editingIndex === null ? questionsMap[currentQuestionId] : null
   const phase2Question = buildMode && isPhase2Active && !isPhase2Complete && editingIndex === null ? phase2QuestionsMap[currentQuestionId] : null
   const editingEntry = editingIndex !== null ? buildChatHistory[editingIndex] : null
