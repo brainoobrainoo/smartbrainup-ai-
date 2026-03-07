@@ -4,7 +4,7 @@
 // Types
 // ────────────────────────────────────────────
 
-export type Section = 'dashboard' | 'detail' | 'new' | 'billing' | 'support' | 'account' | 'phase2'
+export type Section = 'dashboard' | 'detail' | 'new' | 'billing' | 'support' | 'account' | 'phase2' | 'subscription'
 
 export type SecondBrain = {
   id: any
@@ -108,6 +108,7 @@ export const clientContent = {
   nav: [
     { key: 'dashboard' as const, label: 'Dashboard' },
     { key: 'billing' as const, label: 'Billing' },
+    { key: 'subscription' as const, label: 'Generic AI' },
     { key: 'support' as const, label: 'Support' },
     { key: 'account' as const, label: 'Account' },
   ],
@@ -151,6 +152,74 @@ export const clientContent = {
       body: [
         'Manage your identity and access method.',
         'Authentication is handled via Magic Link or OAuth provider.',
+      ],
+    },
+    subscription: {
+      label: 'Generic AI',
+      badge: 'GENERIC AI',
+      title: 'Use AI beyond your Second Brain.',
+      intro: [
+        'Your Second Brain is your dedicated system. It operates on your context, deterministically.',
+        'Generic AI gives you access to advanced reasoning tools outside that structure — for open-ended research, exploration, and general-purpose work.',
+      ],
+      launch: {
+        label: 'LAUNCH PERIOD',
+        body: 'Each new Second Brain license includes two months of complimentary Basic subscription.',
+        note: 'After two months, an active subscription is required to continue using Generic AI.',
+      },
+      plans: [
+        {
+          name: 'Basic',
+          subtitle: 'Essential Access',
+          monthly: '€19',
+          yearly: '€190',
+          badge: null,
+          features: [
+            'Generic AI access',
+            'Core frameworks included',
+            'Standard model',
+            'Controlled usage limits',
+          ],
+        },
+        {
+          name: 'PRO',
+          subtitle: 'Advanced Layer',
+          monthly: '€49',
+          yearly: '€490',
+          badge: null,
+          features: [
+            'Advanced model',
+            'Higher limits',
+            'Priority execution',
+          ],
+        },
+        {
+          name: 'ELITE',
+          subtitle: 'Executive',
+          monthly: '€129',
+          yearly: '€1,290',
+          badge: null,
+          features: [
+            'Top-tier model',
+            'Extended limits',
+            'Highest priority performance',
+          ],
+        },
+      ],
+      comparison: {
+        label: 'SECOND BRAIN vs GENERIC AI',
+        columns: ['Generic AI', 'Second Brain'],
+        rows: [
+          { label: 'Advanced reasoning tools', generic: true, secondBrain: true },
+          { label: 'Dedicated system prompt', generic: false, secondBrain: true },
+          { label: 'Custom operational modules', generic: false, secondBrain: true },
+          { label: 'Persistent context', generic: false, secondBrain: true },
+          { label: 'Deterministic architecture', generic: false, secondBrain: true },
+        ],
+      },
+      principle: [
+        'The Second Brain is a licensed structure. It is created once and remains fixed.',
+        'Generic AI is a continuous operational layer. It requires an active subscription.',
       ],
     },
   },

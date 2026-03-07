@@ -91,121 +91,12 @@ export const licensingContent = {
     ],
     stepsLabel: "Access sequence",
     steps: [
-      "Complete the structured intake.",
-      "Acquire one Second Brain license.",
-      "Your dashboard is activated.",
-      "Your first Second Brain becomes operational."
+      "Answer a few questions about your situation.",
+      "Acquire your Second Brain license.",
+      "Complete the setup with your context and goals.",
+      "Your Second Brain becomes operational."
     ],
     note: "A dashboard is available only after at least one active Second Brain has been created."
-  },
-
-  subscription: {
-    section: "03 — SUBSCRIPTION & USAGE",
-    intro: [
-      "The creation of a Second Brain is **licensed separately** from ongoing usage.",
-      "",
-      "After activation, your environment includes:"
-    ],
-    features: [
-      "Access to **Generic AI**",
-      "Five **advanced reasoning frameworks**",
-    ],
-    frameworks: "Breakdown · Audit · Model · Calibrate · Reframe",
-    note: [
-      "Generic AI provides advanced reasoning tools.",
-      "It does not include personalized context or custom modules."
-    ],
-    launch: {
-      label: "LAUNCH PERIOD",
-      body: [
-        "Each new Second Brain license includes:",
-        "**Two months of complimentary Basic subscription.**"
-      ],
-      during: [
-        "Generic AI is **fully accessible**",
-        "Core frameworks are **available**",
-        "**No additional subscription fee** is required"
-      ],
-      after: "After two months, an active subscription is required to continue using Generic AI."
-    }
-  },
-
-  subscriptionPlans: {
-    section: "04 — SUBSCRIPTION PLANS",
-    plans: [
-      {
-        name: "Basic",
-        monthly: "€19",
-        yearly: "€190",
-        badge: null,
-        features: [
-          "**Generic AI access**",
-          "Core frameworks included",
-          "Standard model",
-          "Controlled usage limits"
-        ]
-      },
-      {
-        name: "PRO",
-        subtitle: "Advanced Layer",
-        monthly: "€49",
-        yearly: "€490",
-        badge: "50% off first 2 months",
-        features: [
-          "**Advanced model**",
-          "Higher limits",
-          "**Priority execution**"
-        ]
-      },
-      {
-        name: "ELITE",
-        subtitle: "Executive",
-        monthly: "€129",
-        yearly: "€1,290",
-        badge: "50% off first 2 months",
-        features: [
-          "**Top-tier model**",
-          "Extended limits",
-          "**Highest priority performance**"
-        ]
-      }
-    ]
-  },
-
-  comparison: {
-    section: "05 — SECOND BRAIN vs GENERIC AI",
-    columns: ["Generic AI", "Second Brain"],
-    features: [
-      { label: "Advanced reasoning tools", generic: true, secondBrain: true },
-      { label: "Dedicated system prompt", generic: false, secondBrain: true },
-      { label: "Custom operational modules", generic: false, secondBrain: true },
-      { label: "Persistent context", generic: false, secondBrain: true },
-      { label: "Deterministic architecture", generic: false, secondBrain: true },
-    ],
-    notes: [
-      "The value of the Second Brain lies in **its structure.**",
-      "The value of the subscription lies in **its continuous operational capacity.**"
-    ]
-  },
-
-  principles: {
-    section: "06 — STRUCTURAL PRINCIPLES",
-    title: [
-      "Licensing governs structure.",
-      "Subscription governs usage."
-    ],
-    body: [
-      "A Second Brain is a **licensed asset.**",
-      "It is created once.",
-      "It remains fixed.",
-      "It defines a **persistent operational architecture.**",
-      "",
-      "Generic AI provides advanced tools.",
-      "The Second Brain provides a **dedicated system.**",
-      "",
-      "The execution layer may evolve.",
-      "**The architecture remains.**"
-    ]
   },
 
   cta: {

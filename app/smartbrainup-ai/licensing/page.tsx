@@ -19,7 +19,7 @@ function parseBold(text: string): ReactNode {
 
 export default function LicensingPage() {
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null)
-  const { pricing, access, subscription, subscriptionPlans, comparison, principles, cta } = licensingContent
+  const { pricing, access, cta } = licensingContent
   const { theme } = useTheme()
   const isLight = theme === 'light'
 
@@ -267,167 +267,12 @@ export default function LicensingPage() {
               <div className="space-y-5">
                 {access.steps.map((step, index) => (
                   <div key={index} className="flex items-start gap-5">
-                    <span className="font-ui text-[14px] font-medium tracking-widest opacity-25 mt-[4px] shrink-0">{String(index + 1).padStart(2, '0')}</span>
+                    <span className="font-ui text-[17px] font-semibold tracking-widest opacity-70 mt-[3px] shrink-0">{String(index + 1).padStart(2, '0')}</span>
                     <p className="text-[19px] md:text-[21px] font-normal leading-[1.35] opacity-60">{step}</p>
                   </div>
                 ))}
               </div>
               <p className="text-[16px] font-normal leading-[1.4] opacity-40 mt-10">{access.note}</p>
-            </div>
-            
-          </div>
-        </Container>
-      </section>
-
-      {/* ============================================ */}
-      {/* 03 — SUBSCRIPTION & USAGE */}
-      {/* ============================================ */}
-      <section className="relative py-16 md:py-32">
-        <Container>
-          <p className="font-ui text-[13px] font-medium tracking-widest uppercase opacity-50 mb-8">{subscription.section}</p>
-          
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-            
-            <div className="lg:col-span-5">
-              {renderBody(subscription.intro)}
-              
-              <div className="mt-6 space-y-3">
-                {subscription.features.map((feature, index) => (
-                  <p key={index} className="text-[19px] md:text-[21px] font-normal leading-[1.35] opacity-80">{parseBold(feature)}</p>
-                ))}
-                <p className="text-[16px] font-normal leading-[1.4] opacity-40 mt-3">{subscription.frameworks}</p>
-              </div>
-              
-              <div className="mt-10">
-                {renderBody(subscription.note, "opacity-40")}
-              </div>
-            </div>
-            
-            <div className="lg:col-span-6 lg:col-start-7">
-              <div className="rounded-[4px] p-8 md:p-10" style={{ background: 'linear-gradient(to bottom, #f7f7f7 0%, #efefef 100%)' }}>
-                <p className="font-ui text-[13px] font-medium tracking-widest uppercase opacity-50 mb-6">{subscription.launch.label}</p>
-                {renderCardBody(subscription.launch.body)}
-                
-                <div className="mt-8 space-y-3">
-                  <p className="font-ui text-[12px] font-medium tracking-widest uppercase opacity-40 mb-4">During this period</p>
-                  {subscription.launch.during.map((item, index) => (
-                    <p key={index} className="text-[17px] md:text-[19px] font-normal leading-[1.35] opacity-60">{parseBold(item)}</p>
-                  ))}
-                </div>
-                
-                <p className="text-[16px] font-normal leading-[1.4] opacity-40 mt-10">{subscription.launch.after}</p>
-              </div>
-            </div>
-            
-          </div>
-        </Container>
-      </section>
-
-      {/* ============================================ */}
-      {/* 04 — SUBSCRIPTION PLANS */}
-      {/* ============================================ */}
-      <section className="relative py-16 md:py-32">
-        <Container>
-          <p className="font-ui text-[13px] font-medium tracking-widest uppercase opacity-50 mb-12">{subscriptionPlans.section}</p>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {subscriptionPlans.plans.map((plan, index) => (
-              <div key={index} className="relative rounded-[4px] p-8 md:p-10 min-h-[360px]" style={{ background: 'linear-gradient(to bottom, #f7f7f7 0%, #efefef 100%)' }}>
-                
-                <p className="font-ui text-[14px] font-medium tracking-widest uppercase opacity-50 mb-1">{plan.name}</p>
-                {'subtitle' in plan && plan.subtitle && (
-                  <p className="text-[15px] font-normal opacity-40 mb-5">{plan.subtitle}</p>
-                )}
-                {!('subtitle' in plan && plan.subtitle) && <div className="mb-5" />}
-                
-                {/* Prices */}
-                <p className="text-[34px] md:text-[42px] font-normal leading-[1.1] tracking-[-0.01em]">
-                  {plan.monthly}<span className="text-[17px] font-normal opacity-40"> / month</span>
-                </p>
-                <p className="text-[17px] font-normal opacity-40 mt-1 mb-8">
-                  {plan.yearly} / year
-                </p>
-                
-                {/* Features */}
-                <div className="space-y-3">
-                  {plan.features.map((feature, fIndex) => (
-                    <p key={fIndex} className="text-[17px] md:text-[19px] font-normal leading-[1.35] opacity-60">{parseBold(feature)}</p>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </Container>
-      </section>
-
-      {/* ============================================ */}
-      {/* 05 — SECOND BRAIN vs GENERIC AI (Apple-style) */}
-      {/* ============================================ */}
-      <section className="relative py-16 md:py-32">
-        <Container>
-          <p className="font-ui text-[13px] font-medium tracking-widest uppercase opacity-50 mb-12">{comparison.section}</p>
-          
-          <div className="max-w-[780px]">
-            {/* Column headers */}
-            <div className="grid grid-cols-[1fr_120px_120px] md:grid-cols-[1fr_160px_160px] items-end pb-5 border-b border-black/10">
-              <div />
-              <p className="font-ui text-[13px] font-medium tracking-widest uppercase opacity-40 text-center">{comparison.columns[0]}</p>
-              <p className="font-ui text-[13px] font-medium tracking-widest uppercase opacity-100 text-center">{comparison.columns[1]}</p>
-            </div>
-            
-            {/* Feature rows */}
-            {comparison.features.map((feature, index) => (
-              <div key={index} className="grid grid-cols-[1fr_120px_120px] md:grid-cols-[1fr_160px_160px] items-center py-6 border-b border-black/[0.06]">
-                <p className="text-[17px] md:text-[19px] font-normal leading-[1.35] opacity-60">{feature.label}</p>
-                <div className="flex justify-center">
-                  {feature.generic ? (
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="opacity-30">
-                      <path d="M4.5 10L8.5 14L15.5 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  ) : (
-                    <span className="block w-[16px] h-[1.5px] bg-black/15" />
-                  )}
-                </div>
-                <div className="flex justify-center">
-                  {feature.secondBrain ? (
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="opacity-80">
-                      <path d="M4.5 10L8.5 14L15.5 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  ) : (
-                    <span className="block w-[16px] h-[1.5px] bg-black/15" />
-                  )}
-                </div>
-              </div>
-            ))}
-            
-            {/* Notes */}
-            <div className="mt-10">
-              {comparison.notes.map((note, index) => (
-                <p key={index} className="text-[16px] font-normal leading-[1.4] opacity-40 mt-2">{parseBold(note)}</p>
-              ))}
-            </div>
-          </div>
-        </Container>
-      </section>
-
-      {/* ============================================ */}
-      {/* 06 — STRUCTURAL PRINCIPLES */}
-      {/* ============================================ */}
-      <section className="relative py-16 md:py-32">
-        <Container>
-          <p className="font-ui text-[13px] font-medium tracking-widest uppercase opacity-50 mb-8">{principles.section}</p>
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-            
-            <div className="lg:col-span-5">
-              <h2 className="text-[36px] md:text-[50px] font-normal leading-[1.05] tracking-[-0.01em]">
-                {principles.title.map((line, index) => (
-                  <span key={index} className="block">{line}</span>
-                ))}
-              </h2>
-            </div>
-            
-            <div className="lg:col-span-6 lg:col-start-7">
-              {renderBody(principles.body)}
             </div>
             
           </div>

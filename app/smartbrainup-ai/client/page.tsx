@@ -11,6 +11,7 @@ import { clientContent, Section, SecondBrain, BillingItem } from '@/content/smar
 import { supportChatContent } from '@/content/smartbrainup-ai/support-chat'
 import { Phase2CollectedData } from '@/content/smartbrainup-ai/phase2'
 import { useAuth, updateDisplayName, signOut } from '@/lib/useAuth'
+import { Grid2x2, Receipt, Zap, HelpCircle, CircleUser } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { createClient } from '@/lib/supabase/client'
 import '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css'
@@ -28,6 +29,7 @@ const { plans, enterprise, nav, sections } = clientContent
 const clientTabs = [
   { key: 'dashboard', label: 'dashboard' },
   { key: 'billing', label: 'billing' },
+  { key: 'subscription', label: 'generic ai' },
   { key: 'support', label: 'support' },
   { key: 'account', label: 'account' },
 ]
@@ -431,7 +433,7 @@ export default function ClientArea() {
     })
   }
 
-  const activeNav = section === 'detail' || section === 'new' ? 'dashboard' : section
+  const activeNav = (section === 'detail' || section === 'new') ? 'dashboard' : section
   const initials = userName
     .split(' ')
     .map((n) => n[0])
@@ -505,20 +507,26 @@ export default function ClientArea() {
           ═══════════════════════════════════════════════════════ */}
       <nav
         className="fixed bottom-0 left-0 right-0 bg-white
-                   flex items-center justify-evenly md:hidden z-50"
+                   flex items-center justify-evenly md:hidden z-50
+                   border-t border-black/[0.06]"
       >
-        {nav.map((item) => (
+        {[
+          { key: 'dashboard',    icon: <Grid2x2 size={22} /> },
+          { key: 'billing',      icon: <Receipt size={22} /> },
+          { key: 'subscription', icon: <Zap size={22} /> },
+          { key: 'support',      icon: <HelpCircle size={22} /> },
+          { key: 'account',      icon: <CircleUser size={22} /> },
+        ].map((item) => (
           <button
             key={item.key}
-            onClick={() => go(item.key)}
+            onClick={() => go(item.key as Section)}
             className={`
-              py-4 flex items-center justify-center cursor-pointer
-              bg-transparent border-0 font-ui text-[11px] font-medium
-              tracking-widest uppercase text-[#1a1a1a] transition-opacity duration-300
+              py-4 px-3 flex items-center justify-center cursor-pointer
+              bg-transparent border-0 text-[#1a1a1a] transition-opacity duration-300
               ${activeNav === item.key ? 'opacity-80' : 'opacity-25'}
             `}
           >
-            {item.label}
+            {item.icon}
           </button>
         ))}
       </nav>
@@ -533,7 +541,7 @@ export default function ClientArea() {
             ───────────────────────────────────────────────── */}
         {loading && (
           <div className="flex items-center justify-center" style={{ minHeight: 'calc(100vh - 180px)' }}>
-            <p className="font-ui text-[13px] opacity-30">Loading…</p>
+            <p className="font-ui text-[13px] opacity-45">Loading…</p>
           </div>
         )}
 
@@ -549,16 +557,16 @@ export default function ClientArea() {
                   <span className="font-semibold text-[#1a1a1a]/50">
                     {brains.length + (pendingBrain ? 1 : 0)} Second Brain{(brains.length + (pendingBrain ? 1 : 0)) !== 1 ? 's' : ''}
                   </span>
-                  <span className="text-[#1a1a1a]/30"> · Since {memberSince}</span>
+                  <span className="text-[#1a1a1a]/50"> · Since {memberSince}</span>
                   {credits > 0 && (
-                    <span className="text-[#1a1a1a]/30"> · {credits} credit{credits !== 1 ? 's' : ''}</span>
+                    <span className="text-[#1a1a1a]/50"> · {credits} credit{credits !== 1 ? 's' : ''}</span>
                   )}
                 </>
               ) : (
                 <>
-                  <span className="text-[#1a1a1a]/30">Welcome</span>
+                  <span className="text-[#1a1a1a]/50">Welcome</span>
                   {credits > 0 && (
-                    <span className="text-[#1a1a1a]/30"> · {credits} credit{credits !== 1 ? 's' : ''}</span>
+                    <span className="text-[#1a1a1a]/50"> · {credits} credit{credits !== 1 ? 's' : ''}</span>
                   )}
                 </>
               )}
@@ -595,10 +603,10 @@ export default function ClientArea() {
                   >
                     {/* Left — label + name */}
                     <div className="flex-1">
-                      <p className="font-ui text-[11px] font-medium tracking-widest uppercase text-[#1a1a1a]/35 mb-1">
+                      <p className="font-ui text-[11px] font-medium tracking-widest uppercase text-[#1a1a1a]/45 mb-1">
                         Second Brain {b.num}
                       </p>
-                      <p className="text-[18px] font-normal text-[#1a1a1a]/60">
+                      <p className="text-[22px] font-normal text-[#1a1a1a]/80">
                         {b.name}
                       </p>
                     </div>
@@ -607,7 +615,7 @@ export default function ClientArea() {
                     <div>
                       {contactBrainId === b.id ? (
                         <div className="flex flex-col items-center gap-2">
-                          <p className="text-[14px] text-[#1a1a1a]/45 text-center">
+                          <p className="text-[14px] text-[#1a1a1a]/65 text-center">
                             Phase 2 activation requires a license
                           </p>
                           <a
@@ -684,8 +692,8 @@ export default function ClientArea() {
                          flex items-center justify-center gap-3 p-6 min-h-[140px]
                          cursor-pointer border-0"
             >
-              <span className="text-[20px] text-[#1a1a1a]/30">+</span>
-              <span className="font-ui text-[11px] font-medium tracking-widest uppercase text-[#1a1a1a]/45">
+              <span className="text-[20px] text-[#1a1a1a]/45">+</span>
+              <span className="font-ui text-[11px] font-medium tracking-widest uppercase text-[#1a1a1a]/60">
                 New Second Brain
               </span>
             </button>
@@ -707,7 +715,7 @@ export default function ClientArea() {
                 ← Dashboard
               </button>
 
-              <p className="font-ui text-[10px] font-medium tracking-widest uppercase opacity-30 mb-2">
+              <p className="font-ui text-[10px] font-medium tracking-widest uppercase opacity-45 mb-2">
                 Second Brain {brain.num}
               </p>
 
@@ -733,7 +741,7 @@ export default function ClientArea() {
                 <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-40 mb-4">
                   Context
                 </p>
-                <p className="text-[17px] leading-[1.45] opacity-60 max-w-[640px]">
+                <p className="text-[17px] leading-[1.45] opacity-75 max-w-[640px]">
                   {brain.context}
                 </p>
               </Container>
@@ -752,7 +760,7 @@ export default function ClientArea() {
                         {brain.platforms.map((p) => (
                           <span
                             key={p}
-                            className="text-[15px] opacity-70 px-4 py-2
+                            className="text-[17px] opacity-75 px-4 py-2
                                        border border-black/10 rounded-[4px]"
                           >
                             {p}
@@ -836,7 +844,7 @@ export default function ClientArea() {
               ← Dashboard
             </button>
 
-            <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-30 mb-8">
+            <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-45 mb-8">
               {sections.newBrain.label}
             </p>
 
@@ -854,12 +862,12 @@ export default function ClientArea() {
                       {plan.name}
                     </p>
                     <p className="text-[14px] opacity-50 mb-4">{plan.brains}</p>
-                    <p className="text-[28px] font-normal tracking-[-0.01em] mb-4">
+                    <p className="text-[32px] font-normal tracking-[-0.01em] mb-4">
                       {plan.price}
                     </p>
                     <div className="mb-auto">
                       {plan.lines.map((line, i) => (
-                        <p key={i} className="text-[15px] leading-[1.4] opacity-50">
+                        <p key={i} className="text-[17px] leading-[1.4] opacity-65">
                           {line}
                         </p>
                       ))}
@@ -888,13 +896,13 @@ export default function ClientArea() {
                 <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-1">
                   {enterprise.name}
                 </p>
-                <p className="text-[14px] opacity-40 mb-4">{enterprise.brains}</p>
+                <p className="text-[14px] opacity-60 mb-4">{enterprise.brains}</p>
                 <p className="text-[28px] font-normal tracking-[-0.01em] mb-5">
                   {enterprise.price}
                 </p>
                 <div className="mb-5">
                   {enterprise.lines.map((line, i) => (
-                    <p key={i} className="text-[15px] leading-[1.4] opacity-50">
+                    <p key={i} className="text-[17px] leading-[1.4] opacity-65">
                       {line}
                     </p>
                   ))}
@@ -915,11 +923,148 @@ export default function ClientArea() {
         )}
 
         {/* ─────────────────────────────────────────────────
+            SUBSCRIPTION / GENERIC AI
+            ───────────────────────────────────────────────── */}
+        {!loading && section === 'subscription' && (
+          <Container>
+            {/* Badge */}
+            <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-40 pt-10 md:pt-14 mb-8">
+              {sections.subscription.badge}
+            </p>
+
+            {/* Title */}
+            <h2 className="text-[28px] md:text-[36px] font-normal leading-[1.05] tracking-[-0.01em] mb-6 max-w-[560px]">
+              {sections.subscription.title}
+            </h2>
+
+            {/* Intro */}
+            <div className="mb-10 max-w-[560px]">
+              {sections.subscription.intro.map((line, i) => (
+                <p key={i} className="text-[20px] leading-[1.6] opacity-65 mb-3">
+                  {line}
+                </p>
+              ))}
+            </div>
+
+            {/* Launch period callout */}
+            <div className="bg-[#f7f7f7] rounded-[4px] px-6 py-5 mb-10">
+              <p className="font-ui text-[10px] font-medium tracking-[0.08em] uppercase opacity-40 mb-2">
+                {sections.subscription.launch.label}
+              </p>
+              <p className="text-[19px] leading-[1.5] opacity-80 mb-2">
+                {sections.subscription.launch.body}
+              </p>
+              <p className="text-[17px] leading-[1.5] opacity-55">
+                {sections.subscription.launch.note}
+              </p>
+            </div>
+
+            {/* Subscription plan cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
+              {sections.subscription.plans.map((plan) => (
+                <div
+                  key={plan.name}
+                  className="rounded-[4px] p-6 flex flex-col min-h-[280px]"
+                  style={{ background: 'linear-gradient(to bottom, #f7f7f7, #efefef)' }}
+                >
+                  {/* Name — fixed height block so price stays aligned */}
+                  <div className="mb-5" style={{ minHeight: 44 }}>
+                    <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-50 mb-1">
+                      {plan.name}
+                    </p>
+                    <p className="text-[16px] opacity-60">{plan.subtitle}</p>
+                  </div>
+
+                  {/* Price — always at same vertical position */}
+                  <div className="mb-5">
+                    <span className="text-[32px] font-normal tracking-[-0.02em] opacity-90">{plan.monthly}</span>
+                    <span className="text-[14px] opacity-45 ml-1">/ mo</span>
+                    <p className="text-[15px] opacity-55 mt-1">{plan.yearly} / year</p>
+                  </div>
+
+                  {/* Features */}
+                  <div className="mb-auto">
+                    {plan.features.map((f, i) => (
+                      <p key={i} className="text-[17px] leading-[1.5] opacity-70 mb-2">
+                        {f}
+                      </p>
+                    ))}
+                  </div>
+
+                  {/* CTA */}
+                  <div className="mt-6">
+                    <button
+                      className="bg-[#252525] text-white border-0 rounded-[4px]
+                                 px-6 py-2.5 font-ui text-[10px] font-medium
+                                 tracking-widest uppercase cursor-pointer
+                                 hover:opacity-80 transition-opacity"
+                    >
+                      Subscribe
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Comparison table */}
+            <p className="font-ui text-[10px] font-medium tracking-[0.08em] uppercase opacity-40 mb-4">
+              {sections.subscription.comparison.label}
+            </p>
+            <div className="bg-[#f7f7f7] rounded-[4px] overflow-hidden mb-10">
+              {/* Header */}
+              <div className="flex px-6 py-4 border-b border-black/[0.06]">
+                <div className="flex-1" />
+                {sections.subscription.comparison.columns.map((col) => (
+                  <div key={col} className="w-[110px] text-center">
+                    <p className="font-ui text-[11px] font-medium tracking-[0.08em] uppercase opacity-50">
+                      {col}
+                    </p>
+                  </div>
+                ))}
+              </div>
+              {/* Rows */}
+              {sections.subscription.comparison.rows.map((row, i) => (
+                <div
+                  key={i}
+                  className={`flex items-center px-6 py-4
+                    ${i < sections.subscription.comparison.rows.length - 1 ? 'border-b border-black/[0.05]' : ''}`}
+                >
+                  <div className="flex-1">
+                    <p className="text-[17px] opacity-75">{row.label}</p>
+                  </div>
+                  <div className="w-[110px] flex justify-center">
+                    {row.generic
+                      ? <span className="text-[#1a1a1a] opacity-70 text-[18px]">✓</span>
+                      : <span className="text-[#1a1a1a] opacity-20 text-[18px]">–</span>
+                    }
+                  </div>
+                  <div className="w-[110px] flex justify-center">
+                    {row.secondBrain
+                      ? <span className="text-[#1a1a1a] opacity-70 text-[18px]">✓</span>
+                      : <span className="text-[#1a1a1a] opacity-20 text-[18px]">–</span>
+                    }
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Structural principle */}
+            <div className="max-w-[480px] pb-10 md:pb-14">
+              {sections.subscription.principle.map((line, i) => (
+                <p key={i} className="text-[19px] leading-[1.6] opacity-60 mb-2">
+                  {line}
+                </p>
+              ))}
+            </div>
+          </Container>
+        )}
+
+        {/* ─────────────────────────────────────────────────
             BILLING
             ───────────────────────────────────────────────── */}
         {!loading && section === 'billing' && (
           <Container>
-            <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-30 pt-10 md:pt-14 mb-8">
+            <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-40 pt-10 md:pt-14 mb-8">
               Billing &amp; Licenses
             </p>
 
@@ -934,14 +1079,14 @@ export default function ClientArea() {
                         ${i < billing.length - 1 ? 'border-b border-black/[0.04]' : ''}`}
                     >
                       <div>
-                        <p className="font-ui text-[10px] font-medium tracking-[0.08em] uppercase opacity-30 mb-1.5">
+                        <p className="font-ui text-[10px] font-medium tracking-[0.08em] uppercase opacity-45 mb-1.5">
                           {row.date}
                         </p>
-                        <p className="text-[15px] opacity-75">{row.item}</p>
+                        <p className="text-[17px] opacity-80">{row.item}</p>
                       </div>
                       <div className="text-right">
                         <p className="text-[15px]">{row.amount}</p>
-                        <p className="font-ui text-[10px] font-medium tracking-[0.08em] uppercase opacity-30 mt-1">
+                        <p className="font-ui text-[10px] font-medium tracking-[0.08em] uppercase opacity-45 mt-1">
                           {row.status}
                         </p>
                       </div>
@@ -953,13 +1098,13 @@ export default function ClientArea() {
                 <div className="md:hidden flex flex-col gap-3">
                   {billing.map((row) => (
                     <div key={row.id} className="bg-[#f7f7f7] rounded-[4px] p-6">
-                      <p className="font-ui text-[10px] font-medium tracking-widest uppercase opacity-30 mb-3">
+                      <p className="font-ui text-[10px] font-medium tracking-widest uppercase opacity-45 mb-3">
                         {row.date}
                       </p>
-                      <p className="text-[15px] opacity-70 mb-2">{row.item}</p>
+                      <p className="text-[17px] opacity-80 mb-2">{row.item}</p>
                       <div className="flex justify-between items-end">
                         <p className="text-[22px] font-normal">{row.amount}</p>
-                        <span className="font-ui text-[10px] font-medium tracking-widest uppercase opacity-30">
+                        <span className="font-ui text-[10px] font-medium tracking-widest uppercase opacity-45">
                           {row.status}
                         </span>
                       </div>
@@ -969,7 +1114,7 @@ export default function ClientArea() {
               </>
             ) : (
               <div className="bg-[#f7f7f7] rounded-[4px] p-8 md:p-12">
-                <p className="text-[15px] opacity-40 text-center">
+                <p className="text-[15px] opacity-60 text-center">
                   No billing records yet.
                 </p>
               </div>
@@ -1050,7 +1195,7 @@ export default function ClientArea() {
             ───────────────────────────────────────────────── */}
         {!loading && section === 'account' && (
           <Container>
-            <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-30 pt-10 md:pt-14 mb-8">
+            <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-40 pt-10 md:pt-14 mb-8">
               Account
             </p>
 
@@ -1061,7 +1206,7 @@ export default function ClientArea() {
                            border-b border-black/[0.04]"
               >
                 <div className="flex-1">
-                  <p className="font-ui text-[10px] font-medium tracking-[0.08em] uppercase opacity-30 mb-1.5">
+                  <p className="font-ui text-[10px] font-medium tracking-[0.08em] uppercase opacity-45 mb-1.5">
                     Name
                   </p>
                   {editName ? (
@@ -1074,7 +1219,7 @@ export default function ClientArea() {
                                  bg-transparent outline-none w-full md:w-[300px] rounded-none"
                     />
                   ) : (
-                    <p className="text-[15px] opacity-70">{userName}</p>
+                    <p className="text-[17px] opacity-85">{userName}</p>
                   )}
                 </div>
                 <button
@@ -1100,29 +1245,29 @@ export default function ClientArea() {
                            border-b border-black/[0.04]"
               >
                 <div className="flex-1">
-                  <p className="font-ui text-[10px] font-medium tracking-[0.08em] uppercase opacity-30 mb-1.5">
+                  <p className="font-ui text-[10px] font-medium tracking-[0.08em] uppercase opacity-45 mb-1.5">
                     Email
                   </p>
-                  <p className="text-[15px] opacity-70">{userEmail}</p>
+                  <p className="text-[17px] opacity-85">{userEmail}</p>
                 </div>
               </div>
 
               {/* Member since */}
               <div className="px-6 md:px-8 py-[18px] border-b border-black/[0.04]">
-                <p className="font-ui text-[10px] font-medium tracking-[0.08em] uppercase opacity-30 mb-1.5">
+                <p className="font-ui text-[10px] font-medium tracking-[0.08em] uppercase opacity-45 mb-1.5">
                   Member since
                 </p>
-                <p className="text-[15px] opacity-70">
+                <p className="text-[17px] opacity-85">
                   {memberSince}{brains.length > 0 ? ` · ${brains.length} Second Brain${brains.length !== 1 ? 's' : ''} active` : ''}
                 </p>
               </div>
 
               {/* Access method */}
               <div className="px-6 md:px-8 py-[18px] border-b border-black/[0.04]">
-                <p className="font-ui text-[10px] font-medium tracking-[0.08em] uppercase opacity-30 mb-1.5">
+                <p className="font-ui text-[10px] font-medium tracking-[0.08em] uppercase opacity-45 mb-1.5">
                   Access method
                 </p>
-                <p className="text-[15px] opacity-70">
+                <p className="text-[17px] opacity-85">
                   {accessMethod}
                 </p>
               </div>
@@ -1130,10 +1275,10 @@ export default function ClientArea() {
               {/* Session */}
               <div className="px-6 md:px-8 py-[18px] flex justify-between items-center">
                 <div>
-                  <p className="font-ui text-[10px] font-medium tracking-[0.08em] uppercase opacity-30 mb-1.5">
+                  <p className="font-ui text-[10px] font-medium tracking-[0.08em] uppercase opacity-45 mb-1.5">
                     Session
                   </p>
-                  <p className="text-[15px] opacity-70">Active</p>
+                  <p className="text-[17px] opacity-85">Active</p>
                 </div>
                 <button
                   onClick={signOut}
