@@ -78,13 +78,16 @@ export default function FloatingChatButton({
   // Lens sizes
   const lensSize = isMobile ? 40 : 50
 
+  // Light group opacity — day mode 40% more transparent
+  const o = variant === 'dark' ? 0.6 : 1
+
   const outerBg = isMobile 
-    ? `radial-gradient(circle, rgba(${colorAlpha},0.18) 25%, rgba(${colorAlpha},0.05) 50%, rgba(${colorAlpha},0) 70%)`
-    : `radial-gradient(circle, rgba(${colorAlpha},0.36) 15%, rgba(${colorAlpha},0.08) 40%, rgba(${colorAlpha},0) 60%)`
+    ? `radial-gradient(circle, rgba(${colorAlpha},${0.18*o}) 25%, rgba(${colorAlpha},${0.05*o}) 50%, rgba(${colorAlpha},0) 70%)`
+    : `radial-gradient(circle, rgba(${colorAlpha},${0.36*o}) 15%, rgba(${colorAlpha},${0.08*o}) 40%, rgba(${colorAlpha},0) 60%)`
 
   const middleBg = isMobile
-    ? `radial-gradient(circle, rgba(${colorAlpha},0.42) 15%, rgba(${colorAlpha},0.12) 45%, rgba(${colorAlpha},0) 75%)`
-    : `radial-gradient(circle, rgba(${colorAlpha},0.72) 15%, rgba(${colorAlpha},0.21) 45%, rgba(${colorAlpha},0) 75%)`
+    ? `radial-gradient(circle, rgba(${colorAlpha},${0.42*o}) 15%, rgba(${colorAlpha},${0.12*o}) 45%, rgba(${colorAlpha},0) 75%)`
+    : `radial-gradient(circle, rgba(${colorAlpha},${0.72*o}) 15%, rgba(${colorAlpha},${0.21*o}) 45%, rgba(${colorAlpha},0) 75%)`
 
   return (
     <a
@@ -92,6 +95,7 @@ export default function FloatingChatButton({
       onClick={onClick ? (e) => { e.preventDefault(); onClick(); } : undefined}
       style={{
         position: 'relative',
+        marginTop: '-20px',
         width: `${outerSize}px`,
         height: `${outerSize}px`,
         borderRadius: '50%',
@@ -180,7 +184,7 @@ export default function FloatingChatButton({
               width: `${lightCoreSize}px`,
               height: `${lightCoreSize}px`,
               borderRadius: '50%',
-              backgroundColor: 'rgba(255,255,255,0.20)',
+              backgroundColor: `rgba(${colorAlpha},0.20)`,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
