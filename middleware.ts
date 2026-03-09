@@ -47,6 +47,13 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
+  // Protect /founder route — redirect to login if not authenticated
+  if (!user && pathname.startsWith('/founder')) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/login'
+    return NextResponse.redirect(url)
+  }
+
   // Redirect logged users away from /login
   if (user && pathname === '/login') {
     const url = request.nextUrl.clone()
@@ -75,7 +82,6 @@ export async function middleware(request: NextRequest) {
   } else if (host.includes('brainoo.ai') || host === 'brainoo') {
     surface = 'brainoo'
   }
-  // Any unknown host (Vercel preview URLs) → smartbrainup-ai by default
 
   const url = request.nextUrl.clone()
   url.pathname = '/' + surface + (pathname === '/' ? '' : pathname)
