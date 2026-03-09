@@ -609,35 +609,33 @@ export default function ClientArea() {
                 {incompleteBrains.map((b) => (
                   <div
                     key={b.id}
-                    className="rounded-[12px] p-6 h-[220px] md:h-[88px] overflow-hidden flex flex-col justify-between md:flex-row md:items-center md:justify-between gap-4"
+                    className="rounded-[12px] p-6 h-[220px] md:h-[88px] overflow-hidden flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-6"
                     style={{ background: 'linear-gradient(to bottom, #ededed 0%, #c9c9c9 100%)' }}
                   >
-                    {/* Left — semi-transparent sphere + label */}
-                    <div className="flex-1 min-w-0 flex flex-col md:flex-row md:items-center md:gap-6">
-                      {/* Incomplete sphere — 15% opacity signals "in progress" */}
-                      <div className="flex-shrink-0 opacity-15">
-                        {incompleteSphereData ? (
-                          <Lottie
-                            animationData={incompleteSphereData}
-                            loop
-                            autoplay
-                            style={{ width: 40, height: 40 }}
-                          />
-                        ) : (
-                          <div className="w-[40px] h-[40px] rounded-full bg-black/[0.06]" />
-                        )}
-                      </div>
-                      <div className="min-w-0">
-                        <p className="font-ui text-[11px] font-medium tracking-widest uppercase text-[#1a1a1a]/45 mb-1">
-                          Second Brain {b.num}
-                        </p>
-                        {/* Spacer matching name line height so label sits at same vertical position */}
-                        <div className="h-[28px]" />
-                      </div>
+                    {/* Sphere — top-level sibling, same as SecondBrainCard */}
+                    <div className="flex-shrink-0 opacity-15">
+                      {incompleteSphereData ? (
+                        <Lottie
+                          animationData={incompleteSphereData}
+                          loop
+                          autoplay
+                          style={{ width: 40, height: 40 }}
+                        />
+                      ) : (
+                        <div className="w-[40px] h-[40px] rounded-full bg-black/[0.06]" />
+                      )}
                     </div>
 
-                    {/* Right — buttons */}
-                    <div className="flex-shrink-0">
+                    {/* Text — top-level sibling, same as SecondBrainCard */}
+                    <div className="flex-1 min-w-0">
+                      <p className="font-ui text-[11px] font-medium tracking-widest uppercase text-[#1a1a1a]/45 mb-1">
+                        Second Brain {b.num}
+                      </p>
+                      <div className="h-[28px]" />
+                    </div>
+
+                    {/* Buttons — top-level sibling */}
+                    <div className="flex-shrink-0 mt-auto md:mt-0">
                       {contactBrainId === b.id ? (
                         <div className="flex flex-col items-center gap-2">
                           <p className="text-[14px] text-[#1a1a1a]/65 text-center">
