@@ -12,7 +12,6 @@ import { clientContent, Section, SecondBrain, BillingItem } from '@/content/smar
 import { supportChatContent } from '@/content/smartbrainup-ai/support-chat'
 import { Phase2CollectedData } from '@/content/smartbrainup-ai/phase2'
 import { useAuth, updateDisplayName, signOut } from '@/lib/useAuth'
-import { Grid2x2, Receipt, Zap, HelpCircle, CircleUser } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { createClient } from '@/lib/supabase/client'
 import '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css'
@@ -31,7 +30,6 @@ const { plans, enterprise, nav, sections } = clientContent
 
 const clientTabs = [
   { key: 'dashboard', label: 'dashboard' },
-  { key: 'billing', label: 'billing' },
   { key: 'subscription', label: 'generic ai' },
   { key: 'support', label: 'support' },
   { key: 'account', label: 'account' },
@@ -515,30 +513,25 @@ export default function ClientArea() {
       </div>
 
       {/* ═══════════════════════════════════════════════════════
-          MOBILE TAB BAR
+          MOBILE TAB BAR — 4 text tabs, no icons
           ═══════════════════════════════════════════════════════ */}
       <nav
         className="fixed bottom-0 left-0 right-0 bg-white
                    flex items-center justify-evenly md:hidden z-50
                    border-t border-black/[0.06]"
       >
-        {[
-          { key: 'dashboard',    icon: <Grid2x2 size={22} /> },
-          { key: 'billing',      icon: <Receipt size={22} /> },
-          { key: 'subscription', icon: <Zap size={22} /> },
-          { key: 'support',      icon: <HelpCircle size={22} /> },
-          { key: 'account',      icon: <CircleUser size={22} /> },
-        ].map((item) => (
+        {clientTabs.map((item) => (
           <button
             key={item.key}
             onClick={() => go(item.key as Section)}
             className={`
-              py-4 px-3 flex items-center justify-center cursor-pointer
-              bg-transparent border-0 text-[#1a1a1a] transition-opacity duration-300
-              ${activeNav === item.key ? 'opacity-80' : 'opacity-25'}
+              py-4 px-2 flex items-center justify-center cursor-pointer
+              bg-transparent border-0 transition-opacity duration-300
+              font-ui text-[10px] font-medium tracking-widest uppercase
+              ${activeNav === item.key ? 'text-[#1a1a1a] opacity-85' : 'text-[#1a1a1a] opacity-30'}
             `}
           >
-            {item.icon}
+            {item.label}
           </button>
         ))}
       </nav>
@@ -1090,69 +1083,6 @@ export default function ClientArea() {
         )}
 
         {/* ─────────────────────────────────────────────────
-            BILLING
-            ───────────────────────────────────────────────── */}
-        {!loading && section === 'billing' && (
-          <Container>
-            <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-60 pt-10 md:pt-14 mb-8">
-              Billing &amp; Licenses
-            </p>
-
-            {billing.length > 0 ? (
-              <>
-                {/* Desktop */}
-                <div className="hidden md:block bg-[#f7f7f7] rounded-[4px] overflow-hidden">
-                  {billing.map((row, i) => (
-                    <div
-                      key={row.id}
-                      className={`flex justify-between items-center px-6 py-[18px]
-                        ${i < billing.length - 1 ? 'border-b border-black/[0.04]' : ''}`}
-                    >
-                      <div>
-                        <p className="font-ui text-[10px] font-medium tracking-[0.08em] uppercase opacity-45 mb-1.5">
-                          {row.date}
-                        </p>
-                        <p className="text-[17px] opacity-80">{row.item}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-[15px]">{row.amount}</p>
-                        <p className="font-ui text-[10px] font-medium tracking-[0.08em] uppercase opacity-45 mt-1">
-                          {row.status}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Mobile */}
-                <div className="md:hidden flex flex-col gap-3">
-                  {billing.map((row) => (
-                    <div key={row.id} className="bg-[#f7f7f7] rounded-[4px] p-6">
-                      <p className="font-ui text-[10px] font-medium tracking-widest uppercase opacity-45 mb-3">
-                        {row.date}
-                      </p>
-                      <p className="text-[17px] opacity-80 mb-2">{row.item}</p>
-                      <div className="flex justify-between items-end">
-                        <p className="text-[22px] font-normal">{row.amount}</p>
-                        <span className="font-ui text-[10px] font-medium tracking-widest uppercase opacity-45">
-                          {row.status}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </>
-            ) : (
-              <div className="bg-[#f7f7f7] rounded-[4px] p-8 md:p-12">
-                <p className="text-[15px] opacity-60 text-center">
-                  No billing records yet.
-                </p>
-              </div>
-            )}
-          </Container>
-        )}
-
-        {/* ─────────────────────────────────────────────────
             SUPPORT
             ───────────────────────────────────────────────── */}
         {!loading && section === 'support' && (
@@ -1321,6 +1251,62 @@ export default function ClientArea() {
                 </button>
               </div>
             </div>
+
+            {/* ── Billing ── */}
+            <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-60 pt-10 mb-6">
+              Billing &amp; Licenses
+            </p>
+
+            {billing.length > 0 ? (
+              <>
+                {/* Desktop */}
+                <div className="hidden md:block bg-[#f7f7f7] rounded-[4px] overflow-hidden">
+                  {billing.map((row, i) => (
+                    <div
+                      key={row.id}
+                      className={`flex justify-between items-center px-6 py-[18px]
+                        ${i < billing.length - 1 ? 'border-b border-black/[0.04]' : ''}`}
+                    >
+                      <div>
+                        <p className="font-ui text-[10px] font-medium tracking-[0.08em] uppercase opacity-45 mb-1.5">
+                          {row.date}
+                        </p>
+                        <p className="text-[17px] opacity-80">{row.item}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-[15px]">{row.amount}</p>
+                        <p className="font-ui text-[10px] font-medium tracking-[0.08em] uppercase opacity-45 mt-1">
+                          {row.status}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {/* Mobile */}
+                <div className="md:hidden flex flex-col gap-3">
+                  {billing.map((row) => (
+                    <div key={row.id} className="bg-[#f7f7f7] rounded-[4px] p-6">
+                      <p className="font-ui text-[10px] font-medium tracking-widest uppercase opacity-45 mb-3">
+                        {row.date}
+                      </p>
+                      <p className="text-[17px] opacity-80 mb-2">{row.item}</p>
+                      <div className="flex justify-between items-end">
+                        <p className="text-[22px] font-normal">{row.amount}</p>
+                        <span className="font-ui text-[10px] font-medium tracking-widest uppercase opacity-45">
+                          {row.status}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <div className="bg-[#f7f7f7] rounded-[4px] p-8 md:p-12">
+                <p className="text-[15px] opacity-60 text-center">
+                  No billing records yet.
+                </p>
+              </div>
+            )}
           </Container>
         )}
       </div>
