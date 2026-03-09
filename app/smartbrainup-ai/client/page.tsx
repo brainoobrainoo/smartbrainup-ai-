@@ -598,7 +598,7 @@ export default function ClientArea() {
                 {incompleteBrains.map((b) => (
                   <div
                     key={b.id}
-                    className="rounded-[12px] p-6 h-[140px] md:h-auto overflow-hidden flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+                    className="rounded-[12px] p-6 h-[220px] md:h-auto overflow-hidden flex flex-col justify-between md:flex-row md:items-center md:justify-between gap-4"
                     style={{ background: 'linear-gradient(to bottom, #ededed 0%, #c9c9c9 100%)' }}
                   >
                     {/* Left — label + name */}
@@ -689,11 +689,12 @@ export default function ClientArea() {
               onClick={() => router.push('/start')}
               className="w-full rounded-[12px] bg-[#f7f7f7] hover:bg-[#f0f0f0]
                          transition-colors duration-200
-                         flex flex-col items-center justify-center h-[140px] md:h-[140px]
-                         cursor-pointer border-0 gap-1"
+                         flex flex-col items-center justify-center h-[220px]
+                         md:h-auto md:flex-row md:justify-center md:gap-3 md:p-6
+                         cursor-pointer border-0"
             >
-              <span className="text-[64px] leading-none font-thin text-[#1a1a1a]/20 select-none" style={{ lineHeight: '1' }}>+</span>
-              <span className="font-ui text-[10px] font-medium tracking-widest uppercase text-[#1a1a1a]/35 mt-1">
+              <span className="text-[72px] leading-none font-thin text-[#1a1a1a]/20 select-none md:text-[22px] md:font-normal md:leading-none">+</span>
+              <span className="font-ui text-[10px] font-medium tracking-widest uppercase text-[#1a1a1a]/35 mt-2 md:mt-0">
                 New Second Brain
               </span>
             </button>

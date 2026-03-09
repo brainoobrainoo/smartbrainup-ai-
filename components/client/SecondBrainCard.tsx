@@ -147,7 +147,7 @@ export default function SecondBrainCard({ brain, onOpen, onRename, onColorChange
 
   return (
     <div
-      className="rounded-[12px] p-6 h-[140px] md:h-auto overflow-hidden flex flex-col md:flex-row md:items-center gap-4 md:gap-6
+      className="rounded-[12px] p-6 h-[220px] md:h-auto overflow-hidden flex flex-col md:flex-row md:items-center gap-4 md:gap-6
                  text-left transition-all duration-200
                  relative border-0"
       style={{ background: getGradient(brain.cardColor) }}
