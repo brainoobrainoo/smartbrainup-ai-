@@ -563,21 +563,21 @@ export default function ClientArea() {
         {!loading && section === 'dashboard' && (
           <Container>
             {/* Badge */}
-            <p className="font-ui text-[13px] font-medium tracking-widest uppercase pt-10 md:pt-14 mb-8">
+            <p className="font-ui text-[11px] font-medium tracking-widest uppercase pt-10 md:pt-14 mb-8">
               {(brains.length + (pendingBrain ? 1 : 0)) > 0 ? (
                 <>
-                  <span className="font-semibold text-[#1a1a1a]/80">
+                  <span className="font-semibold text-[#1a1a1a]/70">
                     {brains.length + (pendingBrain ? 1 : 0)} Second Brain{(brains.length + (pendingBrain ? 1 : 0)) !== 1 ? 's' : ''}
                   </span>
                   {credits > 0 && (
-                    <span className="text-[#1a1a1a]/60"> · {credits} credit{credits !== 1 ? 's' : ''}</span>
+                    <span className="text-[#1a1a1a]/50"> · {credits} credit{credits !== 1 ? 's' : ''}</span>
                   )}
                 </>
               ) : (
                 <>
-                  <span className="text-[#1a1a1a]/75">Welcome</span>
+                  <span className="text-[#1a1a1a]/70">Welcome</span>
                   {credits > 0 && (
-                    <span className="text-[#1a1a1a]/60"> · {credits} credit{credits !== 1 ? 's' : ''}</span>
+                    <span className="text-[#1a1a1a]/50"> · {credits} credit{credits !== 1 ? 's' : ''}</span>
                   )}
                 </>
               )}
@@ -958,7 +958,7 @@ export default function ClientArea() {
         {!loading && section === 'subscription' && (
           <Container>
             {/* Badge */}
-            <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-40 pt-10 md:pt-14 mb-8">
+            <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-60 pt-10 md:pt-14 mb-8">
               {sections.subscription.badge}
             </p>
 
@@ -1094,7 +1094,7 @@ export default function ClientArea() {
             ───────────────────────────────────────────────── */}
         {!loading && section === 'billing' && (
           <Container>
-            <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-40 pt-10 md:pt-14 mb-8">
+            <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-60 pt-10 md:pt-14 mb-8">
               Billing &amp; Licenses
             </p>
 
@@ -1225,7 +1225,7 @@ export default function ClientArea() {
             ───────────────────────────────────────────────── */}
         {!loading && section === 'account' && (
           <Container>
-            <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-40 pt-10 md:pt-14 mb-8">
+            <p className="font-ui text-[11px] font-medium tracking-widest uppercase opacity-60 pt-10 md:pt-14 mb-8">
               Account
             </p>
 
