@@ -598,15 +598,15 @@ export default function ClientArea() {
                 {incompleteBrains.map((b) => (
                   <div
                     key={b.id}
-                    className="rounded-[4px] p-6 min-h-[140px] flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+                    className="rounded-[12px] p-6 h-[140px] md:h-auto overflow-hidden flex flex-col md:flex-row md:items-center md:justify-between gap-4"
                     style={{ background: 'linear-gradient(to bottom, #ededed 0%, #c9c9c9 100%)' }}
                   >
                     {/* Left — label + name */}
-                    <div className="flex-1">
+                    <div className="flex-1 min-w-0">
                       <p className="font-ui text-[11px] font-medium tracking-widest uppercase text-[#1a1a1a]/45 mb-1">
                         Second Brain {b.num}
                       </p>
-                      <p className="text-[22px] font-normal text-[#1a1a1a]/80">
+                      <p className="text-[22px] font-normal text-[#1a1a1a]/80 truncate">
                         {b.name}
                       </p>
                     </div>
@@ -687,13 +687,13 @@ export default function ClientArea() {
             {/* New brain */}
             <button
               onClick={() => router.push('/start')}
-              className="w-full rounded-[4px] bg-[#f7f7f7] hover:bg-[#f0f0f0]
+              className="w-full rounded-[12px] bg-[#f7f7f7] hover:bg-[#f0f0f0]
                          transition-colors duration-200
-                         flex items-center justify-center gap-3 p-6 min-h-[140px]
-                         cursor-pointer border-0"
+                         flex flex-col items-center justify-center h-[140px] md:h-[140px]
+                         cursor-pointer border-0 gap-1"
             >
-              <span className="text-[20px] text-[#1a1a1a]/45">+</span>
-              <span className="font-ui text-[11px] font-medium tracking-widest uppercase text-[#1a1a1a]/60">
+              <span className="text-[64px] leading-none font-thin text-[#1a1a1a]/20 select-none" style={{ lineHeight: '1' }}>+</span>
+              <span className="font-ui text-[10px] font-medium tracking-widest uppercase text-[#1a1a1a]/35 mt-1">
                 New Second Brain
               </span>
             </button>

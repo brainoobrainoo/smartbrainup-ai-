@@ -86,7 +86,7 @@ export default function SecondBrainCard({ brain, onOpen, onRename, onColorChange
   if (editing) {
     return (
       <div
-        className="rounded-[4px] p-6 flex flex-col"
+        className="rounded-[12px] p-6 flex flex-col"
         style={{ background: getGradient(brain.cardColor) }}
       >
         {/* Name input */}
@@ -147,7 +147,7 @@ export default function SecondBrainCard({ brain, onOpen, onRename, onColorChange
 
   return (
     <div
-      className="rounded-[4px] p-6 min-h-[140px] flex flex-col md:flex-row md:items-center gap-4 md:gap-6
+      className="rounded-[12px] p-6 h-[140px] md:h-auto overflow-hidden flex flex-col md:flex-row md:items-center gap-4 md:gap-6
                  text-left transition-all duration-200
                  relative border-0"
       style={{ background: getGradient(brain.cardColor) }}
@@ -171,7 +171,7 @@ export default function SecondBrainCard({ brain, onOpen, onRename, onColorChange
         <p className={`font-ui text-[11px] font-medium tracking-widest uppercase ${textSecondary} mb-1`}>
           Second Brain {brain.num}
         </p>
-        <h3 className={`text-[20px] font-normal tracking-[-0.01em] ${textPrimary} mb-1`}>
+        <h3 className={`text-[20px] font-normal tracking-[-0.01em] truncate ${textPrimary} mb-1`}>
           {brain.name}
         </h3>
         {brain.context && (
