@@ -75,7 +75,7 @@ export default function ClientArea() {
   // Sphere animation for incomplete cards (semi-transparent)
   const [incompleteSphereData, setIncompleteSphereData] = useState<any>(null)
   useEffect(() => {
-    fetch('/animations/sfera_cards_01.json')
+    fetch('/animations/SFERA_LOGO_B_bianco.json')
       .then((r) => r.json())
       .then(setIncompleteSphereData)
       .catch(() => {})
@@ -614,8 +614,8 @@ export default function ClientArea() {
                   >
                     {/* Left — semi-transparent sphere + label */}
                     <div className="flex-1 min-w-0 flex flex-col md:flex-row md:items-center md:gap-6">
-                      {/* Incomplete sphere — 25% opacity signals "in progress" */}
-                      <div className="flex-shrink-0 opacity-25">
+                      {/* Incomplete sphere — 15% opacity signals "in progress" */}
+                      <div className="flex-shrink-0 opacity-15">
                         {incompleteSphereData ? (
                           <Lottie
                             animationData={incompleteSphereData}
