@@ -81,10 +81,15 @@ export default function FloatingChatButton({
       onMouseLeave={(e) => { e.currentTarget.style.opacity = '0.7' }}
       aria-label="Open Second Brain Chat"
     >
+      {/*
+        GO — hand-drawn, same style as BUILD/CHAT
+        viewBox "0 0 20 11" — proporzioni identiche alle altre lettere
+        G occupa 0-9, O occupa 11-20
+      */}
       <svg
-        width="28"
+        width="20"
         height="11"
-        viewBox="0 0 28 11"
+        viewBox="0 0 20 11"
         fill="none"
         stroke={strokeColor}
         strokeWidth="0.8"
@@ -92,10 +97,10 @@ export default function FloatingChatButton({
         strokeLinejoin="round"
         style={{ display: 'block' }}
       >
-        {/* G */}
-        <path d="M 12,3 C 11,1.5 9,1 6.5,1 C 3,1 0.5,2.8 0.5,5.5 C 0.5,8.2 3,10 6.5,10 C 9.5,10 12,8.5 12,6.5 L 12,5.5 L 6.5,5.5" />
-        {/* O */}
-        <path d="M 27.5,5.5 C 27.5,2.8 25.3,1 22,1 C 18.7,1 16.5,2.8 16.5,5.5 C 16.5,8.2 18.7,10 22,10 C 25.3,10 27.5,8.2 27.5,5.5 Z" />
+        {/* G — come la C di CHAT ma con barra centrale */}
+        <path d="M 8.5,3 C 7.5,1.2 5.5,0.8 3.5,1.5 C 1.5,2.5 0.5,4 0.5,5.5 C 0.5,7 1.5,8.5 3.5,9.5 C 5.5,10.5 7.5,10 8.5,8.5 L 8.5,6 L 5.5,6" />
+        {/* O — ovale chiuso */}
+        <path d="M 10.5,5.5 C 10.5,2.8 12,1 14.5,1 C 17,1 19,2.8 19,5.5 C 19,8.2 17,10 14.5,10 C 12,10 10.5,8.2 10.5,5.5 Z" />
       </svg>
     </a>
   )

@@ -145,19 +145,17 @@ export default function HomePage() {
                 </p>
               </div>
 
-              {/* START — non loggati */}
-              {!isAuthenticated && (
-                <div className="mt-[6px] md:mt-[-1px] ml-[145px] md:ml-[170px]">
+              {/* Button slot — dimensioni fisse, sempre presenti per evitare layout shift sulla sfera */}
+              <div className="mt-[6px] md:mt-[-1px] ml-[145px] md:ml-[170px]" style={{ height: '115px', display: 'flex', alignItems: 'flex-start' }}>
+                {!isAuthenticated && (
                   <StartButton show={!isAuthenticated} href="/start" variant={theme === 'dark' ? 'light' : 'dark'} />
-                </div>
-              )}
-
-              {/* GO — loggati con Second Brain attivo */}
-              {isAuthenticated && hasActiveBrain && (
-                <div className="mt-[6px] md:mt-[-1px] ml-[145px] md:ml-[170px]">
-                  <FloatingChatButton show={true} onClick={handleOpenChat} variant={theme === 'dark' ? 'light' : 'dark'} />
-                </div>
-              )}
+                )}
+                {isAuthenticated && hasActiveBrain && (
+                  <div style={{ display: 'flex', alignItems: 'center', height: '115px' }}>
+                    <FloatingChatButton show={true} onClick={handleOpenChat} variant={theme === 'dark' ? 'light' : 'dark'} />
+                  </div>
+                )}
+              </div>
               
             </div>
           </Container>
