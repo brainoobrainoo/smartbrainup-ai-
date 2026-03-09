@@ -18,66 +18,38 @@ export default function FloatingChatButton({
   const [visible, setVisible] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [breathing, setBreathing] = useState(false)
-  const [glowing, setGlowing] = useState(false)
 
   const strokeColor = variant === 'light' ? '#ffffff' : '#1a1a1a'
-  const circleColor = variant === 'light' ? '#ffffff' : '#1a1a1a'
-  const rgbaBase = variant === 'light' ? '255,255,255' : '0,0,0'
+  const borderColor = variant === 'light' ? '#ffffff' : '#1a1a1a'
 
   useEffect(() => {
     setMounted(true)
 
-    const styleId = 'go-btn-keyframes'
+    const styleId = 'float-wobble-keyframes'
     if (!document.getElementById(styleId)) {
       const style = document.createElement('style')
       style.id = styleId
       style.textContent = `
-        @keyframes goInitialRotate {
-          0% { transform: rotate(35deg); }
-          100% { transform: rotate(0deg); }
-        }
-        @keyframes goFloatWobble {
+        @keyframes floatWobble {
           0% { transform: translate(0px, 0px) rotate(0deg); }
           25% { transform: translate(18px, -5px) rotate(2.5deg); }
           50% { transform: translate(6px, -1px) rotate(0.5deg); }
           75% { transform: translate(22px, -7px) rotate(3deg); }
           100% { transform: translate(0px, 0px) rotate(0deg); }
         }
-        @keyframes goLightDrift {
+        @keyframes lightDrift {
           0% { transform: translate(0px, 0px); }
-          14% { transform: translate(-8px, 6px); }
-          32% { transform: translate(14px, -7px); }
-          48% { transform: translate(-5px, 10px); }
-          63% { transform: translate(12px, -4px); }
-          79% { transform: translate(-10px, -6px); }
+          14% { transform: translate(-7px, 5px); }
+          32% { transform: translate(12px, -6px); }
+          48% { transform: translate(-4px, 8px); }
+          63% { transform: translate(10px, -3px); }
+          79% { transform: translate(-8px, -5px); }
           100% { transform: translate(0px, 0px); }
         }
-        @keyframes goBreathe {
+        @keyframes breathe {
           0% { opacity: 0.85; }
           50% { opacity: 0.65; }
           100% { opacity: 0.85; }
-        }
-        @keyframes goLetterBreathe {
-          0% { opacity: 0.45; }
-          17% { opacity: 0.95; }
-          83% { opacity: 0.95; }
-          100% { opacity: 0.45; }
-        }
-        @keyframes goLetterGlow {
-          0% { opacity: 0; }
-          0.3% { opacity: 0.61; }
-          0.8% { opacity: 0; }
-          5% { opacity: 0.54; }
-          5.8% { opacity: 0; }
-          12% { opacity: 0.58; }
-          55% { opacity: 0.40; }
-          100% { opacity: 0.40; }
-        }
-        @keyframes goCircleBreathe {
-          0% { opacity: 0.20; }
-          17% { opacity: 0.40; }
-          83% { opacity: 0.40; }
-          100% { opacity: 0.20; }
         }
       `
       document.head.appendChild(style)
@@ -86,8 +58,7 @@ export default function FloatingChatButton({
     if (!show) return
     const timer = setTimeout(() => setVisible(true), 300)
     const breathTimer = setTimeout(() => setBreathing(true), 2500)
-    const glowTimer = setTimeout(() => setGlowing(true), 7833)
-    return () => { clearTimeout(timer); clearTimeout(breathTimer); clearTimeout(glowTimer) }
+    return () => { clearTimeout(timer); clearTimeout(breathTimer) }
   }, [show])
 
   if (!show || !mounted) return null
@@ -95,182 +66,177 @@ export default function FloatingChatButton({
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
 
   const outerSize = isMobile ? 103 : 115
+  const middleSize = isMobile ? 28 : 32
+  const coreSize = isMobile ? 13 : 14
+  const innerSize = isMobile ? 7 : 7
 
-  // Light group — same as StartButton
-  const lightOuterSize = isMobile ? 113 : 82
-  const lightMiddleSize = isMobile ? 30 : 23
+  // Light group — shrunk 20%
+  const lightOuterSize = isMobile ? 82 : 59
+  const lightMiddleSize = isMobile ? 22 : 17
+  const lightCoreSize = isMobile ? 8 : 8
+  const lightInnerSize = isMobile ? 4 : 4
 
-  // Lens — same as StartButton
-  const lensSize = isMobile ? 142 : 179
+  // Lens sizes
+  const lensSize = isMobile ? 40 : 50
 
-  // Inner orbit circle — same as StartButton
-  const innerCircleSize = isMobile ? 187 : 237
+  const outerBg = variant === 'light'
+    ? (isMobile 
+      ? 'radial-gradient(circle, rgba(255,255,255,0.18) 25%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0) 70%)'
+      : 'radial-gradient(circle, rgba(255,255,255,0.36) 15%, rgba(255,255,255,0.08) 40%, rgba(255,255,255,0) 60%)')
+    : (isMobile
+      ? 'radial-gradient(circle, rgba(0,0,0,0.05) 25%, rgba(0,0,0,0.01) 50%, rgba(0,0,0,0) 70%)'
+      : 'radial-gradient(circle, rgba(0,0,0,0.09) 15%, rgba(0,0,0,0.02) 40%, rgba(0,0,0,0) 60%)')
 
-  const outerBg = isMobile 
-    ? `radial-gradient(circle, rgba(${rgbaBase},0.050) 25%, rgba(${rgbaBase},0.014) 50%, rgba(${rgbaBase},0) 70%)`
-    : `radial-gradient(circle, rgba(${rgbaBase},0.099) 15%, rgba(${rgbaBase},0.022) 40%, rgba(${rgbaBase},0) 60%)`
-
-  const middleBg = isMobile
-    ? `radial-gradient(circle, rgba(${rgbaBase},0.116) 15%, rgba(${rgbaBase},0.033) 45%, rgba(${rgbaBase},0) 75%)`
-    : `radial-gradient(circle, rgba(${rgbaBase},0.199) 15%, rgba(${rgbaBase},0.058) 45%, rgba(${rgbaBase},0) 75%)`
-
-  // SVG GO — same size as START svg
-  const svgWidth = isMobile ? 83 : 108
-  const svgHeight = isMobile ? 24 : 31
-
-  const wrapperStyle: React.CSSProperties = {
-    position: 'relative',
-    width: `${outerSize}px`,
-    height: `${outerSize}px`,
-    borderRadius: '50%',
-    background: 'transparent',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    textDecoration: 'none',
-    border: 'none',
-    boxShadow: 'none',
-    overflow: 'visible',
-    opacity: visible ? 1 : 0,
-    transition: breathing ? 'none' : 'opacity 2s ease-in',
-    animation: visible 
-      ? breathing 
-        ? 'goFloatWobble 12s ease-in-out infinite, goBreathe 3s ease-in-out infinite'
-        : 'goFloatWobble 12s ease-in-out infinite'
-      : 'none',
-    cursor: 'pointer',
-  }
-
-  const innerContent = (
-    <>
-      {/* Rotation wrapper — same as StartButton */}
-      <div
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          overflow: 'visible',
-          animation: 'goInitialRotate 6.5s ease-out forwards',
-        }}
-      >
-        {/* Orbit circle */}
-        <div
-          style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            width: `${innerCircleSize}px`,
-            height: `${innerCircleSize}px`,
-            borderRadius: '50%',
-            backgroundColor: 'transparent',
-            border: `0.5px solid ${circleColor}`,
-            transform: 'translate(-50%, -50%)',
-            opacity: 0.20,
-            animation: breathing ? 'goCircleBreathe 12s ease-in-out infinite' : 'none',
-            pointerEvents: 'none',
-          }}
-        />
-
-        {/* GO GLOW — blurred copy */}
-        <svg
-          width={svgWidth}
-          height={svgHeight}
-          viewBox="0 0 45 11"
-          fill="none"
-          stroke={strokeColor}
-          strokeWidth="1.2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            pointerEvents: 'none',
-            zIndex: 2,
-            filter: 'blur(3px)',
-            animation: glowing && variant === 'light' ? 'goLetterGlow 12s linear forwards' : 'none',
-            opacity: 0,
-          }}
-        >
-          {/* G */}
-          <path d="M 19,4 C 18,2 16,1 12.5,1 C 8.5,1 4,2.5 3,5.5 C 2,8.2 4.5,10 9,10 C 12.5,10 17,9 19,7 L 19,5.5 L 12.5,5.5" />
-          {/* O */}
-          <path d="M 34,1 C 38.5,1 42,2.8 42,5.5 C 42,8.2 38.5,10 34,10 C 29.5,10 26,8.2 26,5.5 C 26,2.8 29.5,1 34,1 Z" />
-        </svg>
-
-        {/* GO — sharp */}
-        <svg
-          width={svgWidth}
-          height={svgHeight}
-          viewBox="0 0 45 11"
-          fill="none"
-          stroke={strokeColor}
-          strokeWidth={variant === 'dark' ? '0.35' : '0.223'}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            pointerEvents: 'none',
-            zIndex: 3,
-            animation: breathing && variant === 'light' ? 'goLetterBreathe 12s ease-in-out infinite' : 'none',
-            opacity: variant === 'dark' ? 1 : (breathing ? undefined : 0.45),
-          }}
-        >
-          {/* G */}
-          <path d="M 19,4 C 18,2 16,1 12.5,1 C 8.5,1 4,2.5 3,5.5 C 2,8.2 4.5,10 9,10 C 12.5,10 17,9 19,7 L 19,5.5 L 12.5,5.5" />
-          {/* O */}
-          <path d="M 34,1 C 38.5,1 42,2.8 42,5.5 C 42,8.2 38.5,10 34,10 C 29.5,10 26,8.2 26,5.5 C 26,2.8 29.5,1 34,1 Z" />
-        </svg>
-
-        {/* Light group */}
-        <div
-          style={{
-            position: 'relative',
-            zIndex: 1,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: `${lightOuterSize}px`,
-            height: `${lightOuterSize}px`,
-            borderRadius: '50%',
-            background: outerBg,
-            animation: visible ? 'goLightDrift 11s ease-in-out infinite' : 'none',
-            pointerEvents: 'none',
-            marginTop: '40px',
-            marginLeft: '30px',
-          }}
-        >
-          <div
-            style={{
-              width: `${lightMiddleSize}px`,
-              height: `${lightMiddleSize}px`,
-              borderRadius: '50%',
-              background: middleBg,
-              pointerEvents: 'none',
-            }}
-          />
-        </div>
-      </div>
-    </>
-  )
+  const middleBg = variant === 'light'
+    ? (isMobile
+      ? 'radial-gradient(circle, rgba(255,255,255,0.42) 15%, rgba(255,255,255,0.12) 45%, rgba(255,255,255,0) 75%)'
+      : 'radial-gradient(circle, rgba(255,255,255,0.72) 15%, rgba(255,255,255,0.21) 45%, rgba(255,255,255,0) 75%)')
+    : (isMobile
+      ? 'radial-gradient(circle, rgba(0,0,0,0.12) 15%, rgba(0,0,0,0.03) 45%, rgba(0,0,0,0) 75%)'
+      : 'radial-gradient(circle, rgba(0,0,0,0.20) 15%, rgba(0,0,0,0.06) 45%, rgba(0,0,0,0) 75%)')
 
   return (
     <a
       href={onClick ? undefined : chatUrl}
       onClick={onClick ? (e) => { e.preventDefault(); onClick(); } : undefined}
-      style={wrapperStyle}
+      style={{
+        position: 'relative',
+        zIndex: 1,
+        width: `${outerSize}px`,
+        height: `${outerSize}px`,
+        borderRadius: '50%',
+        background: 'transparent',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        textDecoration: 'none',
+        border: 'none',
+        boxShadow: 'none',
+        overflow: 'visible',
+        opacity: visible ? 1 : 0,
+        transition: breathing ? 'none' : 'opacity 2s ease-in',
+        animation: visible 
+          ? breathing 
+            ? 'floatWobble 12s ease-in-out infinite, breathe 3s ease-in-out infinite'
+            : 'floatWobble 12s ease-in-out infinite'
+          : 'none',
+        cursor: 'pointer',
+      }}
       aria-label="Open Second Brain Chat"
     >
-      {innerContent}
+      {/* Lens */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          width: `${lensSize}px`,
+          height: `${lensSize}px`,
+          borderRadius: '50%',
+          backgroundColor: 'transparent',
+          border: `0.5px solid ${borderColor}`,
+          transform: 'translate(-50%, -50%)',
+          opacity: isMobile ? 0.56 : 0.64,
+          pointerEvents: 'none',
+        }}
+      />
+
+      {/* GO — clean SVG, centered, same stroke style as START */}
+      <svg
+        width={isMobile ? 20 : 24}
+        height={isMobile ? 9 : 11}
+        viewBox="0 0 22 11"
+        fill="none"
+        stroke={strokeColor}
+        strokeWidth={variant === 'dark' ? '0.55' : '0.38'}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          pointerEvents: 'none',
+          zIndex: 4,
+          opacity: variant === 'dark' ? 0.75 : 0.72,
+        }}
+      >
+        {/* G */}
+        <path d="M 10,3 C 9,1.5 7.5,1 5.5,1 C 3,1 1,2.5 1,5.5 C 1,8.5 3,10 5.5,10 C 8,10 10,8.5 10,6.5 L 10,5.5 L 6,5.5" />
+        {/* O */}
+        <path d="M 21,5.5 C 21,2.8 18.8,1 16,1 C 13.2,1 11,2.8 11,5.5 C 11,8.2 13.2,10 16,10 C 18.8,10 21,8.2 21,5.5 Z" />
+      </svg>
+
+
+      {/* === LIGHT GROUP — more displaced drift === */}
+      <div
+        style={{
+          position: 'relative',
+          zIndex: 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: `${lightOuterSize}px`,
+          height: `${lightOuterSize}px`,
+          borderRadius: '50%',
+          background: outerBg,
+          animation: visible ? 'lightDrift 11s ease-in-out infinite' : 'none',
+          pointerEvents: 'none',
+        }}
+      >
+        {/* Tiny concentric circle */}
+        <div
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            width: '3px',
+            height: '3px',
+            borderRadius: '50%',
+            backgroundColor: strokeColor,
+            transform: 'translate(-50%, -50%)',
+            zIndex: 2,
+          }}
+        />
+        {/* Middle feathered circle */}
+        <div
+          style={{
+            width: `${lightMiddleSize}px`,
+            height: `${lightMiddleSize}px`,
+            borderRadius: '50%',
+            background: middleBg,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            pointerEvents: 'none',
+          }}
+        >
+          {/* Core circle */}
+          <div
+            style={{
+              width: `${lightCoreSize}px`,
+              height: `${lightCoreSize}px`,
+              borderRadius: '50%',
+              backgroundColor: 'rgba(255,255,255,0.20)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              pointerEvents: 'none',
+            }}
+          >
+            {/* Innermost solid circle */}
+            <div
+              style={{
+                width: `${lightInnerSize}px`,
+                height: `${lightInnerSize}px`,
+                borderRadius: '50%',
+                backgroundColor: strokeColor,
+                pointerEvents: 'none',
+              }}
+            />
+          </div>
+        </div>
+      </div>
     </a>
   )
 }

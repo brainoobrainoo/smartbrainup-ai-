@@ -145,21 +145,17 @@ export default function HomePage() {
                 </p>
               </div>
 
-              {/* Start Button — guests only */}
+              {/* START — non loggati */}
               {!isAuthenticated && (
                 <div className="mt-[6px] md:mt-[-1px] ml-[145px] md:ml-[170px]">
                   <StartButton show={!isAuthenticated} href="/start" variant={theme === 'dark' ? 'light' : 'dark'} />
                 </div>
               )}
 
-              {/* GO Button — logged-in users with active Second Brain */}
+              {/* GO — loggati con Second Brain attivo */}
               {isAuthenticated && hasActiveBrain && (
                 <div className="mt-[6px] md:mt-[-1px] ml-[145px] md:ml-[170px]">
-                  <FloatingChatButton
-                    show={true}
-                    onClick={handleOpenChat}
-                    variant={theme === 'dark' ? 'light' : 'dark'}
-                  />
+                  <FloatingChatButton show={true} onClick={handleOpenChat} variant={theme === 'dark' ? 'light' : 'dark'} />
                 </div>
               )}
               
