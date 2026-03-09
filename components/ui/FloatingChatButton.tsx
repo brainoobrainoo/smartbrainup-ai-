@@ -19,9 +19,6 @@ export default function FloatingChatButton({
   const [mounted, setMounted] = useState(false)
   const [breathing, setBreathing] = useState(false)
 
-  const strokeColor = variant === 'light' ? '#ffffff' : '#1a1a1a'
-  const rgbaBase = variant === 'light' ? '255,255,255' : '0,0,0'
-
   useEffect(() => {
     setMounted(true)
 
@@ -36,6 +33,15 @@ export default function FloatingChatButton({
           50% { transform: translate(6px, -1px) rotate(0.5deg); }
           75% { transform: translate(22px, -7px) rotate(3deg); }
           100% { transform: translate(0px, 0px) rotate(0deg); }
+        }
+        @keyframes lightDrift {
+          0% { transform: translate(0px, 0px); }
+          14% { transform: translate(-7px, 5px); }
+          32% { transform: translate(12px, -6px); }
+          48% { transform: translate(-4px, 8px); }
+          63% { transform: translate(10px, -3px); }
+          79% { transform: translate(-8px, -5px); }
+          100% { transform: translate(0px, 0px); }
         }
         @keyframes breathe {
           0% { opacity: 0.85; }
@@ -54,54 +60,146 @@ export default function FloatingChatButton({
 
   if (!show || !mounted) return null
 
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
+  const colorAlpha = variant === 'light' ? '255,255,255' : '0,0,0'
+  const solidColor = variant === 'light' ? '#ffffff' : '#1a1a1a'
+
+  const outerSize = isMobile ? 103 : 115
+  const middleSize = isMobile ? 28 : 32
+  const coreSize = isMobile ? 13 : 14
+  const innerSize = isMobile ? 7 : 7
+
+  // Light group — shrunk 20%
+  const lightOuterSize = isMobile ? 82 : 59
+  const lightMiddleSize = isMobile ? 22 : 17
+  const lightCoreSize = isMobile ? 8 : 8
+  const lightInnerSize = isMobile ? 4 : 4
+
+  // Lens sizes
+  const lensSize = isMobile ? 40 : 50
+
+  const outerBg = isMobile 
+    ? `radial-gradient(circle, rgba(${colorAlpha},0.18) 25%, rgba(${colorAlpha},0.05) 50%, rgba(${colorAlpha},0) 70%)`
+    : `radial-gradient(circle, rgba(${colorAlpha},0.36) 15%, rgba(${colorAlpha},0.08) 40%, rgba(${colorAlpha},0) 60%)`
+
+  const middleBg = isMobile
+    ? `radial-gradient(circle, rgba(${colorAlpha},0.42) 15%, rgba(${colorAlpha},0.12) 45%, rgba(${colorAlpha},0) 75%)`
+    : `radial-gradient(circle, rgba(${colorAlpha},0.72) 15%, rgba(${colorAlpha},0.21) 45%, rgba(${colorAlpha},0) 75%)`
+
   return (
     <a
       href={onClick ? undefined : chatUrl}
       onClick={onClick ? (e) => { e.preventDefault(); onClick(); } : undefined}
       style={{
+        position: 'relative',
+        width: `${outerSize}px`,
+        height: `${outerSize}px`,
+        borderRadius: '50%',
+        background: 'transparent',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        width: '58px',
-        height: '58px',
-        borderRadius: '50%',
-        backgroundColor: 'transparent',
-        border: `0.5px solid rgba(${rgbaBase},0.5)`,
-        cursor: 'pointer',
         textDecoration: 'none',
-        opacity: visible ? 0.7 : 0,
+        border: 'none',
+        boxShadow: 'none',
+        overflow: 'visible',
+        opacity: visible ? 1 : 0,
         transition: breathing ? 'none' : 'opacity 2s ease-in',
-        animation: visible
-          ? breathing
+        animation: visible 
+          ? breathing 
             ? 'floatWobble 12s ease-in-out infinite, breathe 3s ease-in-out infinite'
             : 'floatWobble 12s ease-in-out infinite'
           : 'none',
+        cursor: 'pointer',
       }}
-      onMouseEnter={(e) => { e.currentTarget.style.opacity = '1' }}
-      onMouseLeave={(e) => { e.currentTarget.style.opacity = '0.7' }}
       aria-label="Open Second Brain Chat"
     >
-      {/*
-        GO — hand-drawn, same style as BUILD/CHAT
-        viewBox "0 0 20 11" — proporzioni identiche alle altre lettere
-        G occupa 0-9, O occupa 11-20
-      */}
-      <svg
-        width="20"
-        height="11"
-        viewBox="0 0 20 11"
-        fill="none"
-        stroke={strokeColor}
-        strokeWidth="0.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        style={{ display: 'block' }}
+      {/* Lens */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          width: `${lensSize}px`,
+          height: `${lensSize}px`,
+          borderRadius: '50%',
+          backgroundColor: 'transparent',
+          border: `0.5px solid ${solidColor}`,
+          transform: 'translate(-50%, -50%)',
+          opacity: isMobile ? 0.56 : 0.64,
+          pointerEvents: 'none',
+        }}
+      />
+
+
+      {/* === LIGHT GROUP — more displaced drift === */}
+      <div
+        style={{
+          position: 'relative',
+          zIndex: 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: `${lightOuterSize}px`,
+          height: `${lightOuterSize}px`,
+          borderRadius: '50%',
+          background: outerBg,
+          animation: visible ? 'lightDrift 11s ease-in-out infinite' : 'none',
+          pointerEvents: 'none',
+        }}
       >
-        {/* G — come la C di CHAT ma con barra centrale */}
-        <path d="M 8.5,3 C 7.5,1.2 5.5,0.8 3.5,1.5 C 1.5,2.5 0.5,4 0.5,5.5 C 0.5,7 1.5,8.5 3.5,9.5 C 5.5,10.5 7.5,10 8.5,8.5 L 8.5,6 L 5.5,6" />
-        {/* O — ovale chiuso */}
-        <path d="M 10.5,5.5 C 10.5,2.8 12,1 14.5,1 C 17,1 19,2.8 19,5.5 C 19,8.2 17,10 14.5,10 C 12,10 10.5,8.2 10.5,5.5 Z" />
-      </svg>
+        {/* Tiny concentric circle — 3px, solid white */}
+        <div
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            width: '3px',
+            height: '3px',
+            borderRadius: '50%',
+            backgroundColor: solidColor,
+            zIndex: 2,
+          }}
+        />
+        {/* Middle feathered circle */}
+        <div
+          style={{
+            width: `${lightMiddleSize}px`,
+            height: `${lightMiddleSize}px`,
+            borderRadius: '50%',
+            background: middleBg,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            pointerEvents: 'none',
+          }}
+        >
+          {/* Core circle */}
+          <div
+            style={{
+              width: `${lightCoreSize}px`,
+              height: `${lightCoreSize}px`,
+              borderRadius: '50%',
+              backgroundColor: 'rgba(255,255,255,0.20)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              pointerEvents: 'none',
+            }}
+          >
+            {/* Innermost solid white circle */}
+            <div
+              style={{
+                width: `${lightInnerSize}px`,
+                height: `${lightInnerSize}px`,
+                borderRadius: '50%',
+                backgroundColor: solidColor,
+                pointerEvents: 'none',
+              }}
+            />
+          </div>
+        </div>
+      </div>
     </a>
   )
 }
