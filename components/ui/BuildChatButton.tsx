@@ -20,7 +20,7 @@ export default function BuildChatButton({ isBuildMode, isDayMode, onClick }: Bui
       viewBox="0 0 44 11"
       fill="none"
       stroke={strokeColor}
-      strokeWidth="0.7"
+      strokeWidth="0.8"
       strokeLinecap="round"
       strokeLinejoin="round"
       style={{ display: 'block' }}
@@ -50,7 +50,7 @@ export default function BuildChatButton({ isBuildMode, isDayMode, onClick }: Bui
       viewBox="0 0 38 11"
       fill="none"
       stroke={strokeColor}
-      strokeWidth="0.7"
+      strokeWidth="0.8"
       strokeLinecap="round"
       strokeLinejoin="round"
       style={{ display: 'block' }}
@@ -82,7 +82,7 @@ export default function BuildChatButton({ isBuildMode, isDayMode, onClick }: Bui
         height: '58px',
         borderRadius: '50%',
         backgroundColor: 'transparent',
-        border: `0.5px solid rgba(${rgbaBase},0.45)`,
+        border: `0.5px solid rgba(${rgbaBase},0.5)`,
         cursor: 'pointer',
         opacity: 0.7,
         transition: 'opacity 0.2s ease',
