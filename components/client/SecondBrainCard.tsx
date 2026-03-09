@@ -201,7 +201,7 @@ export default function SecondBrainCard({ brain, onOpen, onRename, onColorChange
       <div className="flex gap-3 w-full md:w-auto md:flex-shrink-0">
         <button
           onClick={() => onOpen(brain)}
-          className={`flex-1 md:flex-none py-2.5 px-6 ${isLight ? 'bg-[#1a1a1a]/[0.08] hover:bg-[#1a1a1a]/[0.15] text-[#1a1a1a]/60' : 'bg-white/[0.1] hover:bg-white/[0.18] text-white/70'}
+          className={`flex-1 md:flex-none md:w-[110px] py-2.5 px-6 ${isLight ? 'bg-[#1a1a1a]/[0.08] hover:bg-[#1a1a1a]/[0.15] text-[#1a1a1a]/60' : 'bg-white/[0.1] hover:bg-white/[0.18] text-white/70'}
                      rounded-[4px] font-ui text-[10px] font-medium tracking-widest
                      uppercase border-0 cursor-pointer transition-colors`}
         >
@@ -209,7 +209,7 @@ export default function SecondBrainCard({ brain, onOpen, onRename, onColorChange
         </button>
         <button
           onClick={() => { setEditing(true); setEditName(brain.name) }}
-          className={`flex-1 md:flex-none py-2.5 px-6 ${isLight ? 'bg-[#1a1a1a]/[0.06] hover:bg-[#1a1a1a]/[0.12] text-[#1a1a1a]/50' : 'bg-white/[0.06] hover:bg-white/[0.12] text-white/50'}
+          className={`flex-1 md:flex-none md:w-[110px] py-2.5 px-6 ${isLight ? 'bg-[#1a1a1a]/[0.06] hover:bg-[#1a1a1a]/[0.12] text-[#1a1a1a]/50' : 'bg-white/[0.06] hover:bg-white/[0.12] text-white/50'}
                      rounded-[4px] font-ui text-[10px] font-medium tracking-widest
                      uppercase border-0 cursor-pointer transition-colors`}
         >

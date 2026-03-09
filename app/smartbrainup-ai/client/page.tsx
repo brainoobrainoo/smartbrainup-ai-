@@ -4,6 +4,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import dynamic from 'next/dynamic'
 import Container from '@/components/layout/Container'
 import SecondBrainCard from '@/components/client/SecondBrainCard'
 import Phase2Assessment from '@/components/client/Phase2Assessment'
@@ -23,6 +24,8 @@ import {
   MessageInput,
   TypingIndicator,
 } from '@chatscope/chat-ui-kit-react'
+
+const Lottie = dynamic(() => import('lottie-react'), { ssr: false })
 
 const { plans, enterprise, nav, sections } = clientContent
 
@@ -68,6 +71,15 @@ export default function ClientArea() {
 
   // Credits from user_profiles
   const [credits, setCredits] = useState<number>(0)
+
+  // Sphere animation for incomplete cards (semi-transparent)
+  const [incompleteSphereData, setIncompleteSphereData] = useState<any>(null)
+  useEffect(() => {
+    fetch('/animations/sfera_cards_01.json')
+      .then((r) => r.json())
+      .then(setIncompleteSphereData)
+      .catch(() => {})
+  }, [])
 
   // Sync displayName from auth
   useEffect(() => {
@@ -557,7 +569,6 @@ export default function ClientArea() {
                   <span className="font-semibold text-[#1a1a1a]/80">
                     {brains.length + (pendingBrain ? 1 : 0)} Second Brain{(brains.length + (pendingBrain ? 1 : 0)) !== 1 ? 's' : ''}
                   </span>
-                  <span className="text-[#1a1a1a]/60"> · Since {memberSince}</span>
                   {credits > 0 && (
                     <span className="text-[#1a1a1a]/60"> · {credits} credit{credits !== 1 ? 's' : ''}</span>
                   )}
@@ -601,14 +612,27 @@ export default function ClientArea() {
                     className="rounded-[12px] p-6 h-[220px] md:h-[88px] overflow-hidden flex flex-col justify-between md:flex-row md:items-center md:justify-between gap-4"
                     style={{ background: 'linear-gradient(to bottom, #ededed 0%, #c9c9c9 100%)' }}
                   >
-                    {/* Left — ghost sphere (visible on both) + label */}
+                    {/* Left — semi-transparent sphere + label */}
                     <div className="flex-1 min-w-0 flex flex-col md:flex-row md:items-center md:gap-6">
-                      {/* Ghost placeholder — same 40px as sphere, keeps label aligned */}
-                      <div className="w-[40px] h-[40px] flex-shrink-0" />
+                      {/* Incomplete sphere — 25% opacity signals "in progress" */}
+                      <div className="flex-shrink-0 opacity-25">
+                        {incompleteSphereData ? (
+                          <Lottie
+                            animationData={incompleteSphereData}
+                            loop
+                            autoplay
+                            style={{ width: 40, height: 40 }}
+                          />
+                        ) : (
+                          <div className="w-[40px] h-[40px] rounded-full bg-black/[0.06]" />
+                        )}
+                      </div>
                       <div className="min-w-0">
-                        <p className="font-ui text-[11px] font-medium tracking-widest uppercase text-[#1a1a1a]/45">
+                        <p className="font-ui text-[11px] font-medium tracking-widest uppercase text-[#1a1a1a]/45 mb-1">
                           Second Brain {b.num}
                         </p>
+                        {/* Spacer matching name line height so label sits at same vertical position */}
+                        <div className="h-[28px]" />
                       </div>
                     </div>
 
@@ -662,7 +686,7 @@ export default function ClientArea() {
                         <div className="flex gap-3 w-full md:w-auto">
                           <button
                             onClick={() => credits > 0 ? handleStartPhase2(b) : setContactBrainId(b.id)}
-                            className="flex-1 md:flex-none py-2.5 px-6 bg-[#1a1a1a]/[0.08] hover:bg-[#1a1a1a]/[0.15]
+                            className="flex-1 md:flex-none md:w-[110px] py-2.5 px-6 bg-[#1a1a1a]/[0.08] hover:bg-[#1a1a1a]/[0.15]
                                        rounded-[4px] font-ui text-[10px] font-medium tracking-widest
                                        uppercase text-[#1a1a1a]/60 border-0 cursor-pointer transition-colors text-center"
                           >
@@ -670,7 +694,7 @@ export default function ClientArea() {
                           </button>
                           <button
                             onClick={() => setDeletingBrainId(b.id)}
-                            className="flex-1 md:flex-none py-2.5 px-6 bg-[#1a1a1a]/[0.06] hover:bg-red-500/10
+                            className="flex-1 md:flex-none md:w-[110px] py-2.5 px-6 bg-[#1a1a1a]/[0.06] hover:bg-red-500/10
                                        rounded-[4px] font-ui text-[10px] font-medium tracking-widest
                                        uppercase text-[#1a1a1a]/50 hover:text-red-600/60
                                        border-0 cursor-pointer transition-colors text-center"
