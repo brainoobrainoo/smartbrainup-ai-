@@ -598,16 +598,15 @@ export default function ClientArea() {
                 {incompleteBrains.map((b) => (
                   <div
                     key={b.id}
-                    className="rounded-[12px] p-6 h-[220px] md:h-auto overflow-hidden flex flex-col justify-between md:flex-row md:items-center md:justify-between gap-4"
+                    className="rounded-[12px] p-6 h-[220px] md:h-[88px] overflow-hidden flex flex-col justify-between md:flex-row md:items-center md:justify-between gap-4"
                     style={{ background: 'linear-gradient(to bottom, #ededed 0%, #c9c9c9 100%)' }}
                   >
-                    {/* Left — label + name */}
-                    <div className="flex-1 min-w-0">
-                      <p className="font-ui text-[11px] font-medium tracking-widest uppercase text-[#1a1a1a]/45 mb-1">
+                    {/* Left — ghost sphere + label (no name, no duplicate) */}
+                    <div className="flex-1 min-w-0 flex flex-col">
+                      {/* Ghost placeholder — same size as sphere so label aligns */}
+                      <div className="w-[40px] h-[40px] md:hidden" />
+                      <p className="font-ui text-[11px] font-medium tracking-widest uppercase text-[#1a1a1a]/45">
                         Second Brain {b.num}
-                      </p>
-                      <p className="text-[22px] font-normal text-[#1a1a1a]/80 truncate">
-                        {b.name}
                       </p>
                     </div>
 
@@ -658,21 +657,21 @@ export default function ClientArea() {
                           </div>
                         </div>
                       ) : (
-                        <div className="flex gap-3">
+                        <div className="flex gap-3 w-full md:w-auto">
                           <button
                             onClick={() => credits > 0 ? handleStartPhase2(b) : setContactBrainId(b.id)}
-                            className="py-2.5 px-6 bg-[#1a1a1a]/[0.08] hover:bg-[#1a1a1a]/[0.15]
+                            className="flex-1 md:flex-none py-2.5 px-6 bg-[#1a1a1a]/[0.08] hover:bg-[#1a1a1a]/[0.15]
                                        rounded-[4px] font-ui text-[10px] font-medium tracking-widest
-                                       uppercase text-[#1a1a1a]/60 border-0 cursor-pointer transition-colors"
+                                       uppercase text-[#1a1a1a]/60 border-0 cursor-pointer transition-colors text-center"
                           >
                             Complete
                           </button>
                           <button
                             onClick={() => setDeletingBrainId(b.id)}
-                            className="py-2.5 px-6 bg-[#1a1a1a]/[0.06] hover:bg-red-500/10
+                            className="flex-1 md:flex-none py-2.5 px-6 bg-[#1a1a1a]/[0.06] hover:bg-red-500/10
                                        rounded-[4px] font-ui text-[10px] font-medium tracking-widest
                                        uppercase text-[#1a1a1a]/50 hover:text-red-600/60
-                                       border-0 cursor-pointer transition-colors"
+                                       border-0 cursor-pointer transition-colors text-center"
                           >
                             Delete
                           </button>
@@ -689,13 +688,19 @@ export default function ClientArea() {
               onClick={() => router.push('/start')}
               className="w-full rounded-[12px] bg-[#f7f7f7] hover:bg-[#f0f0f0]
                          transition-colors duration-200
-                         flex flex-col items-center justify-center h-[220px]
-                         md:h-auto md:flex-row md:justify-center md:gap-3 md:p-6
+                         flex flex-col items-center justify-center h-[220px] md:h-[88px]
                          cursor-pointer border-0"
             >
-              <span className="text-[72px] leading-none font-thin text-[#1a1a1a]/20 select-none md:text-[22px] md:font-normal md:leading-none">+</span>
-              <span className="font-ui text-[10px] font-medium tracking-widest uppercase text-[#1a1a1a]/35 mt-2 md:mt-0">
+              <span className="text-[72px] leading-none font-thin text-[#1a1a1a]/20 select-none md:hidden">+</span>
+              <span className="font-ui text-[10px] font-medium tracking-widest uppercase text-[#1a1a1a]/35 mt-2 md:hidden">
                 New Second Brain
+              </span>
+              {/* Desktop: inline compact */}
+              <span className="hidden md:flex items-center gap-3">
+                <span className="text-[22px] font-thin text-[#1a1a1a]/25 leading-none">+</span>
+                <span className="font-ui text-[10px] font-medium tracking-widest uppercase text-[#1a1a1a]/40">
+                  New Second Brain
+                </span>
               </span>
             </button>
           </Container>

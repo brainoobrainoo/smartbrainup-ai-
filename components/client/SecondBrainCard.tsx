@@ -147,7 +147,7 @@ export default function SecondBrainCard({ brain, onOpen, onRename, onColorChange
 
   return (
     <div
-      className="rounded-[12px] p-6 h-[220px] md:h-auto overflow-hidden flex flex-col md:flex-row md:items-center gap-4 md:gap-6
+      className="rounded-[12px] p-6 h-[220px] md:h-[88px] overflow-hidden flex flex-col md:flex-row md:items-center gap-4 md:gap-6
                  text-left transition-all duration-200
                  relative border-0"
       style={{ background: getGradient(brain.cardColor) }}
@@ -198,10 +198,10 @@ export default function SecondBrainCard({ brain, onOpen, onRename, onColorChange
       </div>
 
       {/* Action buttons — right side */}
-      <div className="flex gap-3 flex-shrink-0">
+      <div className="flex gap-3 w-full md:w-auto md:flex-shrink-0">
         <button
           onClick={() => onOpen(brain)}
-          className={`py-2.5 px-6 ${isLight ? 'bg-[#1a1a1a]/[0.08] hover:bg-[#1a1a1a]/[0.15] text-[#1a1a1a]/60' : 'bg-white/[0.1] hover:bg-white/[0.18] text-white/70'}
+          className={`flex-1 md:flex-none py-2.5 px-6 ${isLight ? 'bg-[#1a1a1a]/[0.08] hover:bg-[#1a1a1a]/[0.15] text-[#1a1a1a]/60' : 'bg-white/[0.1] hover:bg-white/[0.18] text-white/70'}
                      rounded-[4px] font-ui text-[10px] font-medium tracking-widest
                      uppercase border-0 cursor-pointer transition-colors`}
         >
@@ -209,7 +209,7 @@ export default function SecondBrainCard({ brain, onOpen, onRename, onColorChange
         </button>
         <button
           onClick={() => { setEditing(true); setEditName(brain.name) }}
-          className={`py-2.5 px-6 ${isLight ? 'bg-[#1a1a1a]/[0.06] hover:bg-[#1a1a1a]/[0.12] text-[#1a1a1a]/50' : 'bg-white/[0.06] hover:bg-white/[0.12] text-white/50'}
+          className={`flex-1 md:flex-none py-2.5 px-6 ${isLight ? 'bg-[#1a1a1a]/[0.06] hover:bg-[#1a1a1a]/[0.12] text-[#1a1a1a]/50' : 'bg-white/[0.06] hover:bg-white/[0.12] text-white/50'}
                      rounded-[4px] font-ui text-[10px] font-medium tracking-widest
                      uppercase border-0 cursor-pointer transition-colors`}
         >
