@@ -145,10 +145,21 @@ export default function HomePage() {
                 </p>
               </div>
 
-              {/* Start Button — centered under headline, in-flow */}
+              {/* Start Button — guests only */}
               {!isAuthenticated && (
                 <div className="mt-[6px] md:mt-[-1px] ml-[145px] md:ml-[170px]">
                   <StartButton show={!isAuthenticated} href="/start" variant={theme === 'dark' ? 'light' : 'dark'} />
+                </div>
+              )}
+
+              {/* GO Button — logged-in users with active Second Brain */}
+              {isAuthenticated && hasActiveBrain && (
+                <div className="mt-[6px] md:mt-[-1px] ml-[145px] md:ml-[170px]">
+                  <FloatingChatButton
+                    show={true}
+                    onClick={handleOpenChat}
+                    variant={theme === 'dark' ? 'light' : 'dark'}
+                  />
                 </div>
               )}
               
@@ -293,12 +304,6 @@ export default function HomePage() {
           </div>
         </Container>
       </section>
-
-      {/* Floating Chat Button — visible only for users with active Second Brain */}
-      <FloatingChatButton 
-        show={hasActiveBrain}
-        onClick={handleOpenChat}
-      />
 
     </div>
   )
