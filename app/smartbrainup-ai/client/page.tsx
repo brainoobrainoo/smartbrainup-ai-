@@ -551,22 +551,22 @@ export default function ClientArea() {
         {!loading && section === 'dashboard' && (
           <Container>
             {/* Badge */}
-            <p className="font-ui text-[11px] font-medium tracking-widest uppercase pt-10 md:pt-14 mb-8">
+            <p className="font-ui text-[13px] font-medium tracking-widest uppercase pt-10 md:pt-14 mb-8">
               {(brains.length + (pendingBrain ? 1 : 0)) > 0 ? (
                 <>
-                  <span className="font-semibold text-[#1a1a1a]/50">
+                  <span className="font-semibold text-[#1a1a1a]/80">
                     {brains.length + (pendingBrain ? 1 : 0)} Second Brain{(brains.length + (pendingBrain ? 1 : 0)) !== 1 ? 's' : ''}
                   </span>
-                  <span className="text-[#1a1a1a]/50"> · Since {memberSince}</span>
+                  <span className="text-[#1a1a1a]/60"> · Since {memberSince}</span>
                   {credits > 0 && (
-                    <span className="text-[#1a1a1a]/50"> · {credits} credit{credits !== 1 ? 's' : ''}</span>
+                    <span className="text-[#1a1a1a]/60"> · {credits} credit{credits !== 1 ? 's' : ''}</span>
                   )}
                 </>
               ) : (
                 <>
-                  <span className="text-[#1a1a1a]/50">Welcome</span>
+                  <span className="text-[#1a1a1a]/75">Welcome</span>
                   {credits > 0 && (
-                    <span className="text-[#1a1a1a]/50"> · {credits} credit{credits !== 1 ? 's' : ''}</span>
+                    <span className="text-[#1a1a1a]/60"> · {credits} credit{credits !== 1 ? 's' : ''}</span>
                   )}
                 </>
               )}
@@ -601,17 +601,19 @@ export default function ClientArea() {
                     className="rounded-[12px] p-6 h-[220px] md:h-[88px] overflow-hidden flex flex-col justify-between md:flex-row md:items-center md:justify-between gap-4"
                     style={{ background: 'linear-gradient(to bottom, #ededed 0%, #c9c9c9 100%)' }}
                   >
-                    {/* Left — ghost sphere + label (no name, no duplicate) */}
-                    <div className="flex-1 min-w-0 flex flex-col">
-                      {/* Ghost placeholder — same size as sphere so label aligns */}
-                      <div className="w-[40px] h-[40px] md:hidden" />
-                      <p className="font-ui text-[11px] font-medium tracking-widest uppercase text-[#1a1a1a]/45">
-                        Second Brain {b.num}
-                      </p>
+                    {/* Left — ghost sphere (visible on both) + label */}
+                    <div className="flex-1 min-w-0 flex flex-col md:flex-row md:items-center md:gap-6">
+                      {/* Ghost placeholder — same 40px as sphere, keeps label aligned */}
+                      <div className="w-[40px] h-[40px] flex-shrink-0" />
+                      <div className="min-w-0">
+                        <p className="font-ui text-[11px] font-medium tracking-widest uppercase text-[#1a1a1a]/45">
+                          Second Brain {b.num}
+                        </p>
+                      </div>
                     </div>
 
                     {/* Right — buttons */}
-                    <div>
+                    <div className="flex-shrink-0">
                       {contactBrainId === b.id ? (
                         <div className="flex flex-col items-center gap-2">
                           <p className="text-[14px] text-[#1a1a1a]/65 text-center">
