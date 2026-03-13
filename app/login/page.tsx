@@ -16,7 +16,11 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      router.push('/client')
+      if (typeof window !== 'undefined' && localStorage.getItem('post_checkout_pending') === 'true') {
+        router.push('/start')
+      } else {
+        router.push('/client')
+      }
     }
   }, [isAuthenticated, router])
 

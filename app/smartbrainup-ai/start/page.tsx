@@ -125,7 +125,7 @@ export default function StartPage() {
       } else {
         // Not logged in — show login card
         localStorage.setItem('post_checkout_pending', 'true')
-        setIsAwaitingLoginAfterCheckout(true)
+        router.push('/login')
       }
     }
     init()
