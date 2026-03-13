@@ -191,40 +191,49 @@ export default function StartPage() {
     setThemeBottom(NIGHT_THEMES[Math.floor(Math.random() * NIGHT_THEMES.length)])
   }, [])
 
-  // ── CHECK AUTH ON MOUNT ──
+  // ── CHECK AUTH ON MOUNT + LISTEN FOR LOGIN (magic link / OAuth) ──
   useEffect(() => {
-    const checkAuth = async () => {
-      const sb = createClient()
-      const { data: { user } } = await sb.auth.getUser()
-      if (user) {
-        setIsLoggedIn(true)
-        const { data } = await sb.from('user_profiles').select('credits').eq('id', user.id).single()
-        if (data) setUserCredits(data.credits)
+    const sb = createClient()
 
-        // Post-checkout return via magic link or OAuth redirect
-        const postCheckout = localStorage.getItem('post_checkout_pending')
-        if (postCheckout === 'true') {
-          // Restore Phase 1 state from localStorage
-          try {
-            const saved = localStorage.getItem('phase1_results')
-            if (saved) {
-              const parsed = JSON.parse(saved)
-              setCollectedData(parsed)
-              setIsAssessmentComplete(true)
-              setIsPricingVisible(false)
-              setInputBarVisible(false)
-              setBuildMode(true)
-              setTimeout(() => {
-                setBuildVisible(true)
-                if (scrollContainerRef.current) scrollContainerRef.current.scrollTop = 0
-              }, 100)
-            }
-          } catch {}
-          await performPostCheckoutSave(user)
-        }
+    const handleUser = async (user: any) => {
+      setIsLoggedIn(true)
+      const { data } = await sb.from('user_profiles').select('credits').eq('id', user.id).single()
+      if (data) setUserCredits(data.credits)
+
+      const postCheckout = localStorage.getItem('post_checkout_pending')
+      if (postCheckout === 'true') {
+        try {
+          const saved = localStorage.getItem('phase1_results')
+          if (saved) {
+            const parsed = JSON.parse(saved)
+            setCollectedData(parsed)
+            setIsAssessmentComplete(true)
+            setIsPricingVisible(false)
+            setInputBarVisible(false)
+            setBuildMode(true)
+            setTimeout(() => {
+              setBuildVisible(true)
+              if (scrollContainerRef.current) scrollContainerRef.current.scrollTop = 0
+            }, 100)
+          }
+        } catch {}
+        await performPostCheckoutSave(user)
       }
     }
-    checkAuth()
+
+    // Initial check
+    sb.auth.getUser().then(({ data: { user } }: any) => {
+      if (user) handleUser(user)
+    })
+
+    // Listen for SIGNED_IN — catches magic link and OAuth redirects
+    const { data: { subscription } } = sb.auth.onAuthStateChange((event: string, session: any) => {
+      if (event === 'SIGNED_IN' && session?.user) {
+        handleUser(session.user)
+      }
+    })
+
+    return () => subscription.unsubscribe()
   }, [])
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
