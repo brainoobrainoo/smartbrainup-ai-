@@ -61,13 +61,44 @@ export default function StartPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
+  // ── POST-CHECKOUT: save Phase 1 to DB and start Phase 2 ──
+  const performPostCheckoutSave = async (user: { id: string; email?: string; user_metadata?: { full_name?: string } }) => {
+    try {
+      const sb = createClient()
+      let phase1Data: Record<string, unknown> = {}
+      try {
+        const saved = localStorage.getItem('phase1_results')
+        if (saved) phase1Data = JSON.parse(saved)
+      } catch {}
+      const { data, error } = await sb.from('assessments').insert({
+        user_id: user.id,
+        user_email: user.email,
+        user_name: user.user_metadata?.full_name || user.email,
+        responses: { phase1: phase1Data, phase2: {} },
+        phase2_complete: false,
+      }).select('id').single()
+      if (!error && data) setAssessmentDbId(data.id)
+      localStorage.removeItem('phase1_results')
+      localStorage.removeItem('post_checkout_pending')
+    } catch (e) { console.error('[PostCheckout] Save error:', e) }
+    setIsLoggedIn(true)
+    setIsAwaitingLoginAfterCheckout(false)
+    setIsPhase2Active(true)
+    setCurrentQuestionId(phase2StartQuestionId)
+    setTimeout(() => {
+      if (scrollContainerRef.current) scrollContainerRef.current.scrollTop = 0
+      window.scrollTo(0, 0)
+    }, 150)
+  }
+
   // ── HANDLE STRIPE RETURN ──
   useEffect(() => {
     const checkout = searchParams.get('checkout')
-    if (checkout === 'success') {
-      // Clean URL
-      window.history.replaceState({}, '', '/start')
-      // If Phase 1 data exists in localStorage, jump directly to Phase 2
+    if (checkout !== 'success') return
+    window.history.replaceState({}, '', '/start')
+
+    const init = async () => {
+      // Restore Phase 1 state from localStorage
       try {
         const saved = localStorage.getItem('phase1_results')
         if (saved) {
@@ -77,34 +108,27 @@ export default function StartPage() {
           setIsPricingVisible(false)
           setInputBarVisible(false)
           setBuildMode(true)
-          setIsPhase2Active(true)
-          setCurrentQuestionId(phase2StartQuestionId)
           setTimeout(() => {
             setBuildVisible(true)
             if (scrollContainerRef.current) scrollContainerRef.current.scrollTop = 0
             window.scrollTo(0, 0)
           }, 100)
-          return
         }
       } catch {}
-      // Fallback: re-check credits for logged-in users
-      const recheck = async () => {
-        const sb = createClient()
-        const { data: { user } } = await sb.auth.getUser()
-        if (user) {
-          setIsLoggedIn(true)
-          const { data } = await sb.from('user_profiles').select('credits').eq('id', user.id).single()
-          if (data && data.credits > 0) {
-            setUserCredits(data.credits)
-            setIsAssessmentComplete(true)
-            setIsPricingVisible(false)
-            setIsPhase2Active(true)
-            setCurrentQuestionId(phase2StartQuestionId)
-          }
-        }
+
+      // Check if already logged in
+      const sb = createClient()
+      const { data: { user } } = await sb.auth.getUser()
+      if (user) {
+        // Already logged in — save Phase 1 and start Phase 2 immediately
+        await performPostCheckoutSave(user)
+      } else {
+        // Not logged in — show login card
+        localStorage.setItem('post_checkout_pending', 'true')
+        setIsAwaitingLoginAfterCheckout(true)
       }
-      recheck()
     }
+    init()
   }, [searchParams])
 
   // ── HOVER: only on devices with real pointer (no sticky touch hover) ──
@@ -138,6 +162,13 @@ export default function StartPage() {
   const [isPricingVisible, setIsPricingVisible] = useState(false)
   const [isPricingLoading, setIsPricingLoading] = useState<string | null>(null)
 
+  // ── POST-CHECKOUT LOGIN STATE ──
+  const [isAwaitingLoginAfterCheckout, setIsAwaitingLoginAfterCheckout] = useState(false)
+  const [assessmentDbId, setAssessmentDbId] = useState<number | null>(null)
+  const [loginEmail, setLoginEmail] = useState('')
+  const [loginEmailSent, setLoginEmailSent] = useState(false)
+  const [isLoginLoading, setIsLoginLoading] = useState(false)
+
   // Reset loading state quando l'utente torna dalla pagina Stripe
   useEffect(() => {
     const handleVisibility = () => {
@@ -169,6 +200,28 @@ export default function StartPage() {
         setIsLoggedIn(true)
         const { data } = await sb.from('user_profiles').select('credits').eq('id', user.id).single()
         if (data) setUserCredits(data.credits)
+
+        // Post-checkout return via magic link or OAuth redirect
+        const postCheckout = localStorage.getItem('post_checkout_pending')
+        if (postCheckout === 'true') {
+          // Restore Phase 1 state from localStorage
+          try {
+            const saved = localStorage.getItem('phase1_results')
+            if (saved) {
+              const parsed = JSON.parse(saved)
+              setCollectedData(parsed)
+              setIsAssessmentComplete(true)
+              setIsPricingVisible(false)
+              setInputBarVisible(false)
+              setBuildMode(true)
+              setTimeout(() => {
+                setBuildVisible(true)
+                if (scrollContainerRef.current) scrollContainerRef.current.scrollTop = 0
+              }, 100)
+            }
+          } catch {}
+          await performPostCheckoutSave(user)
+        }
       }
     }
     checkAuth()
@@ -303,6 +356,17 @@ export default function StartPage() {
     if (!isPhase2Complete) return
     try { localStorage.setItem('phase2_results', JSON.stringify(phase2CollectedData)) }
     catch (e) { console.error('Failed to save phase2:', e) }
+    // Progressive save: update DB record with Phase 2 data
+    if (!assessmentDbId) return
+    const updatePhase2 = async () => {
+      try {
+        const sb = createClient()
+        await sb.from('assessments')
+          .update({ responses: { phase1: collectedData, phase2: phase2CollectedData } })
+          .eq('id', assessmentDbId)
+      } catch (e) { console.error('[Phase2] DB update error:', e) }
+    }
+    updatePhase2()
   }, [isPhase2Complete])
 
   // ── AUTO-TRANSITION: Phase 2 complete → free chat ──
@@ -432,25 +496,37 @@ export default function StartPage() {
           phase2: phase2CollectedData,
         }
 
-        const payload: Record<string, unknown> = {
-          responses: allResponses,
-          phase2_complete: true,
-          project_description: projectDescription,
-        }
-
-        if (user) {
-          payload.user_id = user.id
-          payload.user_email = user.email
-          payload.user_name = user.user_metadata?.full_name || user.email
-        }
-
-        const { error } = await sb.from('assessments').insert(payload)
-        if (error) console.error('[Build] Supabase insert error:', error.message)
-        else {
-          // Clear localStorage after successful Supabase write
-          localStorage.removeItem('phase1_results')
-          localStorage.removeItem('phase2_results')
-          localStorage.removeItem('freeChat_results')
+        if (assessmentDbId) {
+          // Progressive save — update existing record
+          const { error } = await sb.from('assessments').update({
+            responses: allResponses,
+            phase2_complete: true,
+            project_description: projectDescription,
+          }).eq('id', assessmentDbId)
+          if (error) console.error('[Build] Update error:', error.message)
+          else {
+            localStorage.removeItem('phase2_results')
+            localStorage.removeItem('freeChat_results')
+          }
+        } else {
+          // Fallback: insert (users already logged in with credits who skipped checkout)
+          const payload: Record<string, unknown> = {
+            responses: allResponses,
+            phase2_complete: true,
+            project_description: projectDescription,
+          }
+          if (user) {
+            payload.user_id = user.id
+            payload.user_email = user.email
+            payload.user_name = user.user_metadata?.full_name || user.email
+          }
+          const { error } = await sb.from('assessments').insert(payload)
+          if (error) console.error('[Build] Insert error:', error.message)
+          else {
+            localStorage.removeItem('phase1_results')
+            localStorage.removeItem('phase2_results')
+            localStorage.removeItem('freeChat_results')
+          }
         }
       } catch (e) { console.error('[Build] Failed to write to Supabase:', e) }
 
@@ -1152,6 +1228,74 @@ export default function StartPage() {
                       : startChatContent.buildActivate
                     }
                   </button>
+                </div>
+              )}
+
+              {/* ── LOGIN CARD (after Stripe payment, before Phase 2) ── */}
+              {isAssessmentComplete && !isPhase2Active && isAwaitingLoginAfterCheckout && editingIndex === null && (
+                <div style={{ animation: 'fadeIn 400ms ease', marginTop: '16px', marginBottom: '32px' }}>
+                  <div style={{ ...assistantStyle, marginBottom: '24px', opacity: 0.85 }}>
+                    {loginEmailSent
+                      ? 'Check your email — we sent you a login link.'
+                      : 'Payment confirmed. Create your account to continue.'}
+                  </div>
+                  {!loginEmailSent && (
+                    <>
+                      <button
+                        onClick={async () => {
+                          const sb = createClient()
+                          await sb.auth.signInWithOAuth({
+                            provider: 'google',
+                            options: { redirectTo: `${window.location.origin}/start` },
+                          })
+                        }}
+                        style={{ ...optionBtnBase, marginBottom: '8px', textAlign: 'center' as const }}
+                        onMouseEnter={canHover ? (e) => { e.currentTarget.style.backgroundColor = optionHoverBg; e.currentTarget.style.opacity = '1' } : undefined}
+                        onMouseLeave={canHover ? (e) => { e.currentTarget.style.backgroundColor = optionBaseBg; e.currentTarget.style.opacity = '0.8' } : undefined}
+                      >
+                        Continue with Google
+                      </button>
+                      <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                        <input
+                          type="email"
+                          placeholder="your@email.com"
+                          value={loginEmail}
+                          onChange={e => setLoginEmail(e.target.value)}
+                          style={{
+                            flex: 1, padding: '14px 20px', borderRadius: '14px', border: 'none',
+                            backgroundColor: isDayMode ? 'rgba(0,0,0,0.04)' : 'rgba(255,255,255,0.06)',
+                            color: textColor, fontFamily: 'var(--font-inter), sans-serif',
+                            fontSize: '15px', outline: 'none',
+                          }}
+                        />
+                        <button
+                          onClick={async () => {
+                            if (!loginEmail.trim()) return
+                            setIsLoginLoading(true)
+                            try {
+                              const sb = createClient()
+                              await sb.auth.signInWithOtp({
+                                email: loginEmail.trim(),
+                                options: { emailRedirectTo: `${window.location.origin}/start` },
+                              })
+                              setLoginEmailSent(true)
+                            } catch (e) { console.error('[Login] Error:', e) }
+                            setIsLoginLoading(false)
+                          }}
+                          disabled={isLoginLoading || !loginEmail.trim()}
+                          style={{
+                            ...optionBtnBase, width: 'auto', padding: '14px 20px',
+                            opacity: isLoginLoading || !loginEmail.trim() ? 0.4 : 0.8,
+                            cursor: isLoginLoading || !loginEmail.trim() ? 'default' : 'pointer',
+                          }}
+                          onMouseEnter={canHover && !isLoginLoading && !!loginEmail.trim() ? (e) => { e.currentTarget.style.backgroundColor = optionHoverBg; e.currentTarget.style.opacity = '1' } : undefined}
+                          onMouseLeave={canHover && !isLoginLoading && !!loginEmail.trim() ? (e) => { e.currentTarget.style.backgroundColor = optionBaseBg; e.currentTarget.style.opacity = '0.8' } : undefined}
+                        >
+                          {isLoginLoading ? '...' : 'Send link'}
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
 
