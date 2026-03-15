@@ -123,6 +123,36 @@ export default function ClientArea() {
     if (user) fetchCredits(user.id)
   }, [user])
 
+  // ── POST-CHECKOUT: save Phase 1 to Supabase immediately after login ──
+  useEffect(() => {
+    if (!user) return
+    const pending = localStorage.getItem('post_checkout_pending')
+    if (pending !== 'true') return
+    const raw = localStorage.getItem('phase1_results')
+    if (!raw) return
+
+    const savePhase1 = async () => {
+      try {
+        const phase1Data = JSON.parse(raw)
+        const { error } = await supabase.from('assessments').insert([{
+          user_id: user.id,
+          user_email: user.email,
+          user_name: user.user_metadata?.full_name || displayName || user.email,
+          responses: { phase1: phase1Data, phase2: {} },
+          phase2_complete: false,
+        }])
+        if (!error) {
+          localStorage.removeItem('post_checkout_pending')
+          await fetchAssessments(user.id)
+        }
+      } catch (e) {
+        console.error('[PostCheckout] Save error:', e)
+      }
+    }
+
+    savePhase1()
+  }, [user])
+
   // ── READ PENDING PHASE 1 FROM LOCALSTORAGE (no Supabase write) ──
   useEffect(() => {
     const raw = localStorage.getItem('phase1_results')
