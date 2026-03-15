@@ -23,14 +23,14 @@ export default function LoginPage() {
   useEffect(() => {
     if (isAuthenticated) {
       if (localStorage.getItem('post_checkout_pending') === 'true') {
-        router.push('/start')
+        router.push('/client')
       } else {
         router.push('/client')
       }
     }
   }, [isAuthenticated, router])
 
-  const getNextUrl = () => isPostCheckout ? '/auth/callback?next=/start' : '/auth/callback'
+  const getNextUrl = () => isPostCheckout ? '/auth/callback?next=/client' : '/auth/callback'
 
   const handleGoogleSignIn = async () => {
     const supabase = createClient()
