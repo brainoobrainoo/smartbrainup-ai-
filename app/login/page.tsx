@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useAuth, signInWithGoogle, signInWithMagicLink } from '@/lib/useAuth'
+import { useAuth } from '@/lib/useAuth'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
 
 export default function LoginPage() {
   const { isAuthenticated, loading } = useAuth()
@@ -13,10 +14,15 @@ export default function LoginPage() {
   const [magicLinkError, setMagicLinkError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const authError = searchParams.get('error')
+  const [isPostCheckout, setIsPostCheckout] = useState(false)
+
+  useEffect(() => {
+    setIsPostCheckout(localStorage.getItem('post_checkout_pending') === 'true')
+  }, [])
 
   useEffect(() => {
     if (isAuthenticated) {
-      if (typeof window !== 'undefined' && localStorage.getItem('post_checkout_pending') === 'true') {
+      if (localStorage.getItem('post_checkout_pending') === 'true') {
         router.push('/start')
       } else {
         router.push('/client')
@@ -24,12 +30,26 @@ export default function LoginPage() {
     }
   }, [isAuthenticated, router])
 
+  const getNextUrl = () => isPostCheckout ? '/auth/callback?next=/start' : '/auth/callback'
+
+  const handleGoogleSignIn = async () => {
+    const supabase = createClient()
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.origin + getNextUrl() },
+    })
+  }
+
   const handleMagicLink = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!email.trim()) return
     setIsSubmitting(true)
     setMagicLinkError('')
-    const { error } = await signInWithMagicLink(email)
+    const supabase = createClient()
+    const { error } = await supabase.auth.signInWithOtp({
+      email: email.trim(),
+      options: { emailRedirectTo: window.location.origin + getNextUrl() },
+    })
     if (error) {
       setMagicLinkError(error.message)
     } else {
@@ -77,7 +97,7 @@ export default function LoginPage() {
 
         {/* Google */}
         <button
-          onClick={signInWithGoogle}
+          onClick={handleGoogleSignIn}
           className="w-full py-[11px] px-4 rounded-[8px] border-0 bg-white text-[#111]
                      text-[0.85rem] font-medium cursor-pointer flex items-center
                      justify-center gap-2 hover:opacity-90 transition-opacity"
