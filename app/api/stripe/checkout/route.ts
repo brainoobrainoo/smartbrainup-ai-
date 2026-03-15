@@ -1,17 +1,19 @@
 // app/api/stripe/checkout/route.ts
-// POST — restituisce il Payment Link Stripe per il piano scelto
-
 import { NextRequest, NextResponse } from 'next/server'
+import Stripe from 'stripe'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
-// ── Payment Links (TEST mode) ─────────────────────────────
-const PAYMENT_LINKS: Record<string, string> = {
-  single:       'https://buy.stripe.com/test_fZuaEWgvJ3kWfDHey2enS01',
-  team:         'https://buy.stripe.com/test_3cI3cudjx9JkgHLcpUenS02',
-  department:   'https://buy.stripe.com/test_7sY8wOcft5t41MR61wenS03',
-  organization: 'https://buy.stripe.com/test_dRm6oG0wL6x8crv89EenS04',
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: '2025-01-27.acacia',
+})
+
+const PRICE_IDS: Record<string, string> = {
+  single:       'price_1T5swjAs5Tihp760sCMxRSlr', // €1,997
+  team:         'price_1T5sygAs5Tihp760Kq5IaNbZ', // €4,997
+  department:   'price_1T5vFAAs5Tihp760AqHTqPbM', // €7,997
+  organization: 'price_1T5vG7As5Tihp760dSKIL3xg', // €14,997
 }
 
 export async function POST(request: NextRequest) {
@@ -19,12 +21,21 @@ export async function POST(request: NextRequest) {
     const { plan, planKey } = await request.json()
     const key = plan || planKey
 
-    const url = PAYMENT_LINKS[key]
-    if (!url) {
+    const priceId = PRICE_IDS[key]
+    if (!priceId) {
       return NextResponse.json({ error: 'Invalid plan' }, { status: 400 })
     }
 
-    return NextResponse.json({ url })
+    const origin = request.headers.get('origin') || 'https://smartbrainup.ai'
+
+    const session = await stripe.checkout.sessions.create({
+      mode: 'payment',
+      line_items: [{ price: priceId, quantity: 1 }],
+      success_url: `${origin}/start?checkout=success`,
+      cancel_url: `${origin}/start?checkout=cancel`,
+    })
+
+    return NextResponse.json({ url: session.url })
   } catch (err: any) {
     console.error('[Checkout] Error:', err.message)
     return NextResponse.json({ error: 'Checkout failed' }, { status: 500 })
