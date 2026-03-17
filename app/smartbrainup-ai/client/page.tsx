@@ -115,17 +115,45 @@ export default function ClientArea() {
       // Create missing cards if credits > existing assessments
       if (data.credits > 0) await createMissingCards(userId, data.credits)
     } else if (error?.code === 'PGRST116') {
-      // No row exists — check if developer email
+      // No row exists — check pending_credits before assigning 0
       const isDev = DEVELOPER_EMAILS.includes((userEmail || '').toLowerCase())
+
+      let creditsToAssign = isDev ? 10 : 0
+      let pendingId: number | null = null
+
+      if (!isDev && userEmail) {
+        const { data: pending } = await supabase
+          .from('pending_credits')
+          .select('id, brains_count')
+          .eq('email', userEmail)
+          .eq('status', 'pending')
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single()
+
+        if (pending) {
+          creditsToAssign = pending.brains_count
+          pendingId = pending.id
+        }
+      }
+
       await supabase.from('user_profiles').insert([{
         id: userId,
-        credits: isDev ? 10 : 0,
+        credits: creditsToAssign,
         role: isDev ? 'developer' : 'client',
         email: userEmail || null,
         full_name: displayName || null,
       }])
-      setCredits(isDev ? 10 : 0)
-      if (isDev) await createMissingCards(userId, 10)
+
+      if (pendingId) {
+        await supabase
+          .from('pending_credits')
+          .update({ status: 'claimed' })
+          .eq('id', pendingId)
+      }
+
+      setCredits(creditsToAssign)
+      if (creditsToAssign > 0) await createMissingCards(userId, creditsToAssign)
     }
   }
 
@@ -390,8 +418,8 @@ export default function ClientArea() {
       await supabase.from('assessments').update({ responses: merged, submitted: false }).eq('id', parseInt(activePhaseBrainId))
       setSubmittedBrainIds(prev => prev.filter(id => id !== activePhaseBrainId))
       await fetchAssessments(user.id)
-      handleExitPhase()
     } catch (e) { console.error('[Phase1] Save error:', e) }
+    handleExitPhase()
   }
 
   // ── COMPLETE PHASE 2 (v2) ──
@@ -403,8 +431,8 @@ export default function ClientArea() {
       await supabase.from('assessments').update({ responses: merged, submitted: false }).eq('id', parseInt(activePhaseBrainId))
       setSubmittedBrainIds(prev => prev.filter(id => id !== activePhaseBrainId))
       await fetchAssessments(user.id)
-      handleExitPhase()
     } catch (e) { console.error('[Phase2] Save error:', e) }
+    handleExitPhase()
   }
 
   // ── COMPLETE PHASE 3 (v2) ──
@@ -416,8 +444,8 @@ export default function ClientArea() {
       await supabase.from('assessments').update({ responses: merged, submitted: false }).eq('id', parseInt(activePhaseBrainId))
       setSubmittedBrainIds(prev => prev.filter(id => id !== activePhaseBrainId))
       await fetchAssessments(user.id)
-      handleExitPhase()
     } catch (e) { console.error('[Phase3] Save error:', e) }
+    handleExitPhase()
   }
 
   // ── EXIT PHASE 2 (no save) ──
