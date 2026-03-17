@@ -96,7 +96,7 @@ export default function ClientArea() {
   // ── FETCH OR CREATE USER PROFILE (credits) ──
   const DEVELOPER_EMAILS = ['ca75it@gmail.com']
 
-  const fetchCredits = async (userId: string) => {
+  const fetchCredits = async (userId: string, resolvedEmail: string) => {
     const { data, error } = await supabase
       .from('user_profiles')
       .select('credits, email, full_name, role')
@@ -108,7 +108,7 @@ export default function ClientArea() {
       // Update email/name if missing
       if (!data.email || !data.full_name) {
         await supabase.from('user_profiles').update({
-          email: userEmail || null,
+          email: resolvedEmail || null,
           full_name: displayName || null,
         }).eq('id', userId)
       }
@@ -116,16 +116,16 @@ export default function ClientArea() {
       if (data.credits > 0) await createMissingCards(userId, data.credits)
     } else if (error?.code === 'PGRST116') {
       // No row exists — check pending_credits before assigning 0
-      const isDev = DEVELOPER_EMAILS.includes((userEmail || '').toLowerCase())
+      const isDev = DEVELOPER_EMAILS.includes((resolvedEmail || '').toLowerCase())
 
       let creditsToAssign = isDev ? 10 : 0
       let pendingId: number | null = null
 
-      if (!isDev && userEmail) {
+      if (!isDev && resolvedEmail) {
         const { data: pending } = await supabase
           .from('pending_credits')
           .select('id, brains_count')
-          .eq('email', userEmail)
+          .eq('email', resolvedEmail)
           .eq('status', 'pending')
           .order('created_at', { ascending: false })
           .limit(1)
@@ -141,7 +141,7 @@ export default function ClientArea() {
         id: userId,
         credits: creditsToAssign,
         role: isDev ? 'developer' : 'client',
-        email: userEmail || null,
+        email: resolvedEmail || null,
         full_name: displayName || null,
       }])
 
@@ -158,7 +158,7 @@ export default function ClientArea() {
   }
 
   useEffect(() => {
-    if (user) fetchCredits(user.id)
+    if (user) fetchCredits(user.id, user.email || '')
   }, [user])
 
   // ── POST-CHECKOUT: save Phase 1 to Supabase immediately after login ──
