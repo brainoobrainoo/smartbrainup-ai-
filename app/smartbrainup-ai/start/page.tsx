@@ -60,10 +60,7 @@ export default function StartPage() {
       localStorage.removeItem('post_checkout_pending')
     } catch (e) { console.error('[PostCheckout] Save error:', e) }
     setIsLoggedIn(true)
-    setTimeout(() => {
-      if (scrollContainerRef.current) scrollContainerRef.current.scrollTop = 0
-      window.scrollTo(0, 0)
-    }, 150)
+    router.push('/client')
   }
 
   // ── HANDLE STRIPE RETURN ──
