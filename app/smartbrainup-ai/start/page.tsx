@@ -9,32 +9,11 @@ import BuildChatButton from '@/components/ui/BuildChatButton'
 import type { AssistantInputBarHandle } from '@/components/assistant/AssistantInputBar'
 import { createClient } from '@/lib/supabase/client'
 import { startChatContent } from '@/content/smartbrainup-ai/start-chat'
-import { 
-  questionsMap,
-  startQuestionId,
-  AdaptiveOption,
-  CollectedData 
-} from '@/content/smartbrainup-ai/start'
-import {
-  phase2QuestionsMap,
-  phase2StartQuestionId,
-  Phase2CollectedData,
-} from '@/content/smartbrainup-ai/phase2'
 import { useTheme } from '@/lib/ThemeContext'
 
 type Message = {
   role: 'user' | 'assistant'
   content: string
-}
-
-type BuildHistoryEntry = {
-  questionId: string
-  topic: string
-  question: string
-  answer: string
-  selectedValue: string | string[]
-  nextId: string | null
-  phase: 1 | 2
 }
 
 // ── Night themes — bottom gradient colors (top always #252525) ──
@@ -82,9 +61,6 @@ export default function StartPage() {
       localStorage.removeItem('post_checkout_pending')
     } catch (e) { console.error('[PostCheckout] Save error:', e) }
     setIsLoggedIn(true)
-    setIsAwaitingLoginAfterCheckout(false)
-    setIsPhase2Active(true)
-    setCurrentQuestionId(phase2StartQuestionId)
     setTimeout(() => {
       if (scrollContainerRef.current) scrollContainerRef.current.scrollTop = 0
       window.scrollTo(0, 0)
@@ -103,8 +79,6 @@ export default function StartPage() {
         const saved = localStorage.getItem('phase1_results')
         if (saved) {
           const parsed = JSON.parse(saved)
-          setCollectedData(parsed)
-          setIsAssessmentComplete(true)
           setIsPricingVisible(false)
           setInputBarVisible(false)
           setBuildMode(true)
@@ -141,33 +115,15 @@ export default function StartPage() {
   const [buildMode, setBuildMode] = useState(false)
   const [buildVisible, setBuildVisible] = useState(false)
   const [inputBarVisible, setInputBarVisible] = useState(true)
-  const [currentQuestionId, setCurrentQuestionId] = useState(startQuestionId)
-  const [collectedData, setCollectedData] = useState<CollectedData>({})
-  const [isAssessmentComplete, setIsAssessmentComplete] = useState(false)
-  const [multiSelected, setMultiSelected] = useState<string[]>([])
-  const [buildChatHistory, setBuildChatHistory] = useState<BuildHistoryEntry[]>([])
-  const [editingIndex, setEditingIndex] = useState<number | null>(null)
   const [savedMessages, setSavedMessages] = useState<Message[]>([])
 
-  // ── PHASE 2 STATE ──
-  const [isPhase2Active, setIsPhase2Active] = useState(false)
-  const [isPhase2Complete, setIsPhase2Complete] = useState(false)
-  const [phase2CollectedData, setPhase2CollectedData] = useState<Phase2CollectedData>({})
 
-  // ── FREE CHAT + FINAL STATE ──
-  const [isFreeChatActive, setIsFreeChatActive] = useState(false)
-  const [isFinalComplete, setIsFinalComplete] = useState(false)
 
   // ── PRICING INLINE STATE ──
   const [isPricingVisible, setIsPricingVisible] = useState(false)
   const [isPricingLoading, setIsPricingLoading] = useState<string | null>(null)
 
-  // ── POST-CHECKOUT LOGIN STATE ──
-  const [isAwaitingLoginAfterCheckout, setIsAwaitingLoginAfterCheckout] = useState(false)
-  const [assessmentDbId, setAssessmentDbId] = useState<number | null>(null)
-  const [loginEmail, setLoginEmail] = useState('')
-  const [loginEmailSent, setLoginEmailSent] = useState(false)
-  const [isLoginLoading, setIsLoginLoading] = useState(false)
+
 
   // Reset loading state quando l'utente torna dalla pagina Stripe
   useEffect(() => {
@@ -180,12 +136,7 @@ export default function StartPage() {
     return () => document.removeEventListener('visibilitychange', handleVisibility)
   }, [])
 
-  const question = buildMode && !isAssessmentComplete && !isPhase2Active && editingIndex === null ? questionsMap[currentQuestionId] : null
-  const phase2Question = buildMode && isPhase2Active && !isPhase2Complete && editingIndex === null ? phase2QuestionsMap[currentQuestionId] : null
-  const editingEntry = editingIndex !== null ? buildChatHistory[editingIndex] : null
-  const editingQuestion = editingEntry
-    ? (editingEntry.phase === 2 ? phase2QuestionsMap : questionsMap)[editingEntry.questionId]
-    : null
+
 
   useEffect(() => {
     setThemeBottom(NIGHT_THEMES[Math.floor(Math.random() * NIGHT_THEMES.length)])
@@ -206,8 +157,6 @@ export default function StartPage() {
           const saved = localStorage.getItem('phase1_results')
           if (saved) {
             const parsed = JSON.parse(saved)
-            setCollectedData(parsed)
-            setIsAssessmentComplete(true)
             setIsPricingVisible(false)
             setInputBarVisible(false)
             setBuildMode(true)
@@ -303,7 +252,6 @@ export default function StartPage() {
   }, [messages, isAtBottom, isLoading])
 
   // ── BUILD MODE: smooth scroll to a target element ──
-  const currentQuestionRef = useRef<HTMLDivElement>(null)
   const pricingRef = useRef<HTMLDivElement>(null)
 
   const smoothScrollToElement = useCallback((target: HTMLElement | null, duration: number = 1000) => {
@@ -329,92 +277,9 @@ export default function StartPage() {
     requestAnimationFrame(step)
   }, [])
 
-  useEffect(() => {
-    if (!buildMode) return
-    if (isPhase2Complete) {
-      setTimeout(() => {
-        scrollContainerRef.current?.scrollTo({ top: scrollContainerRef.current.scrollHeight, behavior: 'smooth' })
-      }, 400)
-    } else if (isAssessmentComplete && !isPhase2Active) {
-      setTimeout(() => {
-        scrollContainerRef.current?.scrollTo({ top: scrollContainerRef.current.scrollHeight, behavior: 'smooth' })
-      }, 400)
-    } else if (isPhase2Active && !buildChatHistory.some((e: any) => e.phase === 2)) {
-      // Phase 2 just started — scroll to top so user sees the intro
-      setTimeout(() => {
-        if (scrollContainerRef.current) scrollContainerRef.current.scrollTop = 0
-      }, 150)
-    } else {
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          smoothScrollToElement(currentQuestionRef.current, 1000)
-        })
-      })
-    }
-  }, [buildChatHistory.length, buildMode, isAssessmentComplete, isPhase2Active, isPhase2Complete, smoothScrollToElement])
 
-  // ── BUILD MODE: save to localStorage on Phase 1 complete ──
-  useEffect(() => {
-    if (!isAssessmentComplete) return
-    try { localStorage.setItem('phase1_results', JSON.stringify(collectedData)) }
-    catch (e) { console.error('Failed to save phase1:', e) }
-  }, [isAssessmentComplete])
 
-  // ── BUILD MODE: save to localStorage on Phase 2 complete ──
-  useEffect(() => {
-    if (!isPhase2Complete) return
-    try { localStorage.setItem('phase2_results', JSON.stringify(phase2CollectedData)) }
-    catch (e) { console.error('Failed to save phase2:', e) }
-    // Progressive save: update DB record with Phase 2 data
-    if (!assessmentDbId) return
-    const updatePhase2 = async () => {
-      try {
-        const sb = createClient()
-        await sb.from('assessments')
-          .update({ responses: { phase1: collectedData, phase2: phase2CollectedData } })
-          .eq('id', assessmentDbId)
-      } catch (e) { console.error('[Phase2] DB update error:', e) }
-    }
-    updatePhase2()
-  }, [isPhase2Complete])
 
-  // ── AUTO-TRANSITION: Phase 2 complete → free chat ──
-  useEffect(() => {
-    if (!isPhase2Complete || isFreeChatActive) return
-    const timer = setTimeout(() => {
-      // Exit build mode
-      setBuildVisible(false)
-      setTimeout(() => {
-        setBuildMode(false)
-        setIsFreeChatActive(true)
-        setInputBarVisible(true)
-        // Inject the transition messages
-        setMessages([
-          { role: 'assistant', content: startChatContent.phase2Complete + '\n' + startChatContent.phase2CompleteDetail + '\n' + startChatContent.phase2CompleteSub },
-          { role: 'assistant', content: startChatContent.freeChatPrompt },
-        ])
-        // Scroll to bottom after messages render
-        setTimeout(() => {
-          scrollContainerRef.current?.scrollTo({ top: scrollContainerRef.current.scrollHeight, behavior: 'smooth' })
-        }, 200)
-      }, 300)
-    }, 1500)
-    return () => clearTimeout(timer)
-  }, [isPhase2Complete, isFreeChatActive])
-
-  // ── BUILD MODE: restore multi-select state ──
-  useEffect(() => {
-    if (!buildMode) return
-    const activeQ = editingQuestion || phase2Question || question
-    if (!activeQ) return
-    if (activeQ.type === 'multi') {
-      const dataSource = isPhase2Active ? phase2CollectedData : collectedData
-      const existing = dataSource[activeQ.collectAs]
-      setMultiSelected(existing && Array.isArray(existing) ? existing : [])
-    } else {
-      setMultiSelected([])
-    }
-  }, [currentQuestionId, buildMode, editingIndex, isPhase2Active])
 
   const [isScrolledDown, setIsScrolledDown] = useState(false)
 
@@ -476,80 +341,19 @@ export default function StartPage() {
   // BUILD MODE HANDLERS
   // ═══════════════════════════════════════════
 
-  const handleBuildClick = useCallback(async () => {
-    if (isFreeChatActive && !isFinalComplete) {
-      // Final Build — user finished explaining their project
-      setIsFinalComplete(true)
-      setInputBarVisible(false)
-      setMessages(prev => [
-        ...prev,
-        { role: 'assistant', content: startChatContent.finalComplete },
-      ])
-
-      // Collect free chat text
-      const freeChatMessages = messages.filter(m => m.role === 'user').map(m => m.content)
-      const projectDescription = freeChatMessages.join('\n\n')
-
-      // Save to localStorage (temporary)
-      try {
-        localStorage.setItem('freeChat_results', JSON.stringify(freeChatMessages))
-      } catch (e) { console.error('Failed to save freeChat locally:', e) }
-
-      // Write Phase 1 + Phase 2 + free chat to Supabase
-      try {
-        const sb = createClient()
-        const { data: { user } } = await sb.auth.getUser()
-
-        const allResponses = {
-          phase1: collectedData,
-          phase2: phase2CollectedData,
-        }
-
-        if (assessmentDbId) {
-          // Progressive save — update existing record
-          const { error } = await sb.from('assessments').update({
-            responses: allResponses,
-            phase2_complete: true,
-            project_description: projectDescription,
-          }).eq('id', assessmentDbId)
-          if (error) console.error('[Build] Update error:', error.message)
-          else {
-            localStorage.removeItem('phase2_results')
-            localStorage.removeItem('freeChat_results')
-          }
-        } else {
-          // Fallback: insert (users already logged in with credits who skipped checkout)
-          const payload: Record<string, unknown> = {
-            responses: allResponses,
-            phase2_complete: true,
-            project_description: projectDescription,
-          }
-          if (user) {
-            payload.user_id = user.id
-            payload.user_email = user.email
-            payload.user_name = user.user_metadata?.full_name || user.email
-          }
-          const { error } = await sb.from('assessments').insert(payload)
-          if (error) console.error('[Build] Insert error:', error.message)
-          else {
-            localStorage.removeItem('phase1_results')
-            localStorage.removeItem('phase2_results')
-            localStorage.removeItem('freeChat_results')
-          }
-        }
-      } catch (e) { console.error('[Build] Failed to write to Supabase:', e) }
-
-      setTimeout(() => {
-        scrollContainerRef.current?.scrollTo({ top: scrollContainerRef.current.scrollHeight, behavior: 'smooth' })
-      }, 200)
-      return
-    }
+  const handleBuildClick = useCallback(() => {
     setSavedMessages([...messages])
     setBuildMode(true)
+    setIsPricingVisible(true)
     setInputBarVisible(false)
     if (scrollContainerRef.current) scrollContainerRef.current.scrollTop = 0
-    setTimeout(() => setBuildVisible(true), 100)
-  }, [messages, isFreeChatActive, isFinalComplete, collectedData, phase2CollectedData])
+    setTimeout(() => {
+      setBuildVisible(true)
+      setTimeout(() => {
+        if (pricingRef.current) smoothScrollToElement(pricingRef.current, 600)
+      }, 200)
+    }, 100)
+  }, [messages, smoothScrollToElement])
 
   const handleBackToChat = useCallback(() => {
     setBuildVisible(false)
@@ -557,264 +361,11 @@ export default function StartPage() {
       setBuildMode(false)
       setInputBarVisible(true)
       setMessages(savedMessages)
-      setEditingIndex(null)
       if (scrollContainerRef.current) scrollContainerRef.current.scrollTop = 0
     }, 300)
   }, [savedMessages])
 
-  // ── NEW ANSWER (current question at the end of the path) ──
-  const handleAssessmentOption = useCallback((option: AdaptiveOption) => {
-    const activeQ = isPhase2Active ? phase2Question : question
-    if (!activeQ || activeQ.type === 'multi') return
 
-    if (isPhase2Active) {
-      setPhase2CollectedData(prev => ({ ...prev, [activeQ.collectAs]: option.value }))
-    } else {
-      setCollectedData(prev => ({ ...prev, [activeQ.collectAs]: option.value }))
-    }
-
-    const entry: BuildHistoryEntry = {
-      questionId: currentQuestionId,
-      topic: activeQ.topic,
-      question: activeQ.question,
-      answer: option.label.replace(/\n/g, ' '),
-      selectedValue: option.value,
-      nextId: option.nextId,
-      phase: isPhase2Active ? 2 : 1,
-    }
-    setBuildChatHistory(prev => [...prev, entry])
-
-    if (option.nextId === null) {
-      if (isPhase2Active) {
-        setIsPhase2Complete(true)
-      } else {
-        setIsAssessmentComplete(true)
-      }
-    } else {
-      setCurrentQuestionId(option.nextId)
-    }
-  }, [question, phase2Question, collectedData, phase2CollectedData, currentQuestionId, isPhase2Active])
-
-  // ── EDIT: tap an existing answer ──
-  const handleEditAnswer = useCallback((index: number) => {
-    const entry = buildChatHistory[index]
-    if (!entry) return
-    // Only allow editing answers from the current active phase
-    const currentPhaseNum = isPhase2Active ? 2 : 1
-    if (entry.phase !== currentPhaseNum) return
-
-    if (isPhase2Active && isPhase2Complete && index === buildChatHistory.length - 1) {
-      setIsPhase2Complete(false)
-    } else if (!isPhase2Active && isAssessmentComplete && index === buildChatHistory.length - 1) {
-      setIsAssessmentComplete(false)
-    }
-    setEditingIndex(index)
-  }, [isAssessmentComplete, isPhase2Active, isPhase2Complete, buildChatHistory.length])
-
-  // ── EDIT: pick a new option for an existing answer ──
-  const handleEditSelect = useCallback((option: AdaptiveOption) => {
-    if (editingIndex === null || !editingQuestion || !editingEntry) return
-
-    const isPhase2Entry = editingEntry.phase === 2
-    const oldEntry = buildChatHistory[editingIndex]
-    const sameBranch = option.nextId === oldEntry.nextId
-
-    const newEntry: BuildHistoryEntry = {
-      questionId: oldEntry.questionId,
-      topic: oldEntry.topic,
-      question: oldEntry.question,
-      answer: option.label.replace(/\n/g, ' '),
-      selectedValue: option.value,
-      nextId: option.nextId,
-      phase: oldEntry.phase,
-    }
-
-    if (sameBranch) {
-      // Same branch — just update this answer, keep everything after
-      const updatedHistory = [...buildChatHistory]
-      updatedHistory[editingIndex] = newEntry
-      setBuildChatHistory(updatedHistory)
-
-      // Update correct collected data
-      if (isPhase2Entry) {
-        setPhase2CollectedData(prev => ({ ...prev, [editingQuestion.collectAs]: option.value }))
-      } else {
-        setCollectedData(prev => ({ ...prev, [editingQuestion.collectAs]: option.value }))
-      }
-
-      setEditingIndex(null)
-    } else {
-      // Different branch — truncate everything after this point (within the same phase)
-      const truncatedHistory = buildChatHistory.slice(0, editingIndex)
-      truncatedHistory.push(newEntry)
-
-      // Keep entries from the OTHER phase that came after (shouldn't happen, but safety)
-      // Actually: if editing Phase 1 while Phase 2 exists, truncate Phase 2 too
-      // If editing Phase 2, only truncate Phase 2 entries after this point
-      
-      // Rebuild collected data for the affected phase
-      if (isPhase2Entry) {
-        const newPhase2Collected: Phase2CollectedData = {}
-        truncatedHistory.filter(e => e.phase === 2).forEach(entry => {
-          const q = phase2QuestionsMap[entry.questionId]
-          if (q) newPhase2Collected[q.collectAs] = entry.selectedValue as string
-        })
-        setPhase2CollectedData(newPhase2Collected)
-        setIsPhase2Complete(false)
-      } else {
-        // Editing Phase 1 — truncate everything including Phase 2
-        const newCollected: CollectedData = {}
-        truncatedHistory.filter(e => e.phase === 1).forEach(entry => {
-          const q = questionsMap[entry.questionId]
-          if (q) newCollected[q.collectAs] = entry.selectedValue
-        })
-        setCollectedData(newCollected)
-        // If Phase 2 was active, reset it
-        if (isPhase2Active) {
-          setIsPhase2Active(false)
-          setIsPhase2Complete(false)
-          setPhase2CollectedData({})
-        }
-        setIsAssessmentComplete(false)
-      }
-
-      setBuildChatHistory(truncatedHistory)
-      setEditingIndex(null)
-
-      if (option.nextId === null) {
-        if (isPhase2Entry) { setIsPhase2Complete(true) }
-        else { setIsAssessmentComplete(true) }
-      } else {
-        setCurrentQuestionId(option.nextId)
-      }
-    }
-  }, [editingIndex, editingQuestion, editingEntry, buildChatHistory, isPhase2Active])
-
-  // ── MULTI-SELECT HANDLERS ──
-  const handleMultiToggle = useCallback((value: string) => {
-    const activeQ = editingQuestion || question
-    if (!activeQ) return
-    const max = activeQ.maxSelect || 2
-    setMultiSelected(prev => {
-      if (prev.includes(value)) return prev.filter(v => v !== value)
-      if (prev.length >= max) return [...prev.slice(0, max - 1), value]
-      return [...prev, value]
-    })
-  }, [question, editingQuestion])
-
-  const handleMultiConfirm = useCallback(() => {
-    const activeQ = editingQuestion || phase2Question || question
-    if (!activeQ || multiSelected.length === 0) return
-
-    const selectedLabels = activeQ.options
-      .filter(o => multiSelected.includes(o.value))
-      .map(o => o.label.replace(/\n/g, ' '))
-      .join(', ')
-
-    const nextId = activeQ.options[0].nextId
-    const entryPhase: 1 | 2 = isPhase2Active ? 2 : 1
-
-    if (editingIndex !== null) {
-      // Editing existing multi answer
-      const oldEntry = buildChatHistory[editingIndex]
-      const sameBranch = nextId === oldEntry.nextId
-      const isPhase2Entry = oldEntry.phase === 2
-
-      const newEntry: BuildHistoryEntry = {
-        questionId: oldEntry.questionId,
-        topic: oldEntry.topic,
-        question: oldEntry.question,
-        answer: selectedLabels,
-        selectedValue: multiSelected,
-        nextId,
-        phase: oldEntry.phase,
-      }
-
-      if (sameBranch) {
-        const updatedHistory = [...buildChatHistory]
-        updatedHistory[editingIndex] = newEntry
-        setBuildChatHistory(updatedHistory)
-        if (isPhase2Entry) {
-          setPhase2CollectedData(prev => ({ ...prev, [activeQ.collectAs]: multiSelected }))
-        } else {
-          setCollectedData(prev => ({ ...prev, [activeQ.collectAs]: multiSelected }))
-        }
-        setEditingIndex(null)
-      } else {
-        const truncatedHistory = buildChatHistory.slice(0, editingIndex)
-        truncatedHistory.push(newEntry)
-        if (isPhase2Entry) {
-          const newPhase2Collected: Phase2CollectedData = {}
-          truncatedHistory.filter(e => e.phase === 2).forEach(entry => {
-            const q = phase2QuestionsMap[entry.questionId]
-            if (q) newPhase2Collected[q.collectAs] = entry.selectedValue as string
-          })
-          setPhase2CollectedData(newPhase2Collected)
-          setIsPhase2Complete(false)
-        } else {
-          const newCollected: CollectedData = {}
-          truncatedHistory.filter(e => e.phase === 1).forEach(entry => {
-            const q = questionsMap[entry.questionId]
-            if (q) newCollected[q.collectAs] = entry.selectedValue
-          })
-          setCollectedData(newCollected)
-          if (isPhase2Active) {
-            setIsPhase2Active(false)
-            setIsPhase2Complete(false)
-            setPhase2CollectedData({})
-          }
-          setIsAssessmentComplete(false)
-        }
-        setBuildChatHistory(truncatedHistory)
-        setEditingIndex(null)
-        if (nextId === null) {
-          if (isPhase2Entry) { setIsPhase2Complete(true) }
-          else { setIsAssessmentComplete(true) }
-        } else { setCurrentQuestionId(nextId) }
-      }
-    } else {
-      // New multi answer
-      if (isPhase2Active) {
-        setPhase2CollectedData(prev => ({ ...prev, [activeQ.collectAs]: multiSelected }))
-      } else {
-        setCollectedData(prev => ({ ...prev, [activeQ.collectAs]: multiSelected }))
-      }
-
-      const entry: BuildHistoryEntry = {
-        questionId: currentQuestionId,
-        topic: activeQ.topic,
-        question: activeQ.question,
-        answer: selectedLabels,
-        selectedValue: multiSelected,
-        nextId,
-        phase: entryPhase,
-      }
-      setBuildChatHistory(prev => [...prev, entry])
-
-      if (nextId === null) {
-        if (isPhase2Active) { setIsPhase2Complete(true) }
-        else { setIsAssessmentComplete(true) }
-      } else { setCurrentQuestionId(nextId) }
-    }
-  }, [question, phase2Question, editingQuestion, multiSelected, collectedData, phase2CollectedData, currentQuestionId, editingIndex, buildChatHistory, isPhase2Active])
-
-  const handleContinue = useCallback(() => {
-    if (isLoggedIn && userCredits !== null && userCredits > 0) {
-      // Has credits → start Phase 2 directly
-      setIsPhase2Active(true)
-      setCurrentQuestionId(phase2StartQuestionId)
-    } else {
-      // No credits → show pricing inline + scroll to it
-      setIsPricingVisible(true)
-      setTimeout(() => {
-        if (pricingRef.current) {
-          smoothScrollToElement(pricingRef.current, 600)
-        } else {
-          scrollContainerRef.current?.scrollTo({ top: scrollContainerRef.current.scrollHeight, behavior: 'smooth' })
-        }
-      }, 100)
-    }
-  }, [isLoggedIn, userCredits, smoothScrollToElement])
 
   // ── STRIPE CHECKOUT ──
   const handleSelectPlan = useCallback(async (planKey: string) => {
@@ -831,81 +382,12 @@ export default function StartPage() {
       })
       const { url, error } = await res.json()
       if (error || !url) throw new Error(error || 'No URL')
-      // Save phase1 data again right before redirect — guarantees localStorage is set
-      try { localStorage.setItem('phase1_results', JSON.stringify(collectedData)) } catch {}
       window.location.href = url
     } catch (err) {
       console.error('[Checkout] Failed:', err)
       setIsPricingLoading(null)
     }
   }, [])
-
-  // ── Helper: render label with mobile line breaks ──
-  const renderLabel = (label: string) => {
-    if (!label.includes('\n')) return label
-    return label.split('\n').map((part, i) => (
-      <span key={i}>
-        {i > 0 && <br className="md:hidden" />}
-        {i > 0 && <span className="hidden md:inline"> </span>}
-        {part}
-      </span>
-    ))
-  }
-
-  // ── Render options for a question ──
-  const renderOptions = (q: typeof question | typeof phase2Question, onSelect: (o: AdaptiveOption) => void) => {
-    if (!q) return null
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '32px' }}>
-        {q.options.map((option, idx) => (
-          q.type === 'multi' ? (
-            <button
-              key={idx}
-              onClick={() => handleMultiToggle(option.value)}
-              style={{
-                ...optionBtnBase,
-                backgroundColor: multiSelected.includes(option.value) ? optionSelectedBg : optionBaseBg,
-                boxShadow: multiSelected.includes(option.value)
-                  ? (isDayMode ? 'inset 0 0 0 1px rgba(0,0,0,0.15)' : 'inset 0 0 0 1px rgba(255,255,255,0.15)')
-                  : 'none',
-              }}
-              onMouseEnter={canHover ? (e) => { if (!multiSelected.includes(option.value)) e.currentTarget.style.backgroundColor = optionHoverBg } : undefined}
-              onMouseLeave={canHover ? (e) => { e.currentTarget.style.backgroundColor = multiSelected.includes(option.value) ? optionSelectedBg : optionBaseBg } : undefined}
-            >
-              {renderLabel(option.label)}
-            </button>
-          ) : (
-            <button
-              key={idx}
-              onClick={() => onSelect(option)}
-              style={optionBtnBase}
-              onMouseEnter={canHover ? (e) => { e.currentTarget.style.backgroundColor = optionHoverBg; e.currentTarget.style.opacity = '1' } : undefined}
-              onMouseLeave={canHover ? (e) => { e.currentTarget.style.backgroundColor = optionBaseBg; e.currentTarget.style.opacity = '0.8' } : undefined}
-            >
-              {renderLabel(option.label)}
-            </button>
-          )
-        ))}
-        {q.type === 'multi' && (
-          <button
-            onClick={handleMultiConfirm}
-            disabled={multiSelected.length === 0}
-            style={{
-              ...optionBtnBase,
-              textAlign: 'center',
-              fontWeight: 500,
-              marginTop: '4px',
-              opacity: multiSelected.length > 0 ? 0.8 : 0.3,
-              cursor: multiSelected.length > 0 ? 'pointer' : 'not-allowed',
-              backgroundColor: multiSelected.length > 0 ? optionHoverBg : optionBaseBg,
-            }}
-          >
-            Continue
-          </button>
-        )}
-      </div>
-    )
-  }
 
   // ── Shared styles ──
   const textColor = isDayMode ? '#252525' : '#ffffff'
@@ -1012,7 +494,7 @@ export default function StartPage() {
           {/* ═══════════════════════════════════════════ */}
           {!buildMode && (
             <>
-              {!isFreeChatActive && (
+              {(
               <div style={{
                 marginBottom: '24px',
                 opacity: welcomeVisible ? 1 : 0,
@@ -1087,229 +569,8 @@ export default function StartPage() {
           {buildMode && (
             <div style={{ opacity: buildVisible ? 1 : 0, transition: 'opacity 0.8s ease' }}>
 
-              {/* ── INTRO — hidden when Phase 2 active ── */}
-              {!isPhase2Active && (
-              <div style={{ marginBottom: '32px', display: 'flex', justifyContent: 'flex-start' }}>
-                <div style={assistantStyle}>
-                  {startChatContent.buildIntro.split('\n').map((line, i) => (
-                    <span key={i}>
-                      {i > 0 && <br />}
-                      {line}
-                    </span>
-                  ))}
-                </div>
-              </div>
-              )}
-
-              {/* ── HISTORY: answered pairs ── */}
-              {buildChatHistory.map((pair, i) => {
-                const isEditing = editingIndex === i
-                const currentPhaseNum = isPhase2Active ? 2 : 1
-                const canEditThis = pair.phase === currentPhaseNum
-
-                // Insert Phase 1 complete marker + Phase 2 intro before first Phase 2 entry
-                const isFirstPhase2 = pair.phase === 2 && (i === 0 || buildChatHistory[i - 1].phase === 1)
-
-                return (
-                  <div key={`${pair.questionId}-${i}`}>
-                    {isFirstPhase2 && (
-                      <>
-                        {/* Phase 1 complete marker */}
-                        <div style={{
-                          display: 'flex', flexDirection: 'column', alignItems: 'center',
-                          textAlign: 'center', padding: '40px 0 48px',
-                        }}>
-                          <div style={{
-                            color: textColor, fontFamily: 'var(--font-inter), sans-serif',
-                            fontSize: '15px', lineHeight: 1.8, opacity: 0.85,
-                          }}>
-                            <p>{startChatContent.buildComplete}</p>
-                            <p>{startChatContent.buildCompleteDetail}</p>
-                            <p style={{ opacity: 0.5 }}>{startChatContent.buildCompleteSub}</p>
-                          </div>
-                        </div>
-                        {/* Phase 2 intro */}
-                        <div style={{ marginBottom: '32px', display: 'flex', justifyContent: 'flex-start' }}>
-                          <div style={assistantStyle}>
-                            {startChatContent.phase2Intro.split('\n').map((line, li) => (
-                              <span key={li}>
-                                {li > 0 && <br />}
-                                {line}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      </>
-                    )}
-
-                    {/* Topic label */}
-                    <div style={topicLabelStyle}>{pair.topic}</div>
-
-                    {/* Question */}
-                    <div style={{ marginBottom: isEditing ? '16px' : '12px', display: 'flex', justifyContent: 'flex-start' }}>
-                      <div style={assistantStyle}>{pair.question}</div>
-                    </div>
-
-                    {isEditing ? (
-                      /* ── EDITING: show options ── */
-                      <div style={{
-                        animation: 'fadeIn 300ms ease',
-                      }}>
-                        {renderOptions(editingQuestion, handleEditSelect)}
-                      </div>
-                    ) : (
-                      /* ── ANSWERED: clickable bubble ── */
-                      <div style={{ marginBottom: '32px', display: 'flex', justifyContent: 'flex-end' }}>
-                        <div
-                          onClick={canEditThis ? () => handleEditAnswer(i) : undefined}
-                          style={{
-                            ...userBubbleStyle,
-                            cursor: canEditThis ? 'pointer' : 'default',
-                            transition: 'background-color 0.2s, opacity 0.2s',
-                          }}
-                          onMouseEnter={canHover && canEditThis ? (e) => {
-                            e.currentTarget.style.backgroundColor = isDayMode ? 'rgba(0,0,0,0.10)' : 'rgba(255,255,255,0.13)'
-                            e.currentTarget.style.opacity = '1'
-                          } : undefined}
-                          onMouseLeave={canHover && canEditThis ? (e) => {
-                            e.currentTarget.style.backgroundColor = isDayMode ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.08)'
-                            e.currentTarget.style.opacity = '0.95'
-                          } : undefined}
-                        >
-                          {pair.answer}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
-
-              {/* ── CURRENT QUESTION Phase 1 (end of path, not editing) ── */}
-              {!isAssessmentComplete && !isPhase2Active && question && editingIndex === null && (
-                <div ref={currentQuestionRef}>
-                  <div style={topicLabelStyle}>{question.topic}</div>
-                  <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'flex-start' }}>
-                    <div style={assistantStyle}>{question.question}</div>
-                  </div>
-                  {renderOptions(question, handleAssessmentOption)}
-                </div>
-              )}
-
-              {/* ── PHASE 1 COMPLETION (only if Phase 2 not yet started) ── */}
-              {isAssessmentComplete && !isPhase2Active && editingIndex === null && (
-                <div style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  textAlign: 'center',
-                  paddingTop: '20vh',
-                  paddingBottom: '10vh',
-                }}>
-                  <div style={{
-                    color: textColor,
-                    fontFamily: 'var(--font-inter), sans-serif',
-                    fontSize: '15px',
-                    lineHeight: 1.8,
-                    opacity: 0.85,
-                  }}>
-                    <p>Done</p>
-                    <p>Phase 1 complete</p>
-                    <p style={{ opacity: 0.5 }}>{isLoggedIn && userCredits !== null && userCredits > 0
-                      ? startChatContent.buildCompleteSub
-                      : startChatContent.buildActivateSub
-                    }</p>
-                  </div>
-                  <button
-                    onClick={handleContinue}
-                    style={{
-                      ...optionBtnBase,
-                      textAlign: 'center',
-                      fontWeight: 500,
-                      width: 'auto',
-                      maxWidth: '200px',
-                      marginTop: '24px',
-                    }}
-                    onMouseEnter={canHover ? (e) => { e.currentTarget.style.backgroundColor = optionHoverBg; e.currentTarget.style.opacity = '1' } : undefined}
-                    onMouseLeave={canHover ? (e) => { e.currentTarget.style.backgroundColor = optionBaseBg; e.currentTarget.style.opacity = '0.8' } : undefined}
-                  >
-                    {isLoggedIn && userCredits !== null && userCredits > 0
-                      ? startChatContent.buildContinue
-                      : startChatContent.buildActivate
-                    }
-                  </button>
-                </div>
-              )}
-
-              {/* ── LOGIN CARD (after Stripe payment, before Phase 2) ── */}
-              {isAssessmentComplete && !isPhase2Active && isAwaitingLoginAfterCheckout && editingIndex === null && (
-                <div style={{ animation: 'fadeIn 400ms ease', marginTop: '16px', marginBottom: '32px' }}>
-                  <div style={{ ...assistantStyle, marginBottom: '24px', opacity: 0.85 }}>
-                    {loginEmailSent
-                      ? 'Check your email — we sent you a login link.'
-                      : 'Payment confirmed. Create your account to continue.'}
-                  </div>
-                  {!loginEmailSent && (
-                    <>
-                      <button
-                        onClick={async () => {
-                          const sb = createClient()
-                          await sb.auth.signInWithOAuth({
-                            provider: 'google',
-                            options: { redirectTo: `${window.location.origin}/start` },
-                          })
-                        }}
-                        style={{ ...optionBtnBase, marginBottom: '8px', textAlign: 'center' as const }}
-                        onMouseEnter={canHover ? (e) => { e.currentTarget.style.backgroundColor = optionHoverBg; e.currentTarget.style.opacity = '1' } : undefined}
-                        onMouseLeave={canHover ? (e) => { e.currentTarget.style.backgroundColor = optionBaseBg; e.currentTarget.style.opacity = '0.8' } : undefined}
-                      >
-                        Continue with Google
-                      </button>
-                      <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
-                        <input
-                          type="email"
-                          placeholder="your@email.com"
-                          value={loginEmail}
-                          onChange={e => setLoginEmail(e.target.value)}
-                          style={{
-                            flex: 1, padding: '14px 20px', borderRadius: '14px', border: 'none',
-                            backgroundColor: isDayMode ? 'rgba(0,0,0,0.04)' : 'rgba(255,255,255,0.06)',
-                            color: textColor, fontFamily: 'var(--font-inter), sans-serif',
-                            fontSize: '15px', outline: 'none',
-                          }}
-                        />
-                        <button
-                          onClick={async () => {
-                            if (!loginEmail.trim()) return
-                            setIsLoginLoading(true)
-                            try {
-                              const sb = createClient()
-                              await sb.auth.signInWithOtp({
-                                email: loginEmail.trim(),
-                                options: { emailRedirectTo: `${window.location.origin}/start` },
-                              })
-                              setLoginEmailSent(true)
-                            } catch (e) { console.error('[Login] Error:', e) }
-                            setIsLoginLoading(false)
-                          }}
-                          disabled={isLoginLoading || !loginEmail.trim()}
-                          style={{
-                            ...optionBtnBase, width: 'auto', padding: '14px 20px',
-                            opacity: isLoginLoading || !loginEmail.trim() ? 0.4 : 0.8,
-                            cursor: isLoginLoading || !loginEmail.trim() ? 'default' : 'pointer',
-                          }}
-                          onMouseEnter={canHover && !isLoginLoading && !!loginEmail.trim() ? (e) => { e.currentTarget.style.backgroundColor = optionHoverBg; e.currentTarget.style.opacity = '1' } : undefined}
-                          onMouseLeave={canHover && !isLoginLoading && !!loginEmail.trim() ? (e) => { e.currentTarget.style.backgroundColor = optionBaseBg; e.currentTarget.style.opacity = '0.8' } : undefined}
-                        >
-                          {isLoginLoading ? '...' : 'Send link'}
-                        </button>
-                      </div>
-                    </>
-                  )}
-                </div>
-              )}
-
-              {/* ── PRICING INLINE (after Phase 1, no credits) ── */}
-              {isAssessmentComplete && !isPhase2Active && isPricingVisible && editingIndex === null && (
+              {/* ── PRICING ── */}
+              {isPricingVisible && (
                 <div ref={pricingRef} style={{ animation: 'fadeIn 400ms ease', marginTop: '16px', marginBottom: '32px' }}>
                   <div style={{ ...assistantStyle, marginBottom: '24px', opacity: 0.85 }}>
                     One method. One commitment.
@@ -1355,76 +616,10 @@ export default function StartPage() {
                 </div>
               )}
 
-              {/* ── PHASE 2 INTRO (when Phase 2 just started, no entries yet) ── */}
-              {isPhase2Active && !buildChatHistory.some(e => e.phase === 2) && editingIndex === null && (
-                <>
-                  {/* Phase 1 complete marker */}
-                  <div style={{
-                    display: 'flex', flexDirection: 'column', alignItems: 'center',
-                    textAlign: 'center', padding: '40px 0 48px',
-                  }}>
-                    <div style={{
-                      color: textColor, fontFamily: 'var(--font-inter), sans-serif',
-                      fontSize: '15px', lineHeight: 1.8, opacity: 0.85,
-                    }}>
-                      <p>{startChatContent.buildComplete}</p>
-                      <p>{startChatContent.buildCompleteDetail}</p>
-                      <p style={{ opacity: 0.5 }}>{startChatContent.buildCompleteSub}</p>
-                    </div>
-                  </div>
-                  {/* Phase 2 intro */}
-                  <div style={{ marginBottom: '32px', display: 'flex', justifyContent: 'flex-start' }}>
-                    <div style={assistantStyle}>
-                      {startChatContent.phase2Intro.split('\n').map((line, li) => (
-                        <span key={li}>
-                          {li > 0 && <br />}
-                          {line}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </>
-              )}
-
-              {/* ── CURRENT QUESTION Phase 2 (end of path, not editing) ── */}
-              {isPhase2Active && !isPhase2Complete && phase2Question && editingIndex === null && (
-                <div ref={currentQuestionRef}>
-                  <div style={topicLabelStyle}>{phase2Question.topic}</div>
-                  <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'flex-start' }}>
-                    <div style={assistantStyle}>{phase2Question.question}</div>
-                  </div>
-                  {renderOptions(phase2Question, handleAssessmentOption)}
-                </div>
-              )}
-
-              {/* ── PHASE 2 COMPLETION — brief transition before auto-switch to chat ── */}
-              {isPhase2Complete && editingIndex === null && (
-                <div style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  textAlign: 'center',
-                  paddingTop: '20vh',
-                  paddingBottom: '10vh',
-                  animation: 'fadeIn 300ms ease',
-                }}>
-                  <div style={{
-                    color: textColor,
-                    fontFamily: 'var(--font-inter), sans-serif',
-                    fontSize: '15px',
-                    lineHeight: 1.8,
-                    opacity: 0.85,
-                  }}>
-                    <p>{startChatContent.phase2Complete}</p>
-                    <p>{startChatContent.phase2CompleteDetail}</p>
-                  </div>
-                </div>
-              )}
-
             </div>
           )}
 
-          <div ref={messagesEndRef} />
+                    <div ref={messagesEndRef} />
         </div>
       </div>
       </div>
@@ -1444,7 +639,7 @@ export default function StartPage() {
           position: 'relative', minHeight: '81px', zIndex: 2,
         }}>
           {/* Outer ring */}
-          {!isFinalComplete && (
+          {(
             <div style={{ marginTop: '3px' }}>
               <BuildChatButton
                 isBuildMode={buildMode}

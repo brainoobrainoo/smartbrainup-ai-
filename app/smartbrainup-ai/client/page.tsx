@@ -8,9 +8,13 @@ import dynamic from 'next/dynamic'
 import Container from '@/components/layout/Container'
 import SecondBrainCard from '@/components/client/SecondBrainCard'
 import Phase2Assessment from '@/components/client/Phase2Assessment'
+import PhaseAssessment from '@/components/client/PhaseAssessment'
+import Phase3Chat from '@/components/client/Phase3Chat'
 import { clientContent, Section, SecondBrain, BillingItem } from '@/content/smartbrainup-ai/client'
 import { supportChatContent } from '@/content/smartbrainup-ai/support-chat'
 import { Phase2CollectedData } from '@/content/smartbrainup-ai/phase2'
+import { questionsMap as phase1QuestionsMap, startQuestionId as phase1StartQuestionId } from '@/content/smartbrainup-ai/start'
+import { phase2QuestionsMap, phase2StartQuestionId } from '@/content/smartbrainup-ai/phase2'
 import { useAuth, updateDisplayName, signOut } from '@/lib/useAuth'
 import { supabase } from '@/lib/supabase'
 import { createClient } from '@/lib/supabase/client'
@@ -55,6 +59,11 @@ export default function ClientArea() {
   const [phase2BrainId, setPhase2BrainId] = useState<string | null>(null)
   const [phase2BrainName, setPhase2BrainName] = useState('')
 
+  // Active phase state (v2)
+  const [activePhase, setActivePhase] = useState<1 | 2 | 3 | null>(null)
+  const [activePhaseBrainId, setActivePhaseBrainId] = useState<string | null>(null)
+  const [submittedBrainIds, setSubmittedBrainIds] = useState<string[]>([])
+
   // Inline rename state for incomplete cards
   const [editingBrainId, setEditingBrainId] = useState<string | null>(null)
   const [editingBrainName, setEditingBrainName] = useState('')
@@ -69,6 +78,9 @@ export default function ClientArea() {
 
   // Credits from user_profiles
   const [credits, setCredits] = useState<number>(0)
+
+  // Phase completion status per brain id
+  const [phaseStatus, setPhaseStatus] = useState<Record<string, { p1: boolean; p2: boolean; p3: boolean }>>({})
 
   // Sphere animation for incomplete cards (semi-transparent)
   const [incompleteSphereData, setIncompleteSphereData] = useState<any>(null)
@@ -105,6 +117,8 @@ export default function ClientArea() {
           full_name: displayName || null,
         }).eq('id', userId)
       }
+      // Create missing cards if credits > existing assessments
+      if (data.credits > 0) await createMissingCards(userId, data.credits)
     } else if (error?.code === 'PGRST116') {
       // No row exists — check if developer email
       const isDev = DEVELOPER_EMAILS.includes((userEmail || '').toLowerCase())
@@ -116,6 +130,7 @@ export default function ClientArea() {
         full_name: displayName || null,
       }])
       setCredits(isDev ? 10 : 0)
+      if (isDev) await createMissingCards(userId, 10)
     }
   }
 
@@ -210,6 +225,21 @@ export default function ClientArea() {
         cardColor: row.card_color || 'default',
       }))
       setBrains(mapped)
+
+      // Build phase status map
+      const ps: Record<string, { p1: boolean; p2: boolean; p3: boolean }> = {}
+      const submittedIds: string[] = []
+      data.forEach((row: any) => {
+        const r = row.responses || {}
+        ps[row.id.toString()] = {
+          p1: !!(r.phase1 && Object.keys(r.phase1).length > 0),
+          p2: !!(r.phase2 && Object.keys(r.phase2).length > 0),
+          p3: !!(r.phase3 && r.phase3.length > 0),
+        }
+        if (row.submitted) submittedIds.push(row.id.toString())
+      })
+      setPhaseStatus(ps)
+      setSubmittedBrainIds(submittedIds)
     } else {
       setBrains([])
     }
@@ -218,6 +248,28 @@ export default function ClientArea() {
   useEffect(() => {
     if (user) fetchAssessments(user.id)
   }, [user])
+
+  // ── CREATE MISSING CARDS after credits load ──
+  const createMissingCards = async (userId: string, creditCount: number) => {
+    if (creditCount <= 0) return
+    const { data } = await supabase
+      .from('assessments')
+      .select('id')
+      .eq('user_id', userId)
+    const existing = data?.length || 0
+    const missing = creditCount - existing
+    if (missing <= 0) return
+    const inserts = Array.from({ length: missing }, () => ({
+      user_id: userId,
+      user_email: userEmail || null,
+      user_name: displayName || null,
+      responses: { phase1: {}, phase2: {}, phase3: '' },
+      phase2_complete: false,
+      brain_name: 'Second Brain',
+    }))
+    await supabase.from('assessments').insert(inserts)
+    await fetchAssessments(userId)
+  }
 
   // ── RENAME BRAIN ──
   const handleRenameBrain = async (brainId: string) => {
@@ -299,12 +351,86 @@ export default function ClientArea() {
     }
   }
 
-  // ── START PHASE 2 ──
+  // ── START PHASE 2 (legacy) ──
   const handleStartPhase2 = (b: SecondBrain) => {
     setPhase2BrainId(b.id)
     setPhase2BrainName(b.name)
     setSection('phase2')
     window.scrollTo(0, 0)
+  }
+
+  // ── OPEN PHASE (v2) ──
+  const handleOpenPhase = async (brainId: string, phase: 1 | 2 | 3) => {
+    let realId = brainId
+
+    // If local brain — create Supabase record first
+    if (brainId === 'local' && user) {
+      try {
+        const { data, error } = await supabase.from('assessments').insert([{
+          user_id: user.id,
+          user_email: user.email,
+          user_name: user.user_metadata?.full_name || displayName || user.email,
+          responses: { phase1: {}, phase2: {}, phase3: '' },
+          phase2_complete: false,
+          brain_name: localStorage.getItem('phase1_brain_name') || 'Second Brain',
+        }]).select('id').single()
+        if (!error && data) {
+          realId = data.id.toString()
+          localStorage.removeItem('phase1_results')
+          localStorage.removeItem('phase1_brain_name')
+          await fetchAssessments(user.id)
+        }
+      } catch (e) { console.error('[OpenPhase] Create error:', e) }
+    }
+
+    setActivePhaseBrainId(realId)
+    setActivePhase(phase)
+    window.scrollTo(0, 0)
+  }
+
+  // ── EXIT PHASE (v2) ──
+  const handleExitPhase = () => {
+    setActivePhase(null)
+    setActivePhaseBrainId(null)
+  }
+
+  // ── COMPLETE PHASE 1 (v2) ──
+  const handleCompletePhase1 = async (data: Record<string, string | string[]>) => {
+    if (!activePhaseBrainId || !user) return
+    try {
+      const { data: existing } = await supabase.from('assessments').select('responses').eq('id', parseInt(activePhaseBrainId)).single()
+      const merged = { ...(existing?.responses || {}), phase1: data }
+      await supabase.from('assessments').update({ responses: merged, submitted: false }).eq('id', parseInt(activePhaseBrainId))
+      setSubmittedBrainIds(prev => prev.filter(id => id !== activePhaseBrainId))
+      await fetchAssessments(user.id)
+    } catch (e) { console.error('[Phase1] Save error:', e) }
+    handleExitPhase()
+  }
+
+  // ── COMPLETE PHASE 2 (v2) ──
+  const handleCompletePhase2V2 = async (data: Record<string, string | string[]>) => {
+    if (!activePhaseBrainId || !user) return
+    try {
+      const { data: existing } = await supabase.from('assessments').select('responses').eq('id', parseInt(activePhaseBrainId)).single()
+      const merged = { ...(existing?.responses || {}), phase2: data }
+      await supabase.from('assessments').update({ responses: merged, submitted: false }).eq('id', parseInt(activePhaseBrainId))
+      setSubmittedBrainIds(prev => prev.filter(id => id !== activePhaseBrainId))
+      await fetchAssessments(user.id)
+    } catch (e) { console.error('[Phase2] Save error:', e) }
+    handleExitPhase()
+  }
+
+  // ── COMPLETE PHASE 3 (v2) ──
+  const handleCompletePhase3 = async (text: string) => {
+    if (!activePhaseBrainId || !user) return
+    try {
+      const { data: existing } = await supabase.from('assessments').select('responses').eq('id', parseInt(activePhaseBrainId)).single()
+      const merged = { ...(existing?.responses || {}), phase3: text }
+      await supabase.from('assessments').update({ responses: merged, submitted: false }).eq('id', parseInt(activePhaseBrainId))
+      setSubmittedBrainIds(prev => prev.filter(id => id !== activePhaseBrainId))
+      await fetchAssessments(user.id)
+    } catch (e) { console.error('[Phase3] Save error:', e) }
+    handleExitPhase()
   }
 
   // ── EXIT PHASE 2 (no save) ──
@@ -494,6 +620,46 @@ export default function ClientArea() {
   const accessMethod = user?.app_metadata?.provider === 'google' ? 'Google OAuth' : 'Magic Link'
 
   // ═══════════════════════════════════════════════════════
+  // PHASE RENDERS (v2)
+  // ═══════════════════════════════════════════════════════
+  if (activePhase === 1 && activePhaseBrainId) {
+    return (
+      <PhaseAssessment
+        phaseNumber={1}
+        phaseLabel="Phase 1 — Identity & Direction"
+        introText={'This phase captures your operating context.\nAnswer each question to define your starting point.'}
+        questionsMap={phase1QuestionsMap}
+        startQuestionId={phase1StartQuestionId}
+        onComplete={handleCompletePhase1}
+        onExit={handleExitPhase}
+      />
+    )
+  }
+
+  if (activePhase === 2 && activePhaseBrainId) {
+    return (
+      <PhaseAssessment
+        phaseNumber={2}
+        phaseLabel="Phase 2 — Execution & Style"
+        introText={'This phase defines how your Second Brain should operate.\nYour answers shape the logic and the output style.'}
+        questionsMap={phase2QuestionsMap}
+        startQuestionId={phase2StartQuestionId}
+        onComplete={handleCompletePhase2V2}
+        onExit={handleExitPhase}
+      />
+    )
+  }
+
+  if (activePhase === 3 && activePhaseBrainId) {
+    return (
+      <Phase3Chat
+        onComplete={handleCompletePhase3}
+        onExit={handleExitPhase}
+      />
+    )
+  }
+
+  // ═══════════════════════════════════════════════════════
   // PHASE 2 — FULL SCREEN (hides everything)
   // ═══════════════════════════════════════════════════════
   if (section === 'phase2' && phase2BrainId) {
@@ -633,7 +799,9 @@ export default function ClientArea() {
                   <div
                     key={b.id}
                     className="rounded-[12px] p-6 h-[220px] md:h-[88px] overflow-hidden flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-6"
-                    style={{ background: 'linear-gradient(to bottom, #ededed 0%, #c9c9c9 100%)' }}
+                    style={{ background: submittedBrainIds.includes(b.id)
+                      ? 'linear-gradient(to bottom, #d8d8d8 0%, #b8b8b8 100%)'
+                      : 'linear-gradient(to bottom, #ededed 0%, #c9c9c9 100%)' }}
                   >
                     {/* Sphere — top-level sibling, same as SecondBrainCard */}
                     <div className="flex-shrink-0 opacity-15">
@@ -659,71 +827,74 @@ export default function ClientArea() {
 
                     {/* Buttons — top-level sibling */}
                     <div className="flex-shrink-0 mt-auto md:mt-0">
-                      {contactBrainId === b.id ? (
-                        <div className="flex flex-col items-center gap-2">
-                          <p className="text-[14px] text-[#1a1a1a]/65 text-center">
-                            Phase 2 activation requires a license
-                          </p>
-                          <a
-                            href="mailto:info@smartbrainup.com"
-                            className="text-[14px] text-[#1a1a1a]/60 hover:text-[#1a1a1a]/80 transition-colors"
-                          >
-                            info@smartbrainup.com
-                          </a>
+                      {(() => {
+                        const ps = phaseStatus[b.id] || { p1: false, p2: false, p3: false }
+                        const allDone = ps.p1 && ps.p2 && ps.p3
+                        const phaseBtn = (label: string, done: boolean, onClick: () => void) => (
                           <button
-                            onClick={() => setContactBrainId(null)}
-                            className="py-2 px-5 bg-[#1a1a1a]/[0.06] hover:bg-[#1a1a1a]/[0.12]
-                                       rounded-[4px] font-ui text-[10px] font-medium tracking-widest
-                                       uppercase text-[#1a1a1a]/50 border-0 cursor-pointer transition-colors"
+                            onClick={onClick}
+                            className="flex-1 md:flex-none md:w-[110px] flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-[4px] border-0 cursor-pointer transition-colors font-ui text-[10px] font-medium tracking-widest uppercase"
+                            style={{
+                              backgroundColor: done ? 'rgba(26,26,26,0.55)' : 'rgba(26,26,26,0.06)',
+                              color: done ? '#ffffff' : 'rgba(26,26,26,0.45)',
+                            }}
                           >
-                            Back
+                            <span style={{
+                              width: 5, height: 5, borderRadius: '50%', flexShrink: 0,
+                              backgroundColor: done ? '#34c759' : 'rgba(26,26,26,0.25)',
+                              display: 'inline-block',
+                            }} />
+                            {label}
                           </button>
-                        </div>
-                      ) : deletingBrainId === b.id ? (
-                        <div className="flex flex-col items-center gap-2">
-                          <p className="text-[14px] text-[#1a1a1a]/45 text-center">
-                            Delete all progress?
-                          </p>
-                          <div className="flex gap-3">
-                            <button
-                              onClick={() => handleDeleteBrain(b.id)}
-                              className="py-2 px-5 bg-red-500/10 hover:bg-red-500/20
-                                         rounded-[4px] font-ui text-[10px] font-medium tracking-widest
-                                         uppercase text-red-600/70 border-0 cursor-pointer transition-colors"
-                            >
-                              Yes
-                            </button>
-                            <button
-                              onClick={() => setDeletingBrainId(null)}
-                              className="py-2 px-5 bg-[#1a1a1a]/[0.06] hover:bg-[#1a1a1a]/[0.12]
-                                         rounded-[4px] font-ui text-[10px] font-medium tracking-widest
-                                         uppercase text-[#1a1a1a]/50 border-0 cursor-pointer transition-colors"
-                            >
-                              No
-                            </button>
+                        )
+                        const isSubmitted = submittedBrainIds.includes(b.id)
+                        if (isSubmitted) {
+                          return (
+                            <div style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '11px', fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(26,26,26,0.45)', textAlign: 'right' as const }}>
+                              In preparation
+                            </div>
+                          )
+                        }
+                        if (allDone) {
+                          return (
+                            <div className="flex gap-2 w-full md:w-auto">
+                              <button
+                                onClick={async () => {
+                                  if (!user) return
+                                  await supabase.from('assessments').update({ submitted: true }).eq('id', parseInt(b.id))
+                                  setSubmittedBrainIds(prev => [...prev, b.id])
+                                }}
+                                className="flex-1 md:flex-none md:w-[169px] py-2.5 px-6 rounded-[4px] border-0 cursor-pointer font-ui text-[10px] font-medium tracking-widest uppercase transition-colors"
+                                style={{ backgroundColor: 'rgba(26,26,26,0.55)', color: '#ffffff' }}
+                              >
+                                Submit
+                              </button>
+                              <button
+                                onClick={async () => {
+                                  if (!user) return
+                                  await supabase.from('assessments').update({
+                                    submitted: false,
+                                    responses: { phase1: {}, phase2: {}, phase3: '' },
+                                  }).eq('id', parseInt(b.id))
+                                  setSubmittedBrainIds(prev => prev.filter(id => id !== b.id))
+                                  setPhaseStatus(prev => ({ ...prev, [b.id]: { p1: false, p2: false, p3: false } }))
+                                }}
+                                className="flex-1 md:flex-none md:w-[169px] py-2.5 px-6 rounded-[4px] border-0 cursor-pointer font-ui text-[10px] font-medium tracking-widest uppercase transition-colors"
+                                style={{ backgroundColor: 'rgba(26,26,26,0.06)', color: 'rgba(26,26,26,0.50)' }}
+                              >
+                                Redo phases
+                              </button>
+                            </div>
+                          )
+                        }
+                        return (
+                          <div className="flex gap-2 w-full md:w-auto">
+                            {phaseBtn('Fase 1', ps.p1, () => handleOpenPhase(b.id, 1))}
+                            {phaseBtn('Fase 2', ps.p2, () => handleOpenPhase(b.id, 2))}
+                            {phaseBtn('Fase 3', ps.p3, () => handleOpenPhase(b.id, 3))}
                           </div>
-                        </div>
-                      ) : (
-                        <div className="flex gap-3 w-full md:w-auto">
-                          <button
-                            onClick={() => credits > 0 ? handleStartPhase2(b) : setContactBrainId(b.id)}
-                            className="flex-1 md:flex-none md:w-[110px] py-2.5 px-6 bg-[#1a1a1a]/[0.08] hover:bg-[#1a1a1a]/[0.15]
-                                       rounded-[4px] font-ui text-[10px] font-medium tracking-widest
-                                       uppercase text-[#1a1a1a]/60 border-0 cursor-pointer transition-colors text-center"
-                          >
-                            Complete
-                          </button>
-                          <button
-                            onClick={() => setDeletingBrainId(b.id)}
-                            className="flex-1 md:flex-none md:w-[110px] py-2.5 px-6 bg-[#1a1a1a]/[0.06] hover:bg-red-500/10
-                                       rounded-[4px] font-ui text-[10px] font-medium tracking-widest
-                                       uppercase text-[#1a1a1a]/50 hover:text-red-600/60
-                                       border-0 cursor-pointer transition-colors text-center"
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      )}
+                        )
+                      })()}
                     </div>
                   </div>
                 ))}
