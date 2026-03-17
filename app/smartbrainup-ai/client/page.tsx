@@ -390,8 +390,8 @@ export default function ClientArea() {
       await supabase.from('assessments').update({ responses: merged, submitted: false }).eq('id', parseInt(activePhaseBrainId))
       setSubmittedBrainIds(prev => prev.filter(id => id !== activePhaseBrainId))
       await fetchAssessments(user.id)
+      handleExitPhase()
     } catch (e) { console.error('[Phase1] Save error:', e) }
-    handleExitPhase()
   }
 
   // ── COMPLETE PHASE 2 (v2) ──
@@ -403,8 +403,8 @@ export default function ClientArea() {
       await supabase.from('assessments').update({ responses: merged, submitted: false }).eq('id', parseInt(activePhaseBrainId))
       setSubmittedBrainIds(prev => prev.filter(id => id !== activePhaseBrainId))
       await fetchAssessments(user.id)
+      handleExitPhase()
     } catch (e) { console.error('[Phase2] Save error:', e) }
-    handleExitPhase()
   }
 
   // ── COMPLETE PHASE 3 (v2) ──
@@ -416,8 +416,8 @@ export default function ClientArea() {
       await supabase.from('assessments').update({ responses: merged, submitted: false }).eq('id', parseInt(activePhaseBrainId))
       setSubmittedBrainIds(prev => prev.filter(id => id !== activePhaseBrainId))
       await fetchAssessments(user.id)
+      handleExitPhase()
     } catch (e) { console.error('[Phase3] Save error:', e) }
-    handleExitPhase()
   }
 
   // ── EXIT PHASE 2 (no save) ──
