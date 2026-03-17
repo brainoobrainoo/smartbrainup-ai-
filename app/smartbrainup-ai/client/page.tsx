@@ -2,7 +2,7 @@
 
 // app/(smartbrainup-ai)/client/page.tsx
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import Container from '@/components/layout/Container'
@@ -73,6 +73,7 @@ export default function ClientArea() {
 
   // Credits from user_profiles
   const [credits, setCredits] = useState<number>(0)
+  const cardsCreatedRef = useRef(false)
 
   // Phase completion status per brain id
   const [phaseStatus, setPhaseStatus] = useState<Record<string, { p1: boolean; p2: boolean; p3: boolean }>>({})
@@ -301,13 +302,18 @@ export default function ClientArea() {
   // ── CREATE MISSING CARDS after credits load ──
   const createMissingCards = async (userId: string, creditCount: number) => {
     if (creditCount <= 0) return
+    if (cardsCreatedRef.current) return
+    cardsCreatedRef.current = true
     const { data } = await supabase
       .from('assessments')
       .select('id')
       .eq('user_id', userId)
     const existing = data?.length || 0
     const missing = creditCount - existing
-    if (missing <= 0) return
+    if (missing <= 0) {
+      cardsCreatedRef.current = false
+      return
+    }
     const inserts = Array.from({ length: missing }, () => ({
       user_id: userId,
       user_email: userEmail || null,
@@ -318,6 +324,7 @@ export default function ClientArea() {
     }))
     await supabase.from('assessments').insert(inserts)
     await fetchAssessments(userId)
+    cardsCreatedRef.current = false
   }
 
   // ── RENAME BRAIN ──
