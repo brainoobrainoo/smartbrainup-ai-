@@ -40,61 +40,26 @@ export default function StartPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  // ── POST-CHECKOUT: save Phase 1 to DB and start Phase 2 ──
-  const performPostCheckoutSave = async (user: { id: string; email?: string; user_metadata?: { full_name?: string } }) => {
-    try {
-      const sb = createClient()
-      let phase1Data: Record<string, unknown> = {}
-      try {
-        const saved = localStorage.getItem('phase1_results')
-        if (saved) phase1Data = JSON.parse(saved)
-      } catch {}
-      const { data, error } = await sb.from('assessments').insert({
-        user_id: user.id,
-        user_email: user.email,
-        user_name: user.user_metadata?.full_name || user.email,
-        responses: { phase1: phase1Data, phase2: {} },
-        phase2_complete: false,
-      }).select('id').single()
-      localStorage.removeItem('phase1_results')
-      localStorage.removeItem('post_checkout_pending')
-    } catch (e) { console.error('[PostCheckout] Save error:', e) }
-    setIsLoggedIn(true)
-    router.push('/client')
-  }
-
   // ── HANDLE STRIPE RETURN ──
+  // Post-checkout save is handled entirely by /client page.
+  // This block only sets localStorage flags and redirects.
   useEffect(() => {
     const checkout = searchParams.get('checkout')
     if (checkout !== 'success') return
     window.history.replaceState({}, '', '/start')
 
     const init = async () => {
-      // Restore Phase 1 state from localStorage
-      try {
-        const saved = localStorage.getItem('phase1_results')
-        if (saved) {
-          const parsed = JSON.parse(saved)
-          setIsPricingVisible(false)
-          setInputBarVisible(false)
-          setBuildMode(true)
-          setTimeout(() => {
-            setBuildVisible(true)
-            if (scrollContainerRef.current) scrollContainerRef.current.scrollTop = 0
-            window.scrollTo(0, 0)
-          }, 100)
-        }
-      } catch {}
+      // Mark post-checkout pending — client page will handle saving
+      localStorage.setItem('post_checkout_pending', 'true')
 
       // Check if already logged in
       const sb = createClient()
       const { data: { user } } = await sb.auth.getUser()
       if (user) {
-        // Already logged in — save Phase 1 and start Phase 2 immediately
-        await performPostCheckoutSave(user)
+        // Already logged in — go directly to dashboard
+        router.push('/client')
       } else {
-        // Not logged in — show login card
-        localStorage.setItem('post_checkout_pending', 'true')
+        // Not logged in — go to login, callback will send to /client
         router.push('/login')
       }
     }
@@ -113,13 +78,9 @@ export default function StartPage() {
   const [inputBarVisible, setInputBarVisible] = useState(true)
   const [savedMessages, setSavedMessages] = useState<Message[]>([])
 
-
-
   // ── PRICING INLINE STATE ──
   const [isPricingVisible, setIsPricingVisible] = useState(false)
   const [isPricingLoading, setIsPricingLoading] = useState<string | null>(null)
-
-
 
   // Reset loading state quando l'utente torna dalla pagina Stripe
   useEffect(() => {
@@ -132,49 +93,29 @@ export default function StartPage() {
     return () => document.removeEventListener('visibilitychange', handleVisibility)
   }, [])
 
-
-
   useEffect(() => {
     setThemeBottom(NIGHT_THEMES[Math.floor(Math.random() * NIGHT_THEMES.length)])
   }, [])
 
-  // ── CHECK AUTH ON MOUNT + LISTEN FOR LOGIN (magic link / OAuth) ──
+  // ── CHECK AUTH ON MOUNT ──
   useEffect(() => {
     const sb = createClient()
 
-    const handleUser = async (user: any) => {
-      setIsLoggedIn(true)
-      const { data } = await sb.from('user_profiles').select('credits').eq('id', user.id).single()
-      if (data) setUserCredits(data.credits)
-
-      const postCheckout = localStorage.getItem('post_checkout_pending')
-      if (postCheckout === 'true') {
-        try {
-          const saved = localStorage.getItem('phase1_results')
-          if (saved) {
-            const parsed = JSON.parse(saved)
-            setIsPricingVisible(false)
-            setInputBarVisible(false)
-            setBuildMode(true)
-            setTimeout(() => {
-              setBuildVisible(true)
-              if (scrollContainerRef.current) scrollContainerRef.current.scrollTop = 0
-            }, 100)
-          }
-        } catch {}
-        await performPostCheckoutSave(user)
-      }
-    }
-
-    // Initial check
+    // Initial check — only set logged in state, no redirect logic
     sb.auth.getUser().then(({ data: { user } }: any) => {
-      if (user) handleUser(user)
+      if (user) {
+        setIsLoggedIn(true)
+        sb.from('user_profiles').select('credits').eq('id', user.id).single()
+          .then(({ data }) => { if (data) setUserCredits(data.credits) })
+      }
     })
 
-    // Listen for SIGNED_IN — catches magic link and OAuth redirects
+    // Listen for SIGNED_IN — only update UI state, no post-checkout logic here
     const { data: { subscription } } = sb.auth.onAuthStateChange((event: string, session: any) => {
       if (event === 'SIGNED_IN' && session?.user) {
-        handleUser(session.user)
+        setIsLoggedIn(true)
+        sb.from('user_profiles').select('credits').eq('id', session.user.id).single()
+          .then(({ data }) => { if (data) setUserCredits(data.credits) })
       }
     })
 
@@ -255,7 +196,6 @@ export default function StartPage() {
     if (!container || !target) return
     const containerRect = container.getBoundingClientRect()
     const targetRect = target.getBoundingClientRect()
-    // Position target near top of container viewport
     const offset = containerRect.height * 0.08
     const start = container.scrollTop
     const end = start + (targetRect.top - containerRect.top) - offset
@@ -265,17 +205,12 @@ export default function StartPage() {
     const step = (now: number) => {
       const elapsed = now - startTime
       const progress = Math.min(elapsed / duration, 1)
-      // ease-out cubic
       const ease = 1 - Math.pow(1 - progress, 3)
       container.scrollTop = start + distance * ease
       if (progress < 1) requestAnimationFrame(step)
     }
     requestAnimationFrame(step)
   }, [])
-
-
-
-
 
   const [isScrolledDown, setIsScrolledDown] = useState(false)
 
@@ -361,8 +296,6 @@ export default function StartPage() {
     }, 300)
   }, [savedMessages])
 
-
-
   // ── STRIPE CHECKOUT ──
   const handleSelectPlan = useCallback(async (planKey: string) => {
     setIsPricingLoading(planKey)
@@ -396,17 +329,6 @@ export default function StartPage() {
     lineHeight: 1.6,
     opacity: 0.85,
   }
-  const userBubbleStyle: React.CSSProperties = {
-    maxWidth: '85%',
-    padding: '12px 16px',
-    borderRadius: '18px 18px 4px 18px',
-    backgroundColor: isDayMode ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.08)',
-    color: textColor,
-    fontFamily: 'var(--font-inter), sans-serif',
-    fontSize: '15px',
-    lineHeight: 1.6,
-    opacity: 0.95,
-  }
   const optionBtnBase: React.CSSProperties = {
     width: '100%',
     padding: '14px 20px',
@@ -424,17 +346,6 @@ export default function StartPage() {
   }
   const optionHoverBg = isDayMode ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.12)'
   const optionBaseBg = isDayMode ? 'rgba(0,0,0,0.04)' : 'rgba(255,255,255,0.06)'
-  const optionSelectedBg = isDayMode ? 'rgba(0,0,0,0.10)' : 'rgba(255,255,255,0.14)'
-  const topicLabelStyle: React.CSSProperties = {
-    marginBottom: '6px',
-    fontFamily: 'var(--font-inter), sans-serif',
-    fontSize: '10px',
-    fontWeight: 500,
-    letterSpacing: '0.1em',
-    textTransform: 'uppercase' as const,
-    color: textColor,
-    opacity: 0.3,
-  }
 
   return (
     <div className="start-chat" style={{
@@ -615,9 +526,9 @@ export default function StartPage() {
             </div>
           )}
 
-                    <div ref={messagesEndRef} />
+          <div ref={messagesEndRef} />
         </div>
-      </div>
+        </div>
       </div>
 
       {/* ═══════════════════════════════════════════ */}
@@ -634,16 +545,13 @@ export default function StartPage() {
           paddingBottom: '12px', paddingTop: '8px',
           position: 'relative', minHeight: '81px', zIndex: 2,
         }}>
-          {/* Outer ring */}
-          {(
-            <div style={{ marginTop: '3px' }}>
-              <BuildChatButton
-                isBuildMode={buildMode}
-                isDayMode={isDayMode}
-                onClick={buildMode ? handleBackToChat : handleBuildClick}
-              />
-            </div>
-          )}
+          <div style={{ marginTop: '3px' }}>
+            <BuildChatButton
+              isBuildMode={buildMode}
+              isDayMode={isDayMode}
+              onClick={buildMode ? handleBackToChat : handleBuildClick}
+            />
+          </div>
 
           {/* Scroll to top */}
           <button

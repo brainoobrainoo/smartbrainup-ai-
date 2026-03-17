@@ -2,41 +2,32 @@
 
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/lib/useAuth'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 export default function LoginPage() {
   const { isAuthenticated, loading } = useAuth()
   const router = useRouter()
-  const searchParams = useSearchParams()
   const [email, setEmail] = useState('')
   const [magicLinkSent, setMagicLinkSent] = useState(false)
   const [magicLinkError, setMagicLinkError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const authError = searchParams.get('error')
-  const [isPostCheckout, setIsPostCheckout] = useState(false)
 
-  useEffect(() => {
-    setIsPostCheckout(localStorage.getItem('post_checkout_pending') === 'true')
-  }, [])
-
+  // Always redirect to /client after authentication — no exceptions
   useEffect(() => {
     if (isAuthenticated) {
-      if (localStorage.getItem('post_checkout_pending') === 'true') {
-        router.push('/client')
-      } else {
-        router.push('/client')
-      }
+      router.push('/client')
     }
   }, [isAuthenticated, router])
 
-  const getNextUrl = () => isPostCheckout ? '/auth/callback?next=/client' : '/auth/callback'
+  // Always route through /auth/callback?next=/client
+  const CALLBACK_URL = '/auth/callback?next=/client'
 
   const handleGoogleSignIn = async () => {
     const supabase = createClient()
     await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: window.location.origin + getNextUrl() },
+      options: { redirectTo: window.location.origin + CALLBACK_URL },
     })
   }
 
@@ -48,7 +39,7 @@ export default function LoginPage() {
     const supabase = createClient()
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim(),
-      options: { emailRedirectTo: window.location.origin + getNextUrl() },
+      options: { emailRedirectTo: window.location.origin + CALLBACK_URL },
     })
     if (error) {
       setMagicLinkError(error.message)
@@ -87,13 +78,6 @@ export default function LoginPage() {
             Sign in to your account
           </p>
         </div>
-
-        {/* Auth error */}
-        {authError && (
-          <div className="px-4 py-3 rounded-[8px] bg-red-600/15 text-red-300 text-[0.8rem] mb-6">
-            Authentication failed. Please try again.
-          </div>
-        )}
 
         {/* Google */}
         <button
