@@ -104,7 +104,33 @@ export default function ClientArea() {
       .single()
 
     if (data) {
-      setCredits(data.credits)
+      let finalCredits = data.credits
+
+      // If credits = 0, check pending_credits — may have paid before creating account
+      if (data.credits === 0 && resolvedEmail) {
+        const { data: pending } = await supabase
+          .from('pending_credits')
+          .select('id, brains_count')
+          .eq('email', resolvedEmail)
+          .eq('status', 'pending')
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single()
+
+        if (pending) {
+          finalCredits = pending.brains_count
+          await supabase
+            .from('user_profiles')
+            .update({ credits: finalCredits })
+            .eq('id', userId)
+          await supabase
+            .from('pending_credits')
+            .update({ status: 'claimed' })
+            .eq('id', pending.id)
+        }
+      }
+
+      setCredits(finalCredits)
       // Update email/name if missing
       if (!data.email || !data.full_name) {
         await supabase.from('user_profiles').update({
@@ -113,7 +139,7 @@ export default function ClientArea() {
         }).eq('id', userId)
       }
       // Create missing cards if credits > existing assessments
-      if (data.credits > 0) await createMissingCards(userId, data.credits)
+      if (finalCredits > 0) await createMissingCards(userId, finalCredits)
     } else if (error?.code === 'PGRST116') {
       // No row exists — check pending_credits before assigning 0
       const isDev = DEVELOPER_EMAILS.includes((resolvedEmail || '').toLowerCase())
