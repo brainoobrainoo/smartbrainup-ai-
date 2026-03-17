@@ -7,12 +7,10 @@ import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import Container from '@/components/layout/Container'
 import SecondBrainCard from '@/components/client/SecondBrainCard'
-import Phase2Assessment from '@/components/client/Phase2Assessment'
 import PhaseAssessment from '@/components/client/PhaseAssessment'
 import Phase3Chat from '@/components/client/Phase3Chat'
 import { clientContent, Section, SecondBrain, BillingItem } from '@/content/smartbrainup-ai/client'
 import { supportChatContent } from '@/content/smartbrainup-ai/support-chat'
-import { Phase2CollectedData } from '@/content/smartbrainup-ai/phase2'
 import { questionsMap as phase1QuestionsMap, startQuestionId as phase1StartQuestionId } from '@/content/smartbrainup-ai/start'
 import { phase2QuestionsMap, phase2StartQuestionId } from '@/content/smartbrainup-ai/phase2'
 import { useAuth, updateDisplayName, signOut } from '@/lib/useAuth'
@@ -56,9 +54,6 @@ export default function ClientArea() {
   const [billing, setBilling] = useState<BillingItem[]>([])
 
   // Phase 2 state
-  const [phase2BrainId, setPhase2BrainId] = useState<string | null>(null)
-  const [phase2BrainName, setPhase2BrainName] = useState('')
-
   // Active phase state (v2)
   const [activePhase, setActivePhase] = useState<1 | 2 | 3 | null>(null)
   const [activePhaseBrainId, setActivePhaseBrainId] = useState<string | null>(null)
@@ -351,14 +346,6 @@ export default function ClientArea() {
     }
   }
 
-  // ── START PHASE 2 (legacy) ──
-  const handleStartPhase2 = (b: SecondBrain) => {
-    setPhase2BrainId(b.id)
-    setPhase2BrainName(b.name)
-    setSection('phase2')
-    window.scrollTo(0, 0)
-  }
-
   // ── OPEN PHASE (v2) ──
   const handleOpenPhase = async (brainId: string, phase: 1 | 2 | 3) => {
     let realId = brainId
@@ -434,104 +421,6 @@ export default function ClientArea() {
   }
 
   // ── EXIT PHASE 2 (no save) ──
-  const handleExitPhase2 = () => {
-    setPhase2BrainId(null)
-    setPhase2BrainName('')
-    setSection('dashboard')
-    window.scrollTo(0, 0)
-  }
-
-  // ── COMPLETE PHASE 2 ──
-  const handleCompletePhase2 = async (data: Phase2CollectedData) => {
-    if (!phase2BrainId || !user) return
-
-    // Save brain name early (before localStorage cleanup)
-    const savedBrainName = phase2BrainId === 'local'
-      ? (localStorage.getItem('phase1_brain_name') || 'Second Brain')
-      : phase2BrainName
-
-    if (phase2BrainId === 'local') {
-      // localStorage brain → first write to Supabase with both phases
-      const raw = localStorage.getItem('phase1_results')
-      if (!raw) return
-      const phase1Data = JSON.parse(raw)
-      const brainName = localStorage.getItem('phase1_brain_name') || 'Second Brain'
-
-      const { error } = await supabase.from('assessments').insert([{
-        user_id: user.id,
-        user_name: user.user_metadata?.full_name || displayName || '',
-        user_email: user.email || '',
-        responses: { ...phase1Data, phase2: data },
-        phase2_complete: true,
-        brain_name: brainName,
-      }])
-
-      if (!error) {
-        localStorage.removeItem('phase1_results')
-        localStorage.removeItem('phase1_brain_name')
-        setPendingBrain(null)
-        await fetchAssessments(user.id)
-      }
-    } else {
-      // Supabase brain → merge phase2 into existing record
-      const { data: existing } = await supabase
-        .from('assessments')
-        .select('responses')
-        .eq('id', parseInt(phase2BrainId))
-        .single()
-
-      const mergedResponses = {
-        ...(existing?.responses || {}),
-        phase2: data,
-      }
-
-      await supabase
-        .from('assessments')
-        .update({
-          responses: mergedResponses,
-          phase2_complete: true,
-        })
-        .eq('id', parseInt(phase2BrainId))
-
-      await fetchAssessments(user.id)
-    }
-
-    // Create Second Brain record for the chat
-    const assessmentId = phase2BrainId === 'local' ? null : parseInt(phase2BrainId)
-    // Get the latest assessment if it was a local brain (just inserted)
-    let finalAssessmentId = assessmentId
-    if (phase2BrainId === 'local') {
-      const { data: latest } = await supabase
-        .from('assessments')
-        .select('id')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single()
-      if (latest) finalAssessmentId = latest.id
-    }
-
-    const authClientInsert = createClient()
-    await authClientInsert.from('second_brains').insert([{
-      user_id: user.id,
-      assessment_id: finalAssessmentId,
-      name: savedBrainName,
-      system_prompt: 'You are a Second Brain powered by the AI-UP Second Brain™ method. You help the user based on their personal context. Ask one targeted question at a time. Keep responses brief and essential. You lead the reasoning.',
-      color: '#9CA3AF',
-      icon: 'brain',
-      status: 'active',
-    }])
-
-    // Decrement credit after successful completion
-    await supabase.rpc('decrement_credits', { user_id_input: user.id })
-    setCredits(prev => Math.max(0, prev - 1))
-
-    setPhase2BrainId(null)
-    setPhase2BrainName('')
-    setSection('dashboard')
-    window.scrollTo(0, 0)
-  }
-
   // Chat state
   const [chatMessages, setChatMessages] = useState<Array<{
     id: string; message: string; sender: string;
@@ -655,19 +544,6 @@ export default function ClientArea() {
       <Phase3Chat
         onComplete={handleCompletePhase3}
         onExit={handleExitPhase}
-      />
-    )
-  }
-
-  // ═══════════════════════════════════════════════════════
-  // PHASE 2 — FULL SCREEN (hides everything)
-  // ═══════════════════════════════════════════════════════
-  if (section === 'phase2' && phase2BrainId) {
-    return (
-      <Phase2Assessment
-        brainName={phase2BrainName}
-        onExit={handleExitPhase2}
-        onComplete={handleCompletePhase2}
       />
     )
   }
