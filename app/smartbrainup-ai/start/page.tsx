@@ -56,7 +56,6 @@ export default function StartPage() {
         responses: { phase1: phase1Data, phase2: {} },
         phase2_complete: false,
       }).select('id').single()
-      if (!error && data) setAssessmentDbId(data.id)
       localStorage.removeItem('phase1_results')
       localStorage.removeItem('post_checkout_pending')
     } catch (e) { console.error('[PostCheckout] Save error:', e) }
