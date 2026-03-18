@@ -725,7 +725,7 @@ export default function ClientArea() {
                       className="flex-1 md:flex-none md:w-[110px] flex items-center justify-center py-2.5 px-4 rounded-[4px] border-0 cursor-pointer font-ui text-[10px] font-medium tracking-widest uppercase whitespace-nowrap"
                       style={{
                         background: done
-                          ? 'rgba(26,26,26,0.40)'
+                          ? 'rgba(26,26,26,0.46)'
                           : 'rgba(26,26,26,0.10)',
                         color: done ? '#ffffff' : 'rgba(26,26,26,0.55)',
                         transition: 'background 0.3s ease',
