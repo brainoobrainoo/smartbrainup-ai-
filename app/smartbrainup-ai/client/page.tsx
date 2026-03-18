@@ -289,6 +289,9 @@ export default function ClientArea() {
         cardColor: row.card_color || 'default',
         })
       })
+      console.log('[DEBUG] sbData:', sbData)
+      console.log('[DEBUG] sbStatusMap:', sbStatusMap)
+      console.log('[DEBUG] mapped statuses:', mapped.map(b => ({id: b.id, status: b.status})))
       setBrains(mapped)
 
       // Build phase status map
