@@ -693,11 +693,18 @@ export default function ClientArea() {
               {userName}
             </h1>
 
-            {/* Active brain cards */}
-            {/* ── All brain cards — unified list, fixed order ── */}
+            {/* ── All brain cards — active first, then in preparation, then incomplete ── */}
             {brains.length > 0 && (
               <div className="flex flex-col gap-4 mb-5">
-                {[...(pendingBrain ? [pendingBrain] : []), ...brains].map((b) => {
+                {(() => {
+                  const all = [...(pendingBrain ? [pendingBrain] : []), ...brains]
+                  const ordered = [
+                    ...all.filter(b => b.status === 'active'),
+                    ...all.filter(b => b.status !== 'active' && submittedBrainIds.includes(b.id)),
+                    ...all.filter(b => b.status !== 'active' && !submittedBrainIds.includes(b.id)),
+                  ]
+                  return ordered
+                })().map((b) => {
                   if (b.status === 'active') {
                     return (
                       <SecondBrainCard
@@ -796,8 +803,6 @@ export default function ClientArea() {
                 })}
               </div>
             )}
-
-            {/* New brain */}
             <button
               onClick={() => router.push('/start')}
               className="w-full rounded-[12px] bg-[#f7f7f7] hover:bg-[#f0f0f0]
