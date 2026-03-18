@@ -251,7 +251,7 @@ export default function ClientArea() {
   const fetchAssessments = async (userId: string) => {
     const { data, error } = await supabase
       .from('assessments')
-      .select('*, second_brains!second_brains_assessment_id_fkey(prompt_status)')
+      .select('*')
       .eq('user_id', userId)
       .order('created_at', { ascending: true })
 
@@ -261,11 +261,20 @@ export default function ClientArea() {
     }
 
     if (data && data.length > 0) {
+      // Query separata — evita problemi di join con PostgREST
+      const assessmentIds = data.map((row: any) => row.id)
+      const { data: sbData } = await supabase
+        .from('second_brains')
+        .select('assessment_id, prompt_status')
+        .in('assessment_id', assessmentIds)
+
+      const sbStatusMap: Record<number, string> = {}
+      if (sbData) {
+        sbData.forEach((sb: any) => { sbStatusMap[sb.assessment_id] = sb.prompt_status })
+      }
+
       const mapped: SecondBrain[] = data.map((row: any, index: number) => {
-        const sbStatus = Array.isArray(row.second_brains)
-          ? row.second_brains[0]?.prompt_status
-          : row.second_brains?.prompt_status
-        const isActive = row.phase2_complete || sbStatus === 'active'
+        const isActive = row.phase2_complete || sbStatusMap[row.id] === 'active'
         return ({
         id: row.id.toString(),
         num: String(index + 1),
