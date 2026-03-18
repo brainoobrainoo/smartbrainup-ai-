@@ -736,15 +736,15 @@ export default function ClientArea() {
                   const phaseBtn = (label: string, done: boolean, onClick: () => void) => (
                     <button
                       onClick={onClick}
-                      className="flex-1 md:flex-none md:w-[110px] flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-[4px] border-0 cursor-pointer transition-colors font-ui text-[10px] font-medium tracking-widest uppercase"
+                      className="flex-1 md:flex-none md:w-[110px] flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-[4px] border-0 cursor-pointer transition-colors font-ui text-[10px] font-medium tracking-widest uppercase whitespace-nowrap"
                       style={{
-                        backgroundColor: done ? 'rgba(26,26,26,0.55)' : 'rgba(26,26,26,0.06)',
-                        color: done ? '#ffffff' : 'rgba(26,26,26,0.45)',
+                        backgroundColor: done ? 'rgba(26,26,26,0.55)' : 'rgba(26,26,26,0.10)',
+                        color: done ? '#ffffff' : 'rgba(26,26,26,0.65)',
                       }}
                     >
                       <span style={{
-                        width: 5, height: 5, borderRadius: '50%', flexShrink: 0,
-                        backgroundColor: done ? '#34c759' : 'rgba(26,26,26,0.25)',
+                        width: 10, height: 10, borderRadius: '50%', flexShrink: 0,
+                        backgroundColor: done ? '#34c759' : 'rgba(26,26,26,0.20)',
                         display: 'inline-block',
                       }} />
                       {label}
@@ -774,7 +774,7 @@ export default function ClientArea() {
                       </div>
                       <div className="flex-shrink-0 mt-auto md:mt-0">
                         {isSubmitted ? (
-                          <div style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '11px', fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(26,26,26,0.45)', textAlign: 'right' as const }}>
+                          <div style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '12px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(26,26,26,0.65)', textAlign: 'right' as const }}>
                             In preparation
                           </div>
                         ) : allDone ? (
