@@ -715,126 +715,108 @@ export default function ClientArea() {
             </h1>
 
             {/* Active brain cards */}
-            {activeBrains.length > 0 && (
+            {/* ── All brain cards — unified list, fixed order ── */}
+            {brains.length > 0 && (
               <div className="flex flex-col gap-4 mb-5">
-                {activeBrains.map((b) => (
-                  <SecondBrainCard
-                    key={b.id}
-                    brain={b}
-                    onOpen={openBrain}
-                    onRename={handleActiveBrainRename}
-                    onColorChange={handleActiveBrainColor}
-                  />
-                ))}
-              </div>
-            )}
-
-            {/* ── Incomplete brain cards ── */}
-            {incompleteBrains.length > 0 && (
-              <div className="flex flex-col gap-4 mb-5">
-                {incompleteBrains.map((b) => (
-                  <div
-                    key={b.id}
-                    className="rounded-[12px] p-6 h-[220px] md:h-[88px] overflow-hidden flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-6"
-                    style={{ background: submittedBrainIds.includes(b.id)
-                      ? 'linear-gradient(to bottom, #d8d8d8 0%, #b8b8b8 100%)'
-                      : 'linear-gradient(to bottom, #ededed 0%, #c9c9c9 100%)' }}
-                  >
-                    {/* Sphere — top-level sibling, same as SecondBrainCard */}
-                    <div className="flex-shrink-0 opacity-15">
-                      {incompleteSphereData ? (
-                        <Lottie
-                          animationData={incompleteSphereData}
-                          loop
-                          autoplay
-                          style={{ width: 40, height: 40 }}
-                        />
-                      ) : (
-                        <div className="w-[40px] h-[40px] rounded-full bg-black/[0.06]" />
-                      )}
-                    </div>
-
-                    {/* Text — top-level sibling, same as SecondBrainCard */}
-                    <div className="flex-1 min-w-0">
-                      <p className="font-ui text-[11px] font-medium tracking-widest uppercase text-[#1a1a1a]/45 mb-1">
-                        Second Brain {b.num}
-                      </p>
-                      <div className="h-[28px]" />
-                    </div>
-
-                    {/* Buttons — top-level sibling */}
-                    <div className="flex-shrink-0 mt-auto md:mt-0">
-                      {(() => {
-                        const ps = phaseStatus[b.id] || { p1: false, p2: false, p3: false }
-                        const allDone = ps.p1 && ps.p2 && ps.p3
-                        const phaseBtn = (label: string, done: boolean, onClick: () => void) => (
-                          <button
-                            onClick={onClick}
-                            className="flex-1 md:flex-none md:w-[110px] flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-[4px] border-0 cursor-pointer transition-colors font-ui text-[10px] font-medium tracking-widest uppercase"
-                            style={{
-                              backgroundColor: done ? 'rgba(26,26,26,0.55)' : 'rgba(26,26,26,0.06)',
-                              color: done ? '#ffffff' : 'rgba(26,26,26,0.45)',
-                            }}
-                          >
-                            <span style={{
-                              width: 5, height: 5, borderRadius: '50%', flexShrink: 0,
-                              backgroundColor: done ? '#34c759' : 'rgba(26,26,26,0.25)',
-                              display: 'inline-block',
-                            }} />
-                            {label}
-                          </button>
-                        )
-                        const isSubmitted = submittedBrainIds.includes(b.id)
-                        if (isSubmitted) {
-                          return (
-                            <div style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '11px', fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(26,26,26,0.45)', textAlign: 'right' as const }}>
-                              In preparation
-                            </div>
-                          )
-                        }
-                        if (allDone) {
-                          return (
-                            <div className="flex gap-2 w-full md:w-auto">
-                              <button
-                                onClick={async () => {
-                                  if (!user) return
-                                  await supabase.from('assessments').update({ submitted: true }).eq('id', parseInt(b.id))
-                                  setSubmittedBrainIds(prev => [...prev, b.id])
-                                }}
-                                className="flex-1 md:flex-none md:w-[169px] py-2.5 px-6 rounded-[4px] border-0 cursor-pointer font-ui text-[10px] font-medium tracking-widest uppercase transition-colors"
-                                style={{ backgroundColor: 'rgba(26,26,26,0.55)', color: '#ffffff' }}
-                              >
-                                Submit
-                              </button>
-                              <button
-                                onClick={async () => {
-                                  if (!user) return
-                                  await supabase.from('assessments').update({
-                                    submitted: false,
-                                    responses: { phase1: {}, phase2: {}, phase3: '' },
-                                  }).eq('id', parseInt(b.id))
-                                  setSubmittedBrainIds(prev => prev.filter(id => id !== b.id))
-                                  setPhaseStatus(prev => ({ ...prev, [b.id]: { p1: false, p2: false, p3: false } }))
-                                }}
-                                className="flex-1 md:flex-none md:w-[169px] py-2.5 px-6 rounded-[4px] border-0 cursor-pointer font-ui text-[10px] font-medium tracking-widest uppercase transition-colors"
-                                style={{ backgroundColor: 'rgba(26,26,26,0.06)', color: 'rgba(26,26,26,0.50)' }}
-                              >
-                                Redo phases
-                              </button>
-                            </div>
-                          )
-                        }
-                        return (
+                {[...(pendingBrain ? [pendingBrain] : []), ...brains].map((b) => {
+                  if (b.status === 'active') {
+                    return (
+                      <SecondBrainCard
+                        key={b.id}
+                        brain={b}
+                        onOpen={openBrain}
+                        onRename={handleActiveBrainRename}
+                        onColorChange={handleActiveBrainColor}
+                      />
+                    )
+                  }
+                  // Incomplete card
+                  const ps = phaseStatus[b.id] || { p1: false, p2: false, p3: false }
+                  const allDone = ps.p1 && ps.p2 && ps.p3
+                  const phaseBtn = (label: string, done: boolean, onClick: () => void) => (
+                    <button
+                      onClick={onClick}
+                      className="flex-1 md:flex-none md:w-[110px] flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-[4px] border-0 cursor-pointer transition-colors font-ui text-[10px] font-medium tracking-widest uppercase"
+                      style={{
+                        backgroundColor: done ? 'rgba(26,26,26,0.55)' : 'rgba(26,26,26,0.06)',
+                        color: done ? '#ffffff' : 'rgba(26,26,26,0.45)',
+                      }}
+                    >
+                      <span style={{
+                        width: 5, height: 5, borderRadius: '50%', flexShrink: 0,
+                        backgroundColor: done ? '#34c759' : 'rgba(26,26,26,0.25)',
+                        display: 'inline-block',
+                      }} />
+                      {label}
+                    </button>
+                  )
+                  const isSubmitted = submittedBrainIds.includes(b.id)
+                  return (
+                    <div
+                      key={b.id}
+                      className="rounded-[12px] p-6 h-[220px] md:h-[88px] overflow-hidden flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-6"
+                      style={{ background: isSubmitted
+                        ? 'linear-gradient(to bottom, #d8d8d8 0%, #b8b8b8 100%)'
+                        : 'linear-gradient(to bottom, #ededed 0%, #c9c9c9 100%)' }}
+                    >
+                      <div className="flex-shrink-0 opacity-15">
+                        {incompleteSphereData ? (
+                          <Lottie animationData={incompleteSphereData} loop autoplay style={{ width: 40, height: 40 }} />
+                        ) : (
+                          <div className="w-[40px] h-[40px] rounded-full bg-black/[0.06]" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-ui text-[11px] font-medium tracking-widest uppercase text-[#1a1a1a]/45 mb-1">
+                          Second Brain {b.num}
+                        </p>
+                        <div className="h-[28px]" />
+                      </div>
+                      <div className="flex-shrink-0 mt-auto md:mt-0">
+                        {isSubmitted ? (
+                          <div style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '11px', fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(26,26,26,0.45)', textAlign: 'right' as const }}>
+                            In preparation
+                          </div>
+                        ) : allDone ? (
+                          <div className="flex gap-2 w-full md:w-auto">
+                            <button
+                              onClick={async () => {
+                                if (!user) return
+                                await supabase.from('assessments').update({ submitted: true }).eq('id', parseInt(b.id))
+                                setSubmittedBrainIds(prev => [...prev, b.id])
+                              }}
+                              className="flex-1 md:flex-none md:w-[169px] py-2.5 px-6 rounded-[4px] border-0 cursor-pointer font-ui text-[10px] font-medium tracking-widest uppercase transition-colors"
+                              style={{ backgroundColor: 'rgba(26,26,26,0.55)', color: '#ffffff' }}
+                            >
+                              Submit
+                            </button>
+                            <button
+                              onClick={async () => {
+                                if (!user) return
+                                await supabase.from('assessments').update({
+                                  submitted: false,
+                                  responses: { phase1: {}, phase2: {}, phase3: '' },
+                                }).eq('id', parseInt(b.id))
+                                setSubmittedBrainIds(prev => prev.filter(id => id !== b.id))
+                                setPhaseStatus(prev => ({ ...prev, [b.id]: { p1: false, p2: false, p3: false } }))
+                              }}
+                              className="flex-1 md:flex-none md:w-[169px] py-2.5 px-6 rounded-[4px] border-0 cursor-pointer font-ui text-[10px] font-medium tracking-widest uppercase transition-colors"
+                              style={{ backgroundColor: 'rgba(26,26,26,0.06)', color: 'rgba(26,26,26,0.50)' }}
+                            >
+                              Redo phases
+                            </button>
+                          </div>
+                        ) : (
                           <div className="flex gap-2 w-full md:w-auto">
                             {phaseBtn('Fase 1', ps.p1, () => handleOpenPhase(b.id, 1))}
                             {phaseBtn('Fase 2', ps.p2, () => handleOpenPhase(b.id, 2))}
                             {phaseBtn('Fase 3', ps.p3, () => handleOpenPhase(b.id, 3))}
                           </div>
-                        )
-                      })()}
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             )}
 
