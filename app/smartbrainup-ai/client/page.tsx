@@ -724,7 +724,7 @@ export default function ClientArea() {
                       onClick={onClick}
                       className="flex-1 md:flex-none md:w-[110px] flex items-center justify-center py-2.5 px-4 rounded-[4px] border-0 cursor-pointer font-ui text-[10px] font-medium tracking-widest uppercase whitespace-nowrap"
                       style={{
-                        background: done ? 'rgba(26,26,26,0.52)' : 'rgba(26,26,26,0.10)',
+                        background: done ? 'rgba(26,26,26,0.60)' : 'rgba(26,26,26,0.10)',
                         color: done ? '#ffffff' : 'rgba(26,26,26,0.55)',
                         transition: 'background 0.3s ease',
                       }}
@@ -768,7 +768,7 @@ export default function ClientArea() {
                                 setSubmittedBrainIds(prev => [...prev, b.id])
                               }}
                               className="flex-1 md:flex-none md:w-[169px] py-2.5 px-6 rounded-[4px] border-0 cursor-pointer font-ui text-[10px] font-medium tracking-widest uppercase transition-colors"
-                              style={{ backgroundColor: 'rgba(26,26,26,0.52)', color: '#ffffff' }}
+                              style={{ backgroundColor: 'rgba(26,26,26,0.60)', color: '#ffffff' }}
                             >
                               Submit
                             </button>
@@ -785,7 +785,7 @@ export default function ClientArea() {
                               className="flex-1 md:flex-none md:w-[169px] py-2.5 px-6 rounded-[4px] border-0 cursor-pointer font-ui text-[10px] font-medium tracking-widest uppercase transition-colors"
                               style={{ backgroundColor: 'rgba(26,26,26,0.06)', color: 'rgba(26,26,26,0.50)' }}
                             >
-                              Redo phases
+                              Reset
                             </button>
                           </div>
                         ) : (
