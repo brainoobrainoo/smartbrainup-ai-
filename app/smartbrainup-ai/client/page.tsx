@@ -724,8 +724,10 @@ export default function ClientArea() {
                       onClick={onClick}
                       className="flex-1 md:flex-none md:w-[110px] flex items-center justify-center py-2.5 px-4 rounded-[4px] border-0 cursor-pointer font-ui text-[10px] font-medium tracking-widest uppercase whitespace-nowrap"
                       style={{
-                        background: done ? 'rgba(26,26,26,0.66)' : 'rgba(26,26,26,0.10)',
-                        color: done ? '#ffffff' : 'rgba(26,26,26,0.55)',
+                        background: done
+                          ? 'linear-gradient(to right, rgba(26,26,26,0.66) 0%, rgba(26,26,26,0.76) 100%)'
+                          : 'rgba(26,26,26,0.10)',
+                        color: done ? '#ffffff' : 'rgba(26,26,26,0.70)',
                         transition: 'background 0.3s ease',
                       }}
                     >
@@ -768,7 +770,7 @@ export default function ClientArea() {
                                 setSubmittedBrainIds(prev => [...prev, b.id])
                               }}
                               className="flex-1 md:flex-none md:w-[169px] py-2.5 px-6 rounded-[4px] border-0 cursor-pointer font-ui text-[10px] font-medium tracking-widest uppercase transition-colors"
-                              style={{ backgroundColor: 'rgba(26,26,26,0.66)', color: '#ffffff' }}
+                              style={{ background: 'linear-gradient(to right, rgba(26,26,26,0.66) 0%, rgba(26,26,26,0.76) 100%)', color: '#ffffff' }}
                             >
                               Submit
                             </button>
