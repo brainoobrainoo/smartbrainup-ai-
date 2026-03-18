@@ -726,7 +726,7 @@ export default function ClientArea() {
                       style={{
                         background: done
                           ? 'linear-gradient(to right, rgba(26,26,26,0.66) 0%, rgba(26,26,26,0.76) 100%)'
-                          : 'rgba(26,26,26,0.10)',
+                          : 'linear-gradient(to right, rgba(26,26,26,0.10) 0%, rgba(26,26,26,0.20) 100%)',
                         color: done ? '#ffffff' : 'rgba(26,26,26,0.70)',
                         transition: 'background 0.3s ease',
                       }}
