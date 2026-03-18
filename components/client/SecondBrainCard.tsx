@@ -7,7 +7,6 @@ import type { SecondBrain } from '@/content/smartbrainup-ai/client'
 const Lottie = dynamic(() => import('lottie-react'), { ssr: false })
 
 const CARD_COLORS: { key: string; from: string; to: string }[] = [
-  { key: 'default', from: '#e0e0e0', to: '#aeaeae' },
   { key: 'slate', from: '#c8cfd8', to: '#8f99a8' },
   { key: 'ocean', from: '#d0dde6', to: '#9bb4c4' },
   { key: 'sage', from: '#bcc0a8', to: '#8a9070' },
@@ -35,7 +34,7 @@ function getSphereIndex(brain: { num: string; id: any }): number {
 }
 
 function getGradient(colorKey: string) {
-  const c = CARD_COLORS.find((c) => c.key === colorKey) || CARD_COLORS[0]
+  const c = CARD_COLORS.find((c) => c.key === colorKey) || CARD_COLORS.find((c) => c.key === 'charcoal') || CARD_COLORS[0]
   return `linear-gradient(to bottom, ${c.from} 0%, ${c.to} 100%)`
 }
 

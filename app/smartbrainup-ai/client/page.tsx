@@ -284,7 +284,7 @@ export default function ClientArea() {
         created: new Date(row.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
         lastActive: '',
         interactions: 0,
-        cardColor: row.card_color || 'default',
+        cardColor: row.card_color || 'charcoal',
         })
       })
       setBrains(mapped)
