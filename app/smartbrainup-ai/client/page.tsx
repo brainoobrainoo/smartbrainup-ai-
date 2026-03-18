@@ -263,14 +263,12 @@ export default function ClientArea() {
     if (data && data.length > 0) {
       // Query separata — evita problemi di join con PostgREST
       const assessmentIds = data.map((row: any) => row.id)
-      const { data: sbData } = await supabase
-        .from('second_brains')
-        .select('assessment_id, prompt_status')
-        .in('assessment_id', assessmentIds)
-
+      // Usa API route server-side per bypassare RLS su second_brains
+      const sbRes = await fetch('/api/client/brain-status')
+      const sbJson = sbRes.ok ? await sbRes.json() : { brains: [] }
       const sbStatusMap: Record<number, string> = {}
-      if (sbData) {
-        sbData.forEach((sb: any) => { sbStatusMap[Number(sb.assessment_id)] = sb.prompt_status })
+      if (sbJson.brains) {
+        sbJson.brains.forEach((sb: any) => { sbStatusMap[Number(sb.assessment_id)] = sb.prompt_status })
       }
 
       const mapped: SecondBrain[] = data.map((row: any, index: number) => {
@@ -289,9 +287,6 @@ export default function ClientArea() {
         cardColor: row.card_color || 'default',
         })
       })
-      console.log('[DEBUG] sbData:', sbData)
-      console.log('[DEBUG] sbStatusMap:', sbStatusMap)
-      console.log('[DEBUG] mapped statuses:', mapped.map(b => ({id: b.id, status: b.status})))
       setBrains(mapped)
 
       // Build phase status map
