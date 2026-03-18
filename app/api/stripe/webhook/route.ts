@@ -149,24 +149,15 @@ async function handleLicensingPurchase(
 
   console.log(`[Webhook] Licensing: ${email} → ${licensingInfo.name} (${licensingInfo.credits} credits)`)
 
-  const { data: updatedRows, error: updateError } = await supabaseAdmin
+  // Fetch current credits to add (not overwrite)
+  const { data: existingProfile } = await supabaseAdmin
     .from('user_profiles')
-    .update({
-      stripe_customer_id: customerId,
-      credits: licensingInfo.credits,
-      licensing_status: 'active',
-      purchased_at: new Date().toISOString(),
-    })
+    .select('id, credits')
     .eq('email', email)
-    .select('id')
+    .single()
 
-  if (updateError) {
-    console.error('[Webhook] Update error:', updateError.message)
-    throw updateError
-  }
-
-  // Nessun account trovato → salva in pending_credits
-  if (!updatedRows || updatedRows.length === 0) {
+  if (!existingProfile) {
+    // No account yet → save to pending_credits
     console.log(`[Webhook] No user profile found for ${email} → saving to pending_credits`)
 
     const creditsToplan: Record<number, { plan: string; brains: number }> = {
@@ -194,7 +185,26 @@ async function handleLicensingPurchase(
     }
 
     console.log(`[Webhook] Pending credits saved for ${email}: ${planInfo.brains} brains`)
-    return // non creare il trial — l'utente non ha ancora un account
+    return
+  }
+
+  // Account exists — add credits to existing balance
+  const newCredits = (existingProfile.credits || 0) + licensingInfo.credits
+  console.log(`[Webhook] Adding ${licensingInfo.credits} credits to ${email}: ${existingProfile.credits} → ${newCredits}`)
+
+  const { error: updateError } = await supabaseAdmin
+    .from('user_profiles')
+    .update({
+      stripe_customer_id: customerId,
+      credits: newCredits,
+      licensing_status: 'active',
+      purchased_at: new Date().toISOString(),
+    })
+    .eq('email', email)
+
+  if (updateError) {
+    console.error('[Webhook] Update error:', updateError.message)
+    throw updateError
   }
 
   await createBasicTrial(customerId, email)
