@@ -251,7 +251,7 @@ export default function ClientArea() {
   const fetchAssessments = async (userId: string) => {
     const { data, error } = await supabase
       .from('assessments')
-      .select('*, second_brains(prompt_status)')
+      .select('*, second_brains!second_brains_assessment_id_fkey(prompt_status)')
       .eq('user_id', userId)
       .order('created_at', { ascending: true })
 
