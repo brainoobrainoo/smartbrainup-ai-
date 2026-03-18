@@ -724,7 +724,7 @@ export default function ClientArea() {
                       onClick={onClick}
                       className="flex-1 md:flex-none md:w-[110px] flex items-center justify-center py-2.5 px-4 rounded-[4px] border-0 cursor-pointer font-ui text-[10px] font-medium tracking-widest uppercase whitespace-nowrap"
                       style={{
-                        background: done ? 'rgba(26,26,26,0.60)' : 'rgba(26,26,26,0.10)',
+                        background: done ? 'rgba(26,26,26,0.66)' : 'rgba(26,26,26,0.10)',
                         color: done ? '#ffffff' : 'rgba(26,26,26,0.55)',
                         transition: 'background 0.3s ease',
                       }}
@@ -756,7 +756,7 @@ export default function ClientArea() {
                       </div>
                       <div className="flex-shrink-0 mt-auto md:mt-0 w-full md:w-auto">
                         {isSubmitted ? (
-                          <div style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '11px', fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(26,26,26,0.45)', textAlign: 'right' as const }}>
+                          <div style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '11px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(26,26,26,0.70)', textAlign: 'right' as const }}>
                             In preparation
                           </div>
                         ) : allDone ? (
@@ -768,7 +768,7 @@ export default function ClientArea() {
                                 setSubmittedBrainIds(prev => [...prev, b.id])
                               }}
                               className="flex-1 md:flex-none md:w-[169px] py-2.5 px-6 rounded-[4px] border-0 cursor-pointer font-ui text-[10px] font-medium tracking-widest uppercase transition-colors"
-                              style={{ backgroundColor: 'rgba(26,26,26,0.60)', color: '#ffffff' }}
+                              style={{ backgroundColor: 'rgba(26,26,26,0.66)', color: '#ffffff' }}
                             >
                               Submit
                             </button>
