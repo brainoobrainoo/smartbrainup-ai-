@@ -688,29 +688,8 @@ export default function ClientArea() {
             ───────────────────────────────────────────────── */}
         {!loading && section === 'dashboard' && (
           <Container>
-            {/* Badge */}
-            <p className="font-ui text-[11px] font-medium tracking-widest uppercase pt-10 md:pt-14 mb-8">
-              {(brains.length + (pendingBrain ? 1 : 0)) > 0 ? (
-                <>
-                  <span className="font-semibold text-[#1a1a1a]/70">
-                    {brains.length + (pendingBrain ? 1 : 0)} Second Brain{(brains.length + (pendingBrain ? 1 : 0)) !== 1 ? 's' : ''}
-                  </span>
-                  {credits > 0 && (
-                    <span className="text-[#1a1a1a]/50"> · {credits} credit{credits !== 1 ? 's' : ''}</span>
-                  )}
-                </>
-              ) : (
-                <>
-                  <span className="text-[#1a1a1a]/70">Welcome</span>
-                  {credits > 0 && (
-                    <span className="text-[#1a1a1a]/50"> · {credits} credit{credits !== 1 ? 's' : ''}</span>
-                  )}
-                </>
-              )}
-            </p>
-
             {/* Client name */}
-            <h1 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em] mb-12">
+            <h1 className="text-[32px] md:text-[44px] font-normal leading-[1.05] tracking-[-0.01em] pt-10 md:pt-14 mb-12">
               {userName}
             </h1>
 
@@ -736,15 +715,15 @@ export default function ClientArea() {
                   const phaseBtn = (label: string, done: boolean, onClick: () => void) => (
                     <button
                       onClick={onClick}
-                      className="flex-1 md:flex-none md:w-[110px] flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-[4px] border-0 cursor-pointer transition-colors font-ui text-[10px] font-medium tracking-widest uppercase whitespace-nowrap"
+                      className="flex-1 md:flex-none md:w-[110px] flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-[4px] border-0 cursor-pointer transition-colors font-ui text-[10px] font-medium tracking-widest uppercase"
                       style={{
-                        backgroundColor: done ? 'rgba(26,26,26,0.55)' : 'rgba(26,26,26,0.10)',
-                        color: done ? '#ffffff' : 'rgba(26,26,26,0.65)',
+                        backgroundColor: done ? 'rgba(26,26,26,0.55)' : 'rgba(26,26,26,0.06)',
+                        color: done ? '#ffffff' : 'rgba(26,26,26,0.45)',
                       }}
                     >
                       <span style={{
-                        width: 10, height: 10, borderRadius: '50%', flexShrink: 0,
-                        backgroundColor: done ? '#34c759' : 'rgba(26,26,26,0.20)',
+                        width: 5, height: 5, borderRadius: '50%', flexShrink: 0,
+                        backgroundColor: done ? '#34c759' : 'rgba(26,26,26,0.25)',
                         display: 'inline-block',
                       }} />
                       {label}
@@ -774,7 +753,7 @@ export default function ClientArea() {
                       </div>
                       <div className="flex-shrink-0 mt-auto md:mt-0">
                         {isSubmitted ? (
-                          <div style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '12px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(26,26,26,0.65)', textAlign: 'right' as const }}>
+                          <div style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '11px', fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(26,26,26,0.45)', textAlign: 'right' as const }}>
                             In preparation
                           </div>
                         ) : allDone ? (
