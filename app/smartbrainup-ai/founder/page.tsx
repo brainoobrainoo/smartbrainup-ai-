@@ -1,7 +1,8 @@
 'use client'
 
 // app/smartbrainup-ai/founder/page.tsx
-// Founder Interface — caricamento Prompt Genesi™
+// Founder Interface — caricamento multiplo Prompt Genesi™
+// 1 Second Brain → N Prompt Genesi → N Chat
 // Accesso: solo utenti con role = 'developer'
 
 import { useEffect, useState } from 'react'
@@ -18,12 +19,20 @@ type Brain = {
   created_at: string
 }
 
+type ChatEntry = {
+  id: string
+  prompt_key: string
+  label: string
+  is_default: boolean
+  sort_order: number
+}
+
 type UploadResult = {
   success: boolean
-  brain_id?: string
   prompt_key?: string
+  label?: string
   version?: string
-  status?: string
+  is_default?: boolean
   error?: string
 }
 
@@ -34,11 +43,16 @@ export default function FounderPage() {
 
   const [brains, setBrains] = useState<Brain[]>([])
   const [brainsLoading, setBrainsLoading] = useState(false)
-
   const [selectedBrainId, setSelectedBrainId] = useState('')
+  const [brainChats, setBrainChats] = useState<ChatEntry[]>([])
+  const [chatsLoading, setChatsLoading] = useState(false)
+
+  // Form fields
   const [promptKey, setPromptKey] = useState('')
+  const [label, setLabel] = useState('')
   const [promptText, setPromptText] = useState('')
   const [version, setVersion] = useState('')
+  const [isDefault, setIsDefault] = useState(false)
 
   const [uploading, setUploading] = useState(false)
   const [result, setResult] = useState<UploadResult | null>(null)
@@ -49,10 +63,7 @@ export default function FounderPage() {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
 
-      if (!user) {
-        router.replace('/login')
-        return
-      }
+      if (!user) { router.replace('/login'); return }
 
       const { data: profile } = await supabase
         .from('user_profiles')
@@ -60,53 +71,65 @@ export default function FounderPage() {
         .eq('id', user.id)
         .single()
 
-      if (!profile || profile.role !== 'developer') {
-        router.replace('/client')
-        return
-      }
+      if (!profile || profile.role !== 'developer') { router.replace('/client'); return }
 
       setAuthorized(true)
       setLoading(false)
     }
-
     check()
   }, [router])
 
-  // ── Load brains once authorized ──
+  // ── Load brains ──
   useEffect(() => {
     if (!authorized) return
-
     const fetchBrains = async () => {
       setBrainsLoading(true)
       try {
         const res = await fetch('/api/founder/brains')
         const data = await res.json()
         if (data.brains) setBrains(data.brains)
-      } catch {
-        // Silent — user sees empty list
-      } finally {
+      } catch { /* silent */ } finally {
         setBrainsLoading(false)
       }
     }
-
     fetchBrains()
   }, [authorized])
 
-  // ── Auto-fill prompt_key when brain selected ──
+  // ── Load chats for selected brain ──
+  const loadBrainChats = async (brainId: string) => {
+    setChatsLoading(true)
+    try {
+      const supabase = createClient()
+      const { data } = await supabase
+        .from('chats')
+        .select('id, prompt_key, label, is_default, sort_order')
+        .eq('second_brain_id', brainId)
+        .order('sort_order', { ascending: true })
+      setBrainChats(data || [])
+    } catch { /* silent */ } finally {
+      setChatsLoading(false)
+    }
+  }
+
+  // ── Select brain ──
   const handleBrainSelect = (id: string) => {
     setSelectedBrainId(id)
     setResult(null)
+    setBrainChats([])
     const brain = brains.find(b => b.id === id)
-    if (brain && brain.prompt_key) {
-      setPromptKey(brain.prompt_key)
-    } else if (brain) {
-      setPromptKey(`pg_${brain.id.slice(0, 8)}`)
+    if (id) {
+      loadBrainChats(id)
+      if (brain?.prompt_key) {
+        setPromptKey(brain.prompt_key)
+      } else if (brain) {
+        setPromptKey(`pg_${brain.id.slice(0, 8)}_01`)
+      }
     }
   }
 
   // ── Upload ──
   const handleUpload = async () => {
-    if (!selectedBrainId || !promptKey || !promptText.trim() || !version.trim()) return
+    if (!selectedBrainId || !promptKey || !promptText.trim() || !version.trim() || !label.trim()) return
 
     setUploading(true)
     setResult(null)
@@ -119,7 +142,9 @@ export default function FounderPage() {
           brain_id: selectedBrainId,
           prompt_key: promptKey,
           prompt_text: promptText,
-          version: version.trim()
+          version: version.trim(),
+          label: label.trim(),
+          is_default: isDefault,
         })
       })
 
@@ -127,9 +152,10 @@ export default function FounderPage() {
 
       if (res.ok && data.success) {
         setResult({ success: true, ...data })
-        // Clear prompt text after successful upload — never stays in memory
         setPromptText('')
-        // Refresh brain list to show updated status
+        // Refresh chats list
+        await loadBrainChats(selectedBrainId)
+        // Refresh brain list
         const refreshRes = await fetch('/api/founder/brains')
         const refreshData = await refreshRes.json()
         if (refreshData.brains) setBrains(refreshData.brains)
@@ -144,9 +170,8 @@ export default function FounderPage() {
   }
 
   const selectedBrain = brains.find(b => b.id === selectedBrainId)
-  const canUpload = selectedBrainId && promptKey && promptText.trim() && version.trim() && !uploading
+  const canUpload = selectedBrainId && promptKey && promptText.trim() && version.trim() && label.trim() && !uploading
 
-  // ── Loading / auth ──
   if (loading) {
     return (
       <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center">
@@ -159,7 +184,7 @@ export default function FounderPage() {
 
   return (
     <div className="min-h-screen bg-[#1a1a1a] text-white">
-      <div className="max-w-[680px] mx-auto px-6 py-16">
+      <div className="max-w-[720px] mx-auto px-6 py-16">
 
         {/* Header */}
         <div className="mb-14">
@@ -170,7 +195,7 @@ export default function FounderPage() {
             Prompt Genesi™
           </h1>
           <p className="text-[14px] opacity-40 mt-2 leading-[1.5]">
-            Carica il Prompt Genesi™ su un Second Brain attivo.
+            Ogni Second Brain contiene N Prompt Genesi™. Ogni prompt è una chat con un modo di ragionare distinto.
           </p>
         </div>
 
@@ -212,32 +237,101 @@ export default function FounderPage() {
                   {selectedBrain.prompt_status || 'pending'}
                 </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-[11px] opacity-30 font-mono">version</span>
-                <span className="text-[11px] font-mono opacity-70">{selectedBrain.prompt_version || '—'}</span>
-              </div>
             </div>
           )}
         </div>
 
-        {/* Step 2 — Prompt Key */}
-        <div className="mb-10">
+        {/* Prompt Genesi™ già caricati per questo brain */}
+        {selectedBrainId && (
+          <div className="mb-10">
+            <label className="block text-[10px] font-mono tracking-[0.15em] uppercase opacity-40 mb-3">
+              Prompt Genesi™ attivi su questo brain
+            </label>
+
+            {chatsLoading ? (
+              <p className="text-[13px] opacity-30">Caricamento...</p>
+            ) : brainChats.length === 0 ? (
+              <div className="bg-[#252525] border border-white/5 rounded-[4px] p-4">
+                <p className="text-[13px] opacity-30 font-mono">Nessun prompt caricato ancora.</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {brainChats.map((chat, i) => (
+                  <div
+                    key={chat.id}
+                    onClick={() => {
+                      setPromptKey(chat.prompt_key)
+                      setLabel(chat.label)
+                      setIsDefault(chat.is_default)
+                      setVersion('')
+                      setPromptText('')
+                      setResult(null)
+                    }}
+                    className="bg-[#252525] border border-white/5 rounded-[4px] p-4 flex items-center justify-between cursor-pointer hover:border-white/15 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-[11px] font-mono opacity-30">{String(i + 1).padStart(2, '0')}</span>
+                      <span className="text-[13px] text-white">{chat.label}</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-[11px] font-mono opacity-40">{chat.prompt_key}</span>
+                      {chat.is_default && (
+                        <span className="text-[10px] font-mono tracking-widest uppercase text-green-400 bg-green-400/10 px-2 py-0.5 rounded-[3px]">
+                          default
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Divider */}
+        {selectedBrainId && (
+          <div className="border-t border-white/5 mb-10">
+            <p className="text-[10px] font-mono tracking-[0.15em] uppercase opacity-20 mt-4">
+              Aggiungi o aggiorna un Prompt Genesi™
+            </p>
+          </div>
+        )}
+
+        {/* Step 2 — Label */}
+        <div className="mb-8">
           <label className="block text-[10px] font-mono tracking-[0.15em] uppercase opacity-40 mb-3">
-            02 — Prompt Key
+            02 — Label chat
+          </label>
+          <input
+            type="text"
+            value={label}
+            onChange={e => setLabel(e.target.value)}
+            placeholder="es. Decisione operativa"
+            className="w-full bg-[#2a2a2a] border border-white/10 rounded-[4px] px-4 py-3 text-[14px] text-white placeholder-white/20 focus:outline-none focus:border-white/30 transition-colors"
+          />
+          <p className="text-[11px] opacity-20 mt-2">
+            Nome visibile al cliente nella lista chat.
+          </p>
+        </div>
+
+        {/* Step 3 — Prompt Key */}
+        <div className="mb-8">
+          <label className="block text-[10px] font-mono tracking-[0.15em] uppercase opacity-40 mb-3">
+            03 — Prompt Key
           </label>
           <input
             type="text"
             value={promptKey}
             onChange={e => setPromptKey(e.target.value)}
-            placeholder="es. pg_client_001"
+            placeholder="es. pg_client_001_decisione"
             className="w-full bg-[#2a2a2a] border border-white/10 rounded-[4px] px-4 py-3 text-[14px] text-white font-mono placeholder-white/20 focus:outline-none focus:border-white/30 transition-colors"
           />
         </div>
 
-        {/* Step 3 — Version */}
-        <div className="mb-10">
+        {/* Step 4 — Version */}
+        <div className="mb-8">
           <label className="block text-[10px] font-mono tracking-[0.15em] uppercase opacity-40 mb-3">
-            03 — Versione
+            04 — Versione
           </label>
           <input
             type="text"
@@ -248,16 +342,47 @@ export default function FounderPage() {
           />
         </div>
 
-        {/* Step 4 — Prompt Genesi */}
+        {/* Step 5 — Default flag */}
+        <div className="mb-8">
+          <label className="block text-[10px] font-mono tracking-[0.15em] uppercase opacity-40 mb-3">
+            05 — Chat default
+          </label>
+          <div
+            onClick={() => setIsDefault(!isDefault)}
+            className={`flex items-center gap-3 cursor-pointer w-fit px-4 py-3 rounded-[4px] border transition-colors ${
+              isDefault
+                ? 'border-green-500/40 bg-green-500/5'
+                : 'border-white/10 bg-[#2a2a2a]'
+            }`}
+          >
+            <div className={`w-4 h-4 rounded-[3px] border flex items-center justify-center transition-colors ${
+              isDefault ? 'border-green-400 bg-green-400' : 'border-white/30'
+            }`}>
+              {isDefault && (
+                <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                  <path d="M1 4l2.5 2.5L9 1" stroke="#1a1a1a" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              )}
+            </div>
+            <span className={`text-[13px] font-mono ${isDefault ? 'text-green-400' : 'text-white opacity-50'}`}>
+              {isDefault ? 'Questa è la chat di default — "Start here"' : 'Imposta come chat di default'}
+            </span>
+          </div>
+          <p className="text-[11px] opacity-20 mt-2">
+            La chat default viene evidenziata come punto di partenza consigliato.
+          </p>
+        </div>
+
+        {/* Step 6 — Prompt Genesi */}
         <div className="mb-10">
           <label className="block text-[10px] font-mono tracking-[0.15em] uppercase opacity-40 mb-3">
-            04 — Prompt Genesi™
+            06 — Prompt Genesi™
           </label>
           <textarea
             value={promptText}
             onChange={e => setPromptText(e.target.value)}
             placeholder="Incolla qui il Prompt Genesi™..."
-            rows={12}
+            rows={14}
             className="w-full bg-[#2a2a2a] border border-white/10 rounded-[4px] px-4 py-3 text-[13px] text-white font-mono placeholder-white/20 focus:outline-none focus:border-white/30 transition-colors resize-none leading-[1.6]"
           />
           <p className="text-[11px] opacity-20 mt-2">
@@ -275,7 +400,7 @@ export default function FounderPage() {
               : 'bg-white/10 text-white/20 cursor-not-allowed'
           }`}
         >
-          {uploading ? 'Cifratura e upload in corso...' : '05 — Upload Prompt Genesi™'}
+          {uploading ? 'Cifratura e upload in corso...' : '07 — Upload Prompt Genesi™'}
         </button>
 
         {/* Result */}
@@ -292,20 +417,22 @@ export default function FounderPage() {
                 </p>
                 <div className="space-y-2">
                   <div className="flex justify-between">
-                    <span className="text-[11px] opacity-40 font-mono">brain_id</span>
-                    <span className="text-[11px] font-mono opacity-80">{result.brain_id}</span>
-                  </div>
-                  <div className="flex justify-between">
                     <span className="text-[11px] opacity-40 font-mono">prompt_key</span>
                     <span className="text-[11px] font-mono opacity-80">{result.prompt_key}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-[11px] opacity-40 font-mono">label</span>
+                    <span className="text-[11px] font-mono opacity-80">{result.label}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-[11px] opacity-40 font-mono">version</span>
                     <span className="text-[11px] font-mono opacity-80">{result.version}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-[11px] opacity-40 font-mono">status</span>
-                    <span className="text-[11px] font-mono text-green-400">{result.status}</span>
+                    <span className="text-[11px] opacity-40 font-mono">default</span>
+                    <span className={`text-[11px] font-mono ${result.is_default ? 'text-green-400' : 'opacity-50'}`}>
+                      {result.is_default ? 'sì' : 'no'}
+                    </span>
                   </div>
                 </div>
               </div>

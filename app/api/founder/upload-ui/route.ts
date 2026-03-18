@@ -1,5 +1,6 @@
 // app/api/founder/upload-ui/route.ts
 // Upload Prompt Genesi via UI — session authenticated, role verified
+// Supports multiple prompts per brain via chats table
 // Never logs prompt content. Never exposes to client.
 
 import { NextRequest, NextResponse } from 'next/server'
@@ -42,11 +43,11 @@ export async function POST(request: NextRequest) {
     }
 
     // ── Parse body ──
-    const { brain_id, prompt_key, prompt_text, version } = await request.json()
+    const { brain_id, prompt_key, prompt_text, version, label, is_default } = await request.json()
 
-    if (!brain_id || !prompt_key || !prompt_text || !version) {
+    if (!brain_id || !prompt_key || !prompt_text || !version || !label) {
       return NextResponse.json({
-        error: 'Missing fields: brain_id, prompt_key, prompt_text, version'
+        error: 'Missing fields: brain_id, prompt_key, prompt_text, version, label'
       }, { status: 400 })
     }
 
@@ -69,11 +70,11 @@ export async function POST(request: NextRequest) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     )
 
-    // Upsert into prompt_registry
+    // ── Upsert prompt_registry (with second_brain_id) ──
     const { error: registryError } = await supabaseAdmin
       .from('prompt_registry')
       .upsert(
-        { prompt_key, encrypted_prompt, version },
+        { prompt_key, encrypted_prompt, version, second_brain_id: brain_id },
         { onConflict: 'prompt_key' }
       )
 
@@ -81,18 +82,66 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Registry write failed' }, { status: 500 })
     }
 
-    // Update second_brains
-    const { error: brainError } = await supabaseAdmin
-      .from('second_brains')
-      .update({
-        prompt_key,
-        prompt_version: version,
-        prompt_status: 'active'
-      })
-      .eq('id', brain_id)
+    // ── If is_default, reset all other chats for this brain ──
+    if (is_default) {
+      await supabaseAdmin
+        .from('chats')
+        .update({ is_default: false })
+        .eq('second_brain_id', brain_id)
+    }
 
-    if (brainError) {
-      return NextResponse.json({ error: 'Brain update failed' }, { status: 500 })
+    // ── Upsert into chats ──
+    // Get current max sort_order for this brain
+    const { data: existingChats } = await supabaseAdmin
+      .from('chats')
+      .select('sort_order, prompt_key')
+      .eq('second_brain_id', brain_id)
+      .order('sort_order', { ascending: false })
+      .limit(1)
+
+    const isExisting = existingChats?.find(c => c.prompt_key === prompt_key)
+    const nextSortOrder = existingChats && existingChats.length > 0
+      ? (existingChats[0].sort_order || 0) + 1
+      : 0
+
+    if (isExisting) {
+      // Update existing chat entry
+      const { error: chatUpdateError } = await supabaseAdmin
+        .from('chats')
+        .update({ label, is_default: !!is_default })
+        .eq('second_brain_id', brain_id)
+        .eq('prompt_key', prompt_key)
+
+      if (chatUpdateError) {
+        return NextResponse.json({ error: 'Chat update failed' }, { status: 500 })
+      }
+    } else {
+      // Insert new chat entry
+      const { error: chatInsertError } = await supabaseAdmin
+        .from('chats')
+        .insert({
+          second_brain_id: brain_id,
+          prompt_key,
+          label,
+          is_default: !!is_default,
+          sort_order: nextSortOrder,
+        })
+
+      if (chatInsertError) {
+        return NextResponse.json({ error: 'Chat insert failed' }, { status: 500 })
+      }
+    }
+
+    // ── Update second_brains if this is the default prompt ──
+    if (is_default) {
+      await supabaseAdmin
+        .from('second_brains')
+        .update({
+          prompt_key,
+          prompt_version: version,
+          prompt_status: 'active'
+        })
+        .eq('id', brain_id)
     }
 
     // ── Safe response — no prompt content ever returned ──
@@ -101,6 +150,8 @@ export async function POST(request: NextRequest) {
       brain_id,
       prompt_key,
       version,
+      label,
+      is_default: !!is_default,
       status: 'active'
     })
 
