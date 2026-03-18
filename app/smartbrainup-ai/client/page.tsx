@@ -251,7 +251,7 @@ export default function ClientArea() {
   const fetchAssessments = async (userId: string) => {
     const { data, error } = await supabase
       .from('assessments')
-      .select('*')
+      .select('*, second_brains(prompt_status)')
       .eq('user_id', userId)
       .order('created_at', { ascending: true })
 
@@ -261,11 +261,16 @@ export default function ClientArea() {
     }
 
     if (data && data.length > 0) {
-      const mapped: SecondBrain[] = data.map((row: any, index: number) => ({
+      const mapped: SecondBrain[] = data.map((row: any, index: number) => {
+        const sbStatus = Array.isArray(row.second_brains)
+          ? row.second_brains[0]?.prompt_status
+          : row.second_brains?.prompt_status
+        const isActive = row.phase2_complete || sbStatus === 'active'
+        return ({
         id: row.id.toString(),
         num: String(index + 1),
         name: row.brain_name || 'Second Brain',
-        status: row.phase2_complete ? 'active' as const : 'setup' as const,
+        status: isActive ? 'active' as const : 'setup' as const,
         context: '',
         platforms: [],
         pmf: 'Pending',
@@ -273,7 +278,8 @@ export default function ClientArea() {
         lastActive: '',
         interactions: 0,
         cardColor: row.card_color || 'default',
-      }))
+        })
+      })
       setBrains(mapped)
 
       // Build phase status map
