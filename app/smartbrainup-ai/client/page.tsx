@@ -785,7 +785,7 @@ export default function ClientArea() {
                                 setPhaseStatus(prev => ({ ...prev, [b.id]: { p1: false, p2: false, p3: false } }))
                               }}
                               className="flex-1 md:flex-none md:w-[169px] py-2.5 px-6 rounded-[4px] border-0 cursor-pointer font-ui text-[10px] font-medium tracking-widest uppercase transition-colors"
-                              style={{ background: 'linear-gradient(to right, rgba(26,26,26,0.66) 0%, rgba(26,26,26,0.76) 100%)', color: '#ffffff' }}
+                              style={{ background: 'linear-gradient(to right, rgba(26,26,26,0.10) 0%, rgba(26,26,26,0.20) 100%)', color: 'rgba(26,26,26,0.70)' }}
                             >
                               Reset
                             </button>
