@@ -751,7 +751,7 @@ export default function ClientArea() {
                         </p>
                         <div className="h-[28px]" />
                       </div>
-                      <div className="flex-shrink-0 mt-auto md:mt-0">
+                      <div className="flex-shrink-0 mt-auto md:mt-0 w-full md:w-auto">
                         {isSubmitted ? (
                           <div style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '11px', fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(26,26,26,0.45)', textAlign: 'right' as const }}>
                             In preparation
