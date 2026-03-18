@@ -767,6 +767,20 @@ export default function ClientArea() {
                               onClick={async () => {
                                 if (!user) return
                                 await supabase.from('assessments').update({ submitted: true }).eq('id', parseInt(b.id))
+                                // Crea il record in second_brains se non esiste già
+                                const { data: existingSb } = await supabase
+                                  .from('second_brains')
+                                  .select('id')
+                                  .eq('assessment_id', parseInt(b.id))
+                                  .maybeSingle()
+                                if (!existingSb) {
+                                  await supabase.from('second_brains').insert([{
+                                    user_id: user.id,
+                                    assessment_id: parseInt(b.id),
+                                    name: b.name || 'Second Brain',
+                                    prompt_status: 'pending',
+                                  }])
+                                }
                                 setSubmittedBrainIds(prev => [...prev, b.id])
                               }}
                               className="flex-1 md:flex-none md:w-[169px] py-2.5 px-6 rounded-[4px] border-0 cursor-pointer font-ui text-[10px] font-medium tracking-widest uppercase transition-colors"
