@@ -270,11 +270,11 @@ export default function ClientArea() {
 
       const sbStatusMap: Record<number, string> = {}
       if (sbData) {
-        sbData.forEach((sb: any) => { sbStatusMap[sb.assessment_id] = sb.prompt_status })
+        sbData.forEach((sb: any) => { sbStatusMap[Number(sb.assessment_id)] = sb.prompt_status })
       }
 
       const mapped: SecondBrain[] = data.map((row: any, index: number) => {
-        const isActive = row.phase2_complete || sbStatusMap[row.id] === 'active'
+        const isActive = row.phase2_complete || sbStatusMap[Number(row.id)] === 'active'
         return ({
         id: row.id.toString(),
         num: String(index + 1),
