@@ -693,111 +693,124 @@ export default function ClientArea() {
               {userName}
             </h1>
 
-            {/* Active brain cards */}
-            {/* ── All brain cards — unified list, fixed order ── */}
-            {brains.length > 0 && (
-              <div className="flex flex-col gap-4 mb-5">
-                {[...(pendingBrain ? [pendingBrain] : []), ...brains].map((b) => {
-                  if (b.status === 'active') {
+            {/* ── All brain cards — active first, then in preparation, then incomplete (fixed order) ── */}
+            {brains.length > 0 && (() => {
+              const allCards = [...(pendingBrain ? [pendingBrain] : []), ...brains]
+              const active = allCards.filter(b => b.status === 'active')
+              const inPrep = allCards.filter(b => b.status !== 'active' && submittedBrainIds.includes(b.id))
+              const incomplete = allCards.filter(b => b.status !== 'active' && !submittedBrainIds.includes(b.id))
+              const ordered = [...active, ...inPrep, ...incomplete]
+
+              const phaseBtn = (label: string, done: boolean, onClick: () => void) => (
+                <button
+                  onClick={onClick}
+                  className="flex-1 md:flex-none md:w-[110px] border-0 cursor-pointer transition-colors font-ui font-medium tracking-widest uppercase rounded-[4px]"
+                  style={{
+                    backgroundColor: done ? 'rgba(26,26,26,0.55)' : 'rgba(26,26,26,0.10)',
+                    color: done ? '#ffffff' : 'rgba(26,26,26,0.65)',
+                    padding: '8px 4px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '5px',
+                  }}
+                >
+                  <span style={{
+                    width: 10, height: 10, borderRadius: '50%', flexShrink: 0,
+                    backgroundColor: done ? '#34c759' : 'rgba(26,26,26,0.20)',
+                    display: 'block',
+                  }} />
+                  <span style={{ fontSize: '10px', lineHeight: 1 }}>{label}</span>
+                </button>
+              )
+
+              return (
+                <div className="flex flex-col gap-4 mb-5">
+                  {ordered.map((b) => {
+                    if (b.status === 'active') {
+                      return (
+                        <SecondBrainCard
+                          key={b.id}
+                          brain={b}
+                          onOpen={openBrain}
+                          onRename={handleActiveBrainRename}
+                          onColorChange={handleActiveBrainColor}
+                        />
+                      )
+                    }
+                    const ps = phaseStatus[b.id] || { p1: false, p2: false, p3: false }
+                    const allDone = ps.p1 && ps.p2 && ps.p3
+                    const isSubmitted = submittedBrainIds.includes(b.id)
                     return (
-                      <SecondBrainCard
+                      <div
                         key={b.id}
-                        brain={b}
-                        onOpen={openBrain}
-                        onRename={handleActiveBrainRename}
-                        onColorChange={handleActiveBrainColor}
-                      />
+                        className="rounded-[12px] p-6 h-[220px] md:h-[88px] overflow-hidden flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-6"
+                        style={{ background: isSubmitted
+                          ? 'linear-gradient(to bottom, #d8d8d8 0%, #b8b8b8 100%)'
+                          : 'linear-gradient(to bottom, #ededed 0%, #c9c9c9 100%)' }}
+                      >
+                        <div className="flex-shrink-0 opacity-15">
+                          {incompleteSphereData ? (
+                            <Lottie animationData={incompleteSphereData} loop autoplay style={{ width: 40, height: 40 }} />
+                          ) : (
+                            <div className="w-[40px] h-[40px] rounded-full bg-black/[0.06]" />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-ui text-[11px] font-medium tracking-widest uppercase text-[#1a1a1a]/45 mb-1">
+                            Second Brain {b.num}
+                          </p>
+                          <div className="h-[28px]" />
+                        </div>
+                        <div className="flex-shrink-0 mt-auto md:mt-0 w-full md:w-auto">
+                          {isSubmitted ? (
+                            <div style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '12px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(26,26,26,0.65)', textAlign: 'right' as const }}>
+                              In preparation
+                            </div>
+                          ) : allDone ? (
+                            <div className="flex gap-2 w-full md:w-auto">
+                              <button
+                                onClick={async () => {
+                                  if (!user) return
+                                  await supabase.from('assessments').update({ submitted: true }).eq('id', parseInt(b.id))
+                                  setSubmittedBrainIds(prev => [...prev, b.id])
+                                }}
+                                className="flex-1 md:flex-none md:w-[169px] py-2.5 px-6 rounded-[4px] border-0 cursor-pointer font-ui text-[10px] font-medium tracking-widest uppercase transition-colors"
+                                style={{ backgroundColor: 'rgba(26,26,26,0.55)', color: '#ffffff' }}
+                              >
+                                Submit
+                              </button>
+                              <button
+                                onClick={async () => {
+                                  if (!user) return
+                                  await supabase.from('assessments').update({
+                                    submitted: false,
+                                    responses: { phase1: {}, phase2: {}, phase3: '' },
+                                  }).eq('id', parseInt(b.id))
+                                  setSubmittedBrainIds(prev => prev.filter(id => id !== b.id))
+                                  setPhaseStatus(prev => ({ ...prev, [b.id]: { p1: false, p2: false, p3: false } }))
+                                }}
+                                className="flex-1 md:flex-none md:w-[169px] py-2.5 px-6 rounded-[4px] border-0 cursor-pointer font-ui text-[10px] font-medium tracking-widest uppercase transition-colors"
+                                style={{ backgroundColor: 'rgba(26,26,26,0.06)', color: 'rgba(26,26,26,0.50)' }}
+                              >
+                                Redo phases
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="flex gap-2 w-full md:w-auto">
+                              {phaseBtn('Phase 1', ps.p1, () => handleOpenPhase(b.id, 1))}
+                              {phaseBtn('Phase 2', ps.p2, () => handleOpenPhase(b.id, 2))}
+                              {phaseBtn('Phase 3', ps.p3, () => handleOpenPhase(b.id, 3))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     )
-                  }
-                  // Incomplete card
-                  const ps = phaseStatus[b.id] || { p1: false, p2: false, p3: false }
-                  const allDone = ps.p1 && ps.p2 && ps.p3
-                  const phaseBtn = (label: string, done: boolean, onClick: () => void) => (
-                    <button
-                      onClick={onClick}
-                      className="flex-1 md:flex-none md:w-[110px] flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-[4px] border-0 cursor-pointer transition-colors font-ui text-[10px] font-medium tracking-widest uppercase"
-                      style={{
-                        backgroundColor: done ? 'rgba(26,26,26,0.55)' : 'rgba(26,26,26,0.06)',
-                        color: done ? '#ffffff' : 'rgba(26,26,26,0.45)',
-                      }}
-                    >
-                      <span style={{
-                        width: 5, height: 5, borderRadius: '50%', flexShrink: 0,
-                        backgroundColor: done ? '#34c759' : 'rgba(26,26,26,0.25)',
-                        display: 'inline-block',
-                      }} />
-                      {label}
-                    </button>
-                  )
-                  const isSubmitted = submittedBrainIds.includes(b.id)
-                  return (
-                    <div
-                      key={b.id}
-                      className="rounded-[12px] p-6 h-[220px] md:h-[88px] overflow-hidden flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-6"
-                      style={{ background: isSubmitted
-                        ? 'linear-gradient(to bottom, #d8d8d8 0%, #b8b8b8 100%)'
-                        : 'linear-gradient(to bottom, #ededed 0%, #c9c9c9 100%)' }}
-                    >
-                      <div className="flex-shrink-0 opacity-15">
-                        {incompleteSphereData ? (
-                          <Lottie animationData={incompleteSphereData} loop autoplay style={{ width: 40, height: 40 }} />
-                        ) : (
-                          <div className="w-[40px] h-[40px] rounded-full bg-black/[0.06]" />
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-ui text-[11px] font-medium tracking-widest uppercase text-[#1a1a1a]/45 mb-1">
-                          Second Brain {b.num}
-                        </p>
-                        <div className="h-[28px]" />
-                      </div>
-                      <div className="flex-shrink-0 mt-auto md:mt-0 w-full md:w-auto">
-                        {isSubmitted ? (
-                          <div style={{ fontFamily: 'var(--font-inter), sans-serif', fontSize: '11px', fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(26,26,26,0.45)', textAlign: 'right' as const }}>
-                            In preparation
-                          </div>
-                        ) : allDone ? (
-                          <div className="flex gap-2 w-full md:w-auto">
-                            <button
-                              onClick={async () => {
-                                if (!user) return
-                                await supabase.from('assessments').update({ submitted: true }).eq('id', parseInt(b.id))
-                                setSubmittedBrainIds(prev => [...prev, b.id])
-                              }}
-                              className="flex-1 md:flex-none md:w-[169px] py-2.5 px-6 rounded-[4px] border-0 cursor-pointer font-ui text-[10px] font-medium tracking-widest uppercase transition-colors"
-                              style={{ backgroundColor: 'rgba(26,26,26,0.55)', color: '#ffffff' }}
-                            >
-                              Submit
-                            </button>
-                            <button
-                              onClick={async () => {
-                                if (!user) return
-                                await supabase.from('assessments').update({
-                                  submitted: false,
-                                  responses: { phase1: {}, phase2: {}, phase3: '' },
-                                }).eq('id', parseInt(b.id))
-                                setSubmittedBrainIds(prev => prev.filter(id => id !== b.id))
-                                setPhaseStatus(prev => ({ ...prev, [b.id]: { p1: false, p2: false, p3: false } }))
-                              }}
-                              className="flex-1 md:flex-none md:w-[169px] py-2.5 px-6 rounded-[4px] border-0 cursor-pointer font-ui text-[10px] font-medium tracking-widest uppercase transition-colors"
-                              style={{ backgroundColor: 'rgba(26,26,26,0.06)', color: 'rgba(26,26,26,0.50)' }}
-                            >
-                              Redo phases
-                            </button>
-                          </div>
-                        ) : (
-                          <div className="flex gap-2 w-full md:w-auto">
-                            {phaseBtn('Fase 1', ps.p1, () => handleOpenPhase(b.id, 1))}
-                            {phaseBtn('Fase 2', ps.p2, () => handleOpenPhase(b.id, 2))}
-                            {phaseBtn('Fase 3', ps.p3, () => handleOpenPhase(b.id, 3))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            )}
+                  })}
+                </div>
+              )
+            })()}
 
             {/* New brain */}
             <button
