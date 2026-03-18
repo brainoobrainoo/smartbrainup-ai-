@@ -6,7 +6,6 @@
 // Never shows prompt content after submit. Never stores in client.
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 
 type UploadStatus = 'idle' | 'loading' | 'success' | 'error'
 
@@ -18,8 +17,6 @@ type RuntimeMeta = {
 }
 
 export default function FounderPublicPage() {
-  const router = useRouter()
-
   const [promptText, setPromptText] = useState('')
   const [promptVersion, setPromptVersion] = useState('')
   const [publicContext, setPublicContext] = useState('')
@@ -31,7 +28,7 @@ export default function FounderPublicPage() {
 
   const handleSubmit = async () => {
     if (!promptText || !promptVersion || !publicContext || !publicContextVersion) {
-      setErrorMsg('All fields are required.')
+      setErrorMsg('Tutti i campi sono obbligatori.')
       return
     }
 
@@ -59,7 +56,6 @@ export default function FounderPublicPage() {
         return
       }
 
-      // Clear sensitive fields immediately after submit
       setPromptText('')
       setPublicContext('')
 
@@ -74,120 +70,129 @@ export default function FounderPublicPage() {
 
     } catch {
       setStatus('error')
-      setErrorMsg('Network error. Try again.')
+      setErrorMsg('Network error. Riprova.')
     }
-  }
-
-  const labelStyle: React.CSSProperties = {
-    display: 'block',
-    fontSize: '11px',
-    fontWeight: 600,
-    letterSpacing: '0.08em',
-    textTransform: 'uppercase',
-    color: 'rgba(255,255,255,0.4)',
-    marginBottom: '8px',
-  }
-
-  const textareaStyle: React.CSSProperties = {
-    width: '100%',
-    padding: '12px 14px',
-    borderRadius: '8px',
-    border: '1px solid rgba(255,255,255,0.1)',
-    backgroundColor: 'rgba(255,255,255,0.04)',
-    color: 'rgba(255,255,255,0.85)',
-    fontFamily: 'monospace',
-    fontSize: '13px',
-    lineHeight: 1.6,
-    resize: 'vertical',
-    outline: 'none',
   }
 
   const inputStyle: React.CSSProperties = {
     width: '100%',
-    padding: '10px 14px',
+    background: '#fff',
+    border: '1.5px solid #d0d0d0',
     borderRadius: '8px',
-    border: '1px solid rgba(255,255,255,0.1)',
-    backgroundColor: 'rgba(255,255,255,0.04)',
-    color: 'rgba(255,255,255,0.85)',
-    fontFamily: 'monospace',
-    fontSize: '13px',
+    padding: '14px 16px',
+    fontSize: '16px',
+    color: '#1a1a1a',
     outline: 'none',
+    fontFamily: 'monospace',
+    boxSizing: 'border-box',
+  }
+
+  const textareaStyle: React.CSSProperties = {
+    width: '100%',
+    background: '#fff',
+    border: '1.5px solid #d0d0d0',
+    borderRadius: '8px',
+    padding: '16px',
+    fontSize: '15px',
+    color: '#1a1a1a',
+    outline: 'none',
+    fontFamily: 'monospace',
+    resize: 'vertical',
+    lineHeight: '1.65',
+    boxSizing: 'border-box',
+  }
+
+  const labelStyle: React.CSSProperties = {
+    display: 'block',
+    fontSize: '13px',
+    fontWeight: '600',
+    color: '#1a1a1a',
+    marginBottom: '8px',
+    letterSpacing: '0.03em',
+    fontFamily: 'system-ui, sans-serif',
+    textTransform: 'uppercase',
   }
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      backgroundColor: '#111',
-      color: 'rgba(255,255,255,0.85)',
-      fontFamily: 'var(--font-inter), sans-serif',
-      padding: '48px 24px',
-    }}>
-      <div style={{ maxWidth: '680px', margin: '0 auto' }}>
+    <div style={{ minHeight: '100vh', background: '#f8f8f6', fontFamily: 'Georgia, "Times New Roman", serif' }}>
+      <div style={{ maxWidth: '880px', margin: '0 auto', padding: '48px 40px 80px' }}>
 
         {/* Header */}
-        <div style={{ marginBottom: '48px' }}>
-          <div style={{ fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: '12px' }}>
-            Founder Interface — Public Runtime
-          </div>
-          <h1 style={{ fontSize: '22px', fontWeight: 600, margin: 0 }}>
+        <div style={{ marginBottom: '48px', paddingBottom: '32px', borderBottom: '2px solid #1a1a1a' }}>
+          <p style={{ fontSize: '12px', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#888', marginBottom: '12px', fontFamily: 'system-ui, sans-serif' }}>
+            SmartBrainUp — Founder Interface / Public Runtime
+          </p>
+          <h1 style={{ fontSize: '36px', fontWeight: '400', color: '#1a1a1a', margin: '0 0 10px', letterSpacing: '-0.02em', lineHeight: 1.1 }}>
             Public Chat Configuration
           </h1>
-          <p style={{ marginTop: '8px', fontSize: '13px', color: 'rgba(255,255,255,0.4)', lineHeight: 1.6 }}>
-            Upload Public Surface Context and Prompt Genesi™ for the public chat.<br />
-            Both fields are required. Content is never shown after submit.
+          <p style={{ fontSize: '17px', color: '#555', margin: 0, lineHeight: 1.5, fontFamily: 'system-ui, sans-serif' }}>
+            Carica il Public Surface Context e il Prompt Genesi™ per la public chat. Il contenuto non viene mai mostrato dopo il submit.
           </p>
         </div>
 
         {status !== 'success' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '36px' }}>
 
             {/* Public Surface Context */}
             <div>
-              <label style={labelStyle}>Public Surface Context</label>
+              <label style={labelStyle}>01 — Public Surface Context</label>
               <textarea
                 value={publicContext}
                 onChange={e => setPublicContext(e.target.value)}
-                rows={8}
-                placeholder="Paste the Public Surface Context here..."
+                rows={10}
+                placeholder="Incolla il Public Surface Context..."
                 style={textareaStyle}
+                onFocus={e => (e.target.style.borderColor = '#1a1a1a')}
+                onBlur={e => (e.target.style.borderColor = '#d0d0d0')}
               />
-              <div style={{ marginTop: '8px' }}>
-                <label style={{ ...labelStyle, marginBottom: '6px' }}>Version</label>
+              <div style={{ marginTop: '16px' }}>
+                <label style={{ ...labelStyle, fontSize: '12px' }}>Versione</label>
                 <input
                   type="text"
                   value={publicContextVersion}
                   onChange={e => setPublicContextVersion(e.target.value)}
-                  placeholder="e.g. 1.0"
-                  style={inputStyle}
+                  placeholder="es. 1.0"
+                  style={{ ...inputStyle, width: '280px' }}
+                  onFocus={e => (e.target.style.borderColor = '#1a1a1a')}
+                  onBlur={e => (e.target.style.borderColor = '#d0d0d0')}
                 />
               </div>
             </div>
 
-            {/* Prompt Genesi™ */}
+            {/* Prompt Genesi */}
             <div>
-              <label style={labelStyle}>Prompt Genesi™</label>
+              <label style={labelStyle}>02 — Prompt Genesi™</label>
               <textarea
                 value={promptText}
                 onChange={e => setPromptText(e.target.value)}
-                rows={8}
-                placeholder="Paste Prompt Genesi™ here..."
-                style={{ ...textareaStyle, borderColor: 'rgba(255,255,255,0.15)' }}
+                rows={10}
+                placeholder="Incolla il Prompt Genesi™..."
+                style={textareaStyle}
+                onFocus={e => (e.target.style.borderColor = '#1a1a1a')}
+                onBlur={e => (e.target.style.borderColor = '#d0d0d0')}
               />
-              <div style={{ marginTop: '8px' }}>
-                <label style={{ ...labelStyle, marginBottom: '6px' }}>Version</label>
+              <p style={{ margin: '6px 0 0', fontSize: '13px', color: '#999', fontFamily: 'system-ui, sans-serif' }}>
+                Il testo viene cifrato AES-256-GCM immediatamente. Non viene mai salvato in chiaro.
+              </p>
+              <div style={{ marginTop: '16px' }}>
+                <label style={{ ...labelStyle, fontSize: '12px' }}>Versione</label>
                 <input
                   type="text"
                   value={promptVersion}
                   onChange={e => setPromptVersion(e.target.value)}
-                  placeholder="e.g. 1.0"
-                  style={inputStyle}
+                  placeholder="es. 1.0"
+                  style={{ ...inputStyle, width: '280px' }}
+                  onFocus={e => (e.target.style.borderColor = '#1a1a1a')}
+                  onBlur={e => (e.target.style.borderColor = '#d0d0d0')}
                 />
               </div>
             </div>
 
             {/* Error */}
             {errorMsg && (
-              <div style={{ fontSize: '13px', color: '#ff6b6b' }}>{errorMsg}</div>
+              <div style={{ padding: '14px 16px', borderRadius: '8px', border: '1.5px solid #dc2626', background: '#fef2f2' }}>
+                <p style={{ fontSize: '14px', color: '#dc2626', margin: 0, fontFamily: 'system-ui, sans-serif' }}>✗ {errorMsg}</p>
+              </div>
             )}
 
             {/* Submit */}
@@ -195,18 +200,24 @@ export default function FounderPublicPage() {
               onClick={handleSubmit}
               disabled={status === 'loading'}
               style={{
-                padding: '14px 28px',
+                width: '100%',
+                padding: '18px',
                 borderRadius: '8px',
                 border: 'none',
-                backgroundColor: status === 'loading' ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.9)',
-                color: '#111',
-                fontSize: '14px',
-                fontWeight: 600,
-                cursor: status === 'loading' ? 'default' : 'pointer',
-                alignSelf: 'flex-start',
+                fontSize: '15px',
+                fontWeight: '700',
+                letterSpacing: '0.06em',
+                textTransform: 'uppercase',
+                cursor: status === 'loading' ? 'not-allowed' : 'pointer',
+                background: status === 'loading' ? '#e0e0e0' : '#1a1a1a',
+                color: status === 'loading' ? '#aaa' : '#fff',
+                transition: 'all 0.15s',
+                fontFamily: 'system-ui, sans-serif',
               }}
+              onMouseEnter={e => { if (status !== 'loading') e.currentTarget.style.background = '#333' }}
+              onMouseLeave={e => { if (status !== 'loading') e.currentTarget.style.background = '#1a1a1a' }}
             >
-              {status === 'loading' ? 'Uploading...' : 'Upload Public Runtime'}
+              {status === 'loading' ? 'Upload in corso...' : '03 — Upload Public Runtime'}
             </button>
 
           </div>
@@ -214,50 +225,45 @@ export default function FounderPublicPage() {
 
         {/* Success */}
         {status === 'success' && result && (
-          <div style={{
-            padding: '24px',
-            borderRadius: '10px',
-            border: '1px solid rgba(255,255,255,0.1)',
-            backgroundColor: 'rgba(255,255,255,0.04)',
-          }}>
-            <div style={{ fontSize: '13px', color: 'rgba(100,220,120,0.9)', fontWeight: 600, marginBottom: '20px' }}>
-              ✓ Public runtime activated
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <div style={{ borderRadius: '8px', border: '1.5px solid #16a34a', background: '#f0fdf4', padding: '24px' }}>
+            <p style={{ fontSize: '13px', fontWeight: '700', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#16a34a', marginBottom: '20px', fontFamily: 'system-ui, sans-serif' }}>
+              ✓ Public runtime attivato
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: '10px', fontFamily: 'system-ui, sans-serif' }}>
               {[
-                { label: 'prompt_key', value: result.prompt_key },
-                { label: 'prompt_version', value: result.prompt_version },
-                { label: 'public_context_version', value: result.public_context_version },
-                { label: 'status', value: result.status },
-              ].map(row => (
-                <div key={row.label} style={{ display: 'flex', gap: '16px', fontSize: '13px', fontFamily: 'monospace' }}>
-                  <span style={{ color: 'rgba(255,255,255,0.35)', minWidth: '200px' }}>{row.label}</span>
-                  <span style={{ color: 'rgba(255,255,255,0.85)' }}>{row.value}</span>
-                </div>
+                ['prompt_key', result.prompt_key],
+                ['prompt_version', result.prompt_version],
+                ['public_context_version', result.public_context_version],
+                ['status', result.status],
+              ].map(([k, v]) => (
+                <>
+                  <span key={k + 'k'} style={{ fontSize: '13px', color: '#888' }}>{k}</span>
+                  <span key={k + 'v'} style={{ fontSize: '13px', color: '#1a1a1a', fontWeight: '500' }}>{v}</span>
+                </>
               ))}
             </div>
             <button
-              onClick={() => {
-                setStatus('idle')
-                setResult(null)
-                setPromptVersion('')
-                setPublicContextVersion('')
-              }}
+              onClick={() => { setStatus('idle'); setResult(null); setPromptVersion(''); setPublicContextVersion('') }}
               style={{
-                marginTop: '24px',
-                padding: '10px 20px',
-                borderRadius: '6px',
-                border: '1px solid rgba(255,255,255,0.15)',
-                backgroundColor: 'transparent',
-                color: 'rgba(255,255,255,0.6)',
-                fontSize: '13px',
-                cursor: 'pointer',
+                marginTop: '24px', padding: '12px 20px', borderRadius: '8px',
+                border: '1.5px solid #d0d0d0', background: '#fff', color: '#555',
+                fontSize: '14px', cursor: 'pointer', fontFamily: 'system-ui, sans-serif',
+                fontWeight: '500', transition: 'border-color 0.15s',
               }}
+              onMouseEnter={e => (e.currentTarget.style.borderColor = '#1a1a1a')}
+              onMouseLeave={e => (e.currentTarget.style.borderColor = '#d0d0d0')}
             >
-              Upload new version
+              Carica nuova versione
             </button>
           </div>
         )}
+
+        {/* Footer */}
+        <div style={{ marginTop: '64px', paddingTop: '24px', borderTop: '1px solid #e0e0e0' }}>
+          <p style={{ fontSize: '12px', color: '#bbb', lineHeight: 1.7, margin: 0, fontFamily: 'system-ui, sans-serif' }}>
+            Prompt Genesi™ è cifrato AES-256-GCM server-side. Nessun dato sensibile viene loggato o restituito al client. Accesso riservato: role = developer.
+          </p>
+        </div>
 
       </div>
     </div>
