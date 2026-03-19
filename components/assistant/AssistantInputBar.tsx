@@ -176,6 +176,31 @@ function LiveAudioBars({ stream, barColor }: { stream: MediaStream | null, barCo
   )
 }
 
+// ── FILE ATTACHMENT ──
+
+export interface FileAttachment {
+  file: File
+  preview: string | null
+  type: 'image' | 'audio' | 'document'
+  name: string
+}
+
+const ACCEPTED_TYPES = [
+  'image/jpeg', 'image/png', 'image/gif', 'image/webp',
+  'application/pdf',
+  'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'text/plain', 'text/csv',
+  'audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/webm', 'audio/mp4',
+].join(',')
+
+const MAX_FILE_SIZE = 20 * 1024 * 1024
+
+function getFileType(mimeType: string): FileAttachment['type'] {
+  if (mimeType.startsWith('image/')) return 'image'
+  if (mimeType.startsWith('audio/')) return 'audio'
+  return 'document'
+}
+
 // ── COMPONENT ──
 
 export interface AssistantInputBarHandle {
@@ -191,15 +216,19 @@ interface AssistantInputBarProps {
   disclaimer?: string
   // Optional: called after transcription with blob + transcript (used by Phase3Chat)
   onAudioAsset?: (blob: Blob, transcript: string) => void
+  // Optional: called when user attaches a file (used by Phase3Chat)
+  onFileAsset?: (file: File) => void
 }
 
-const AssistantInputBar = forwardRef<AssistantInputBarHandle, AssistantInputBarProps>(({ onSend, isLoading, isDayMode = false, onToggleTheme, placeholder = 'Ask your question...', disclaimer = 'AI-UP Second Brain\u2122', onAudioAsset }, ref) => {
+const AssistantInputBar = forwardRef<AssistantInputBarHandle, AssistantInputBarProps>(({ onSend, isLoading, isDayMode = false, onToggleTheme, placeholder = 'Ask your question...', disclaimer = 'AI-UP Second Brain\u2122', onAudioAsset, onFileAsset }, ref) => {
   const C = isDayMode ? C_DAY : C_NIGHT
   const [input, setInput] = useState('')
+  const [attachments, setAttachments] = useState<FileAttachment[]>([])
   const [isRecording, setIsRecording] = useState(false)
   const [isTranscribing, setIsTranscribing] = useState(false)
   const [activeStream, setActiveStream] = useState<MediaStream | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const chunksRef = useRef<Blob[]>([])
 
@@ -210,6 +239,41 @@ const AssistantInputBar = forwardRef<AssistantInputBarHandle, AssistantInputBarP
       setTimeout(() => textareaRef.current?.focus(), 50)
     }
   }))
+
+  // ── FILE HANDLING ──
+  const processFile = useCallback((file: File): Promise<FileAttachment> => {
+    return new Promise((resolve) => {
+      const type = getFileType(file.type)
+      if (type === 'image') {
+        const reader = new FileReader()
+        reader.onload = (e) => resolve({ file, preview: e.target?.result as string, type, name: file.name })
+        reader.readAsDataURL(file)
+      } else {
+        resolve({ file, preview: null, type, name: file.name })
+      }
+    })
+  }, [])
+
+  const handleFiles = useCallback(async (files: FileList | File[]) => {
+    const valid = Array.from(files).filter(f => f.size <= MAX_FILE_SIZE)
+    if (!valid.length) return
+    const newAttachments = await Promise.all(valid.map(processFile))
+    setAttachments(prev => [...prev, ...newAttachments])
+    if (onFileAsset) valid.forEach(f => onFileAsset(f))
+    setTimeout(() => textareaRef.current?.focus(), 100)
+  }, [processFile, onFileAsset])
+
+  const removeAttachment = useCallback((index: number) => {
+    setAttachments(prev => prev.filter((_, i) => i !== index))
+  }, [])
+
+  const handleUploadClick = useCallback(() => {
+    fileInputRef.current?.click()
+  }, [])
+
+  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.length) { handleFiles(e.target.files); e.target.value = '' }
+  }, [handleFiles])
 
   // ── TEXTAREA AUTO-RESIZE ──
   useLayoutEffect(() => {
@@ -301,7 +365,7 @@ const AssistantInputBar = forwardRef<AssistantInputBarHandle, AssistantInputBarP
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend() }
   }
 
-  const hasContent = !!input.trim()
+  const hasContent = !!input.trim() || attachments.length > 0
 
   const iconBtnStyle = (active: boolean): React.CSSProperties => ({
     padding: '6px', borderRadius: '8px', background: 'none', border: 'none',
@@ -322,12 +386,53 @@ const AssistantInputBar = forwardRef<AssistantInputBarHandle, AssistantInputBarP
         }
       `}</style>
 
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept={ACCEPTED_TYPES}
+        multiple
+        onChange={handleFileChange}
+        style={{ display: 'none' }}
+      />
+
       <div className="assistant-input-inner" style={{ maxWidth: L.maxWidth, margin: '0 auto', padding: '0 30px' }}>
         <div style={{
           backgroundColor: C.cloud,
           borderRadius: L.cloud.borderRadius,
           transition: 'none',
         }}>
+
+          {/* Attachment previews */}
+          {attachments.length > 0 && (
+            <div style={{ padding: '10px 14px 0', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+              {attachments.map((att, i) => (
+                <div key={i} style={{
+                  display: 'flex', alignItems: 'center', gap: '6px',
+                  padding: '5px 10px', borderRadius: '10px',
+                  backgroundColor: isDayMode ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.10)',
+                  maxWidth: '200px',
+                }}>
+                  {att.type === 'image' && att.preview ? (
+                    <img src={att.preview} alt={att.name} style={{ width: '20px', height: '20px', objectFit: 'cover', borderRadius: '4px' }} />
+                  ) : (
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" style={{ color: C.textMuted, flexShrink: 0 }}>
+                      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                      <polyline points="14,2 14,8 20,8" />
+                    </svg>
+                  )}
+                  <span style={{ fontSize: '12px', color: C.text, opacity: 0.7, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: L.textarea.fontFamily }}>
+                    {att.name}
+                  </span>
+                  <button onClick={() => removeAttachment(i)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.textMuted, padding: '0 0 0 2px', display: 'flex', flexShrink: 0 }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* Transcribing indicator */}
           {isTranscribing && (
@@ -394,6 +499,8 @@ const AssistantInputBar = forwardRef<AssistantInputBarHandle, AssistantInputBarP
               </>
             ) : (
               <>
+                {/* Left side: theme toggle + paperclip */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
                 {/* Sun/Moon toggle */}
                 <button
                   onClick={onToggleTheme}
@@ -425,6 +532,27 @@ const AssistantInputBar = forwardRef<AssistantInputBarHandle, AssistantInputBarP
                     </svg>
                   )}
                 </button>
+
+                {/* Paperclip — only shown when onFileAsset is provided */}
+                {onFileAsset && (
+                  <button
+                    onClick={handleUploadClick}
+                    disabled={isLoading || isTranscribing}
+                    style={{
+                      padding: L.plusButton.padding, borderRadius: L.plusButton.borderRadius,
+                      background: 'none', border: 'none',
+                      cursor: isLoading || isTranscribing ? 'not-allowed' : 'pointer',
+                      color: C.textMuted, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      opacity: isLoading || isTranscribing ? 0.4 : 1,
+                      transition: 'color 0.2s, opacity 0.2s, transform 0.15s',
+                    }}
+                    aria-label="Attach file">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" />
+                    </svg>
+                  </button>
+                )}
+                </div>
 
                 {/* Right side: mic + send */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>

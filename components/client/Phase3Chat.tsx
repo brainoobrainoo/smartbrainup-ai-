@@ -16,7 +16,6 @@ interface Message {
 
 interface Phase3ChatProps {
   initialText?: string
-  secondBrainId: string
   onComplete: (text: string) => void
   onExit: () => void
 }
@@ -25,7 +24,7 @@ const NIGHT_THEMES = [
   '#656c73', '#60706d', '#5f7064', '#736f60', '#807b68', '#776457', '#8c7d7b',
 ]
 
-export default function Phase3Chat({ initialText = '', secondBrainId, onComplete, onExit }: Phase3ChatProps) {
+export default function Phase3Chat({ initialText = '', onComplete, onExit }: Phase3ChatProps) {
   const { theme, toggleTheme } = useTheme()
   const [isDayMode, setIsDayMode] = useState(false)
   useEffect(() => { setIsDayMode(theme === 'light') }, [theme])
@@ -99,6 +98,20 @@ export default function Phase3Chat({ initialText = '', secondBrainId, onComplete
       await fetch('/api/phase3/upload', { method: 'POST', body: formData })
     } catch (e) {
       console.error('[Phase3] Audio upload error:', e)
+    }
+  }, [secondBrainId])
+
+  const handleFileAsset = useCallback(async (file: File) => {
+    if (!secondBrainId) return
+    try {
+      const formData = new FormData()
+      formData.append('file', file, file.name)
+      formData.append('second_brain_id', secondBrainId)
+      formData.append('asset_type', file.type.startsWith('image/') ? 'image' : 'document')
+      formData.append('source', 'file_upload')
+      await fetch('/api/phase3/upload', { method: 'POST', body: formData })
+    } catch (e) {
+      console.error('[Phase3] File upload error:', e)
     }
   }, [secondBrainId])
 
@@ -235,6 +248,7 @@ export default function Phase3Chat({ initialText = '', secondBrainId, onComplete
           placeholder={phase3Content.placeholder}
           disclaimer={phase3Content.disclaimer}
           onAudioAsset={handleAudioAsset}
+          onFileAsset={handleFileAsset}
           onToggleTheme={() => {
             if (isDayMode) setThemeBottom(NIGHT_THEMES[Math.floor(Math.random() * NIGHT_THEMES.length)])
             toggleTheme()
