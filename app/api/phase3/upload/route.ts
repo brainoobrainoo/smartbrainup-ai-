@@ -1,26 +1,25 @@
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
+import { createClient } from '@/lib/supabase/server'
 import OpenAI from 'openai'
 
 export async function POST(req: Request) {
   try {
-    const supabase = createRouteHandlerClient({ cookies })
+    const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 })
 
     const formData = await req.formData()
     const file = formData.get('file') as File
-    const secondBrainId = formData.get('second_brain_id') as string
-    const assetType = formData.get('asset_type') as string // 'audio' | 'text' | 'document'
-    const source = formData.get('source') as string // 'input_bar_audio' | 'file_upload' | 'text'
+    const assessmentId = formData.get('assessment_id') as string
+    const assetType = formData.get('asset_type') as string // 'audio' | 'image' | 'document'
+    const source = formData.get('source') as string // 'input_bar_audio' | 'file_upload'
 
-    if (!file || !secondBrainId) {
-      return Response.json({ error: 'Missing file or second_brain_id' }, { status: 400 })
+    if (!file || !assessmentId) {
+      return Response.json({ error: 'Missing file or assessment_id' }, { status: 400 })
     }
 
     // 1. Upload to Supabase Storage
     const ext = file.name.split('.').pop() || 'bin'
-    const storagePath = `${user.id}/${secondBrainId}/${Date.now()}.${ext}`
+    const storagePath = `${user.id}/${assessmentId}/${Date.now()}.${ext}`
 
     const arrayBuffer = await file.arrayBuffer()
     const buffer = new Uint8Array(arrayBuffer)
@@ -42,7 +41,7 @@ export async function POST(req: Request) {
       .from('files')
       .insert({
         user_id: user.id,
-        second_brain_id: secondBrainId,
+        assessment_id: parseInt(assessmentId),
         phase: 'phase3',
         asset_type: assetType,
         source: source,
@@ -55,6 +54,7 @@ export async function POST(req: Request) {
       .single()
 
     if (fileError || !fileRecord) {
+      console.error('File record error:', fileError)
       return Response.json({ error: 'File record failed' }, { status: 500 })
     }
 
@@ -78,7 +78,7 @@ export async function POST(req: Request) {
     // 4. Save to context_extractions
     await supabase.from('context_extractions').insert({
       asset_id: fileRecord.id,
-      raw_text: rawText,
+      raw_text: rawText || null,
       transcript: transcript || null,
     })
 
@@ -91,7 +91,6 @@ export async function POST(req: Request) {
       success: true,
       file_id: fileRecord.id,
       transcript: transcript || null,
-      raw_text: rawText,
     })
 
   } catch (error) {

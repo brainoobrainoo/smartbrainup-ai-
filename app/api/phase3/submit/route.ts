@@ -1,10 +1,9 @@
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
+import { createClient } from '@/lib/supabase/server'
 import OpenAI from 'openai'
 
 export async function POST(req: Request) {
   try {
-    const supabase = createRouteHandlerClient({ cookies })
+    const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 })
 
@@ -27,11 +26,11 @@ export async function POST(req: Request) {
 
     const { phase1, phase2, phase3 } = assessment.responses || {}
 
-    // 2. Fetch all context_extractions for this second_brain
+    // 2. Fetch all context_extractions for this assessment
     const { data: files } = await supabase
       .from('files')
       .select('id, asset_type, source')
-      .eq('second_brain_id', second_brain_id)
+      .eq('assessment_id', assessment_id)
       .eq('phase', 'phase3')
       .eq('status', 'processed')
 
