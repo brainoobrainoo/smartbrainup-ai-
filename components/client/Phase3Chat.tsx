@@ -94,8 +94,7 @@ export default function Phase3Chat({ initialText = '', assessmentId, onComplete,
       const formData = new FormData()
       formData.append('file', blob, 'recording.webm')
       formData.append('assessment_id', assessmentId)
-      formData.append('asset_type', 'audio')
-      formData.append('source', 'input_bar_audio')
+      formData.append('file_type', 'audio')
       await fetch('/api/phase3/upload', { method: 'POST', body: formData })
     } catch (e) {
       console.error('[Phase3] Audio upload error:', e)
@@ -108,8 +107,7 @@ export default function Phase3Chat({ initialText = '', assessmentId, onComplete,
       const formData = new FormData()
       formData.append('file', file, file.name)
       formData.append('assessment_id', assessmentId)
-      formData.append('asset_type', file.type.startsWith('image/') ? 'image' : 'document')
-      formData.append('source', 'file_upload')
+      formData.append('file_type', file.type.startsWith('image/') ? 'image' : file.type.startsWith('audio/') ? 'audio' : 'document')
       await fetch('/api/phase3/upload', { method: 'POST', body: formData })
     } catch (e) {
       console.error('[Phase3] File upload error:', e)
