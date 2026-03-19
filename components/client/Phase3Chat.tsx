@@ -16,6 +16,7 @@ interface Message {
 
 interface Phase3ChatProps {
   initialText?: string
+  secondBrainId: string
   onComplete: (text: string) => void
   onExit: () => void
 }
@@ -24,7 +25,7 @@ const NIGHT_THEMES = [
   '#656c73', '#60706d', '#5f7064', '#736f60', '#807b68', '#776457', '#8c7d7b',
 ]
 
-export default function Phase3Chat({ initialText = '', onComplete, onExit }: Phase3ChatProps) {
+export default function Phase3Chat({ initialText = '', secondBrainId, onComplete, onExit }: Phase3ChatProps) {
   const { theme, toggleTheme } = useTheme()
   const [isDayMode, setIsDayMode] = useState(false)
   useEffect(() => { setIsDayMode(theme === 'light') }, [theme])
@@ -86,6 +87,20 @@ export default function Phase3Chat({ initialText = '', onComplete, onExit }: Pha
     if (!text.trim()) return
     setMessages(prev => [...prev, { role: 'user', content: text.trim() }])
   }, [])
+
+  const handleAudioAsset = useCallback(async (blob: Blob, transcript: string) => {
+    if (!secondBrainId) return
+    try {
+      const formData = new FormData()
+      formData.append('file', blob, 'recording.webm')
+      formData.append('second_brain_id', secondBrainId)
+      formData.append('asset_type', 'audio')
+      formData.append('source', 'input_bar_audio')
+      await fetch('/api/phase3/upload', { method: 'POST', body: formData })
+    } catch (e) {
+      console.error('[Phase3] Audio upload error:', e)
+    }
+  }, [secondBrainId])
 
   const handleSave = () => {
     if (!hasUserText || isSaved) return
@@ -219,6 +234,7 @@ export default function Phase3Chat({ initialText = '', onComplete, onExit }: Pha
           isDayMode={isDayMode}
           placeholder={phase3Content.placeholder}
           disclaimer={phase3Content.disclaimer}
+          onAudioAsset={handleAudioAsset}
           onToggleTheme={() => {
             if (isDayMode) setThemeBottom(NIGHT_THEMES[Math.floor(Math.random() * NIGHT_THEMES.length)])
             toggleTheme()

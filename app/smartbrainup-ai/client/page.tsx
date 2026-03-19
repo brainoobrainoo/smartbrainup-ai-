@@ -616,6 +616,7 @@ export default function ClientArea() {
   if (activePhase === 3 && activePhaseBrainId) {
     return (
       <Phase3Chat
+        secondBrainId={activePhaseBrainId}
         onComplete={handleCompletePhase3}
         onExit={handleExitPhase}
       />

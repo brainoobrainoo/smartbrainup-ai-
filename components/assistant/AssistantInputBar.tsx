@@ -189,9 +189,11 @@ interface AssistantInputBarProps {
   onToggleTheme?: () => void
   placeholder?: string
   disclaimer?: string
+  // Optional: called after transcription with blob + transcript (used by Phase3Chat)
+  onAudioAsset?: (blob: Blob, transcript: string) => void
 }
 
-const AssistantInputBar = forwardRef<AssistantInputBarHandle, AssistantInputBarProps>(({ onSend, isLoading, isDayMode = false, onToggleTheme, placeholder = 'Ask your question...', disclaimer = 'AI-UP Second Brain\u2122' }, ref) => {
+const AssistantInputBar = forwardRef<AssistantInputBarHandle, AssistantInputBarProps>(({ onSend, isLoading, isDayMode = false, onToggleTheme, placeholder = 'Ask your question...', disclaimer = 'AI-UP Second Brain\u2122', onAudioAsset }, ref) => {
   const C = isDayMode ? C_DAY : C_NIGHT
   const [input, setInput] = useState('')
   const [isRecording, setIsRecording] = useState(false)
@@ -264,11 +266,15 @@ const AssistantInputBar = forwardRef<AssistantInputBarHandle, AssistantInputBarP
         if (res.ok) {
           const data = await res.json()
           if (data.text) {
+            const transcript = data.text.trim()
             setInput(prev => {
               const sep = prev.trim() ? ' ' : ''
-              return prev + sep + data.text.trim()
+              return prev + sep + transcript
             })
             setTimeout(() => textareaRef.current?.focus(), 50)
+            if (onAudioAsset) {
+              onAudioAsset(blob, transcript)
+            }
           }
         }
       } catch (error) {
