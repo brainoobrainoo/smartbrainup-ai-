@@ -42,10 +42,10 @@ export async function GET(request: NextRequest) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     )
 
-    // ── Get brain → user_id ──
+    // ── Get brain → user_id + assessment_id ──
     const { data: brain, error: brainError } = await supabaseAdmin
       .from('second_brains')
-      .select('user_id')
+      .select('user_id, assessment_id')
       .eq('id', brain_id)
       .single()
 
@@ -64,16 +64,14 @@ export async function GET(request: NextRequest) {
     const { data: assessment } = await supabaseAdmin
       .from('assessments')
       .select('responses')
-      .eq('user_id', brain.user_id)
-      .order('created_at', { ascending: false })
-      .limit(1)
+      .eq('id', brain.assessment_id)
       .maybeSingle()
 
     // ── Get files ──
     const { data: files } = await supabaseAdmin
       .from('files')
       .select('id, file_type, asset_type, file_url, phase, status, created_at')
-      .eq('brain_id', brain_id)
+      .eq('assessment_id', brain.assessment_id)
       .order('created_at', { ascending: false })
 
     return NextResponse.json({
