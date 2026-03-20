@@ -437,13 +437,13 @@ export default function FounderPage() {
 
   const selectedBrain = brains.find(b => b.id === selectedBrainId)
   const canUpload = selectedBrainId && promptKey && promptText.trim() && version.trim() && promptLabel.trim() && !uploading
-  const submittedCount = brains.filter(b => b.submitted).length
+  const submittedCount = brains.filter(b => b.submitted && b.prompt_status !== 'active').length
   const filteredBrains = brains.filter(b => {
     const matchesSearch = !searchQuery ||
       (b.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
       b.id.includes(searchQuery) ||
       b.user_id.includes(searchQuery)
-    const matchesFilter = !filterSubmitted || b.submitted
+    const matchesFilter = !filterSubmitted || (b.submitted && b.prompt_status !== 'active')
     return matchesSearch && matchesFilter
   })
   const phase3Files = (context?.files || [])
@@ -631,7 +631,7 @@ export default function FounderPage() {
                         {brain.prompt_status || 'draft'}
                       </span>
                     </div>
-                    {brain.submitted && (
+                    {brain.submitted && brain.prompt_status !== 'active' && (
                       <div style={{ marginTop: '6px' }}>
                         <span style={{
                           fontSize: '9px',
@@ -677,7 +677,7 @@ export default function FounderPage() {
                     {selectedBrain?.name || 'Brain senza nome'}
                   </h2>
                   {selectedBrain && statusChip(selectedBrain.prompt_status)}
-                  {selectedBrain?.submitted && (
+                  {selectedBrain?.submitted && selectedBrain?.prompt_status !== 'active' && (
                     <span style={{
                       fontSize: '11px',
                       fontWeight: '800',
