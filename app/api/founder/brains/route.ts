@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
 
     // ── Get latest assessment submitted status per user ──
     // One query: latest assessment per distinct user_id
-    const userIds = [...new Set(brains.map(b => b.user_id))]
+    const userIds = Array.from(new Set(brains.map(b => b.user_id)))
 
     const { data: assessments } = await supabaseAdmin
       .from('assessments')
