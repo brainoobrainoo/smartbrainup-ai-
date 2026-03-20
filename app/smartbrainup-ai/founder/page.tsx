@@ -18,6 +18,7 @@ type Brain = {
   prompt_status: string
   user_id: string
   created_at: string
+  submitted: boolean
 }
 
 type ChatEntry = {
@@ -301,6 +302,7 @@ export default function FounderPage() {
   const [brainsLoading, setBrainsLoading] = useState(false)
   const [selectedBrainId, setSelectedBrainId] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
+  const [filterSubmitted, setFilterSubmitted] = useState(false)
 
   // Client context
   const [context, setContext] = useState<ClientContext | null>(null)
@@ -435,12 +437,15 @@ export default function FounderPage() {
 
   const selectedBrain = brains.find(b => b.id === selectedBrainId)
   const canUpload = selectedBrainId && promptKey && promptText.trim() && version.trim() && promptLabel.trim() && !uploading
-  const filteredBrains = brains.filter(b =>
-    !searchQuery ||
-    (b.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-    b.id.includes(searchQuery) ||
-    b.user_id.includes(searchQuery)
-  )
+  const submittedCount = brains.filter(b => b.submitted).length
+  const filteredBrains = brains.filter(b => {
+    const matchesSearch = !searchQuery ||
+      (b.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      b.id.includes(searchQuery) ||
+      b.user_id.includes(searchQuery)
+    const matchesFilter = !filterSubmitted || b.submitted
+    return matchesSearch && matchesFilter
+  })
   const phase3Files = (context?.files || [])
   const hasPhase3Text = !!(context?.assessment?.phase3)
 
@@ -523,6 +528,47 @@ export default function FounderPage() {
                 boxSizing: 'border-box',
               }}
             />
+            {/* Filter bar */}
+            <div style={{ display: 'flex', gap: '6px', marginTop: '10px' }}>
+              <button
+                onClick={() => setFilterSubmitted(false)}
+                style={{
+                  flex: 1,
+                  padding: '6px 10px',
+                  borderRadius: '6px',
+                  border: 'none',
+                  fontSize: '11px',
+                  fontWeight: '600',
+                  letterSpacing: '0.06em',
+                  fontFamily: 'system-ui, sans-serif',
+                  cursor: 'pointer',
+                  background: !filterSubmitted ? '#1a1a1a' : '#f0f0f0',
+                  color: !filterSubmitted ? '#fff' : '#888',
+                  transition: 'all 0.12s',
+                }}
+              >
+                TUTTI ({brains.length})
+              </button>
+              <button
+                onClick={() => setFilterSubmitted(true)}
+                style={{
+                  flex: 1,
+                  padding: '6px 10px',
+                  borderRadius: '6px',
+                  border: 'none',
+                  fontSize: '11px',
+                  fontWeight: '600',
+                  letterSpacing: '0.06em',
+                  fontFamily: 'system-ui, sans-serif',
+                  cursor: 'pointer',
+                  background: filterSubmitted ? '#dc2626' : '#fef2f2',
+                  color: filterSubmitted ? '#fff' : '#dc2626',
+                  transition: 'all 0.12s',
+                }}
+              >
+                DA LAVORARE {submittedCount > 0 ? `(${submittedCount})` : ''}
+              </button>
+            </div>
           </div>
 
           {/* List */}
@@ -585,6 +631,20 @@ export default function FounderPage() {
                         {brain.prompt_status || 'draft'}
                       </span>
                     </div>
+                    {brain.submitted && (
+                      <div style={{ marginTop: '6px' }}>
+                        <span style={{
+                          fontSize: '9px',
+                          fontWeight: '800',
+                          letterSpacing: '0.1em',
+                          textTransform: 'uppercase',
+                          color: isSelected ? '#fca5a5' : '#dc2626',
+                          fontFamily: 'system-ui, sans-serif',
+                        }}>
+                          ● DA LAVORARE
+                        </span>
+                      </div>
+                    )}
                   </div>
                 )
               })
@@ -617,6 +677,22 @@ export default function FounderPage() {
                     {selectedBrain?.name || 'Brain senza nome'}
                   </h2>
                   {selectedBrain && statusChip(selectedBrain.prompt_status)}
+                  {selectedBrain?.submitted && (
+                    <span style={{
+                      fontSize: '11px',
+                      fontWeight: '800',
+                      letterSpacing: '0.1em',
+                      textTransform: 'uppercase',
+                      color: '#dc2626',
+                      background: '#fef2f2',
+                      padding: '4px 10px',
+                      borderRadius: '5px',
+                      fontFamily: 'system-ui, sans-serif',
+                      border: '1.5px solid #fecaca',
+                    }}>
+                      ● DA LAVORARE
+                    </span>
+                  )}
                 </div>
 
                 {/* Context metadata */}
