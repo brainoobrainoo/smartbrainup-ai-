@@ -447,7 +447,8 @@ export default function FounderPage() {
       return (
         (b.user_email || '').toLowerCase().includes(q) ||
         (b.name || '').toLowerCase().includes(q) ||
-        b.user_id.includes(q)
+        b.user_id.includes(q) ||
+        String(b.assessment_id).includes(q)
       )
     }
     // No search: hide non_iniziato
@@ -516,6 +517,14 @@ export default function FounderPage() {
               textOverflow: 'ellipsis',
             }}>
               {brain.user_email}
+            </p>
+            <p style={{
+              margin: '2px 0 0',
+              fontSize: '10px',
+              color: isSelected ? '#666' : '#d0d0d0',
+              fontFamily: 'monospace',
+            }}>
+              assessment #{brain.assessment_id}
             </p>
           </div>
           <span style={{
