@@ -31,6 +31,7 @@ type ChatEntry = {
   label: string
   is_default: boolean
   sort_order: number
+  dce_entry_questions?: string[]
 }
 
 type ClientFile = {
@@ -319,6 +320,8 @@ export default function FounderPage() {
   const [promptText, setPromptText] = useState('')
   const [version, setVersion] = useState('')
   const [isDefault, setIsDefault] = useState(false)
+  const [dceQuestions, setDceQuestions] = useState('')
+  const [contextSummary, setContextSummary] = useState('')
   const [uploading, setUploading] = useState(false)
   const [uploadResult, setUploadResult] = useState<UploadResult | null>(null)
 
@@ -369,12 +372,37 @@ export default function FounderPage() {
     setChatsLoading(true)
     try {
       const supabase = createClient()
-      const { data } = await supabase
+      const { data: chatsData } = await supabase
         .from('chats')
         .select('id, prompt_key, label, is_default, sort_order')
         .eq('second_brain_id', brainId)
         .order('sort_order', { ascending: true })
-      setBrainChats(data || [])
+
+      if (!chatsData || chatsData.length === 0) {
+        setBrainChats([])
+        return
+      }
+
+      // Fetch dce_entry_questions from prompt_registry for each prompt_key
+      const promptKeys = chatsData.map((c: any) => c.prompt_key)
+      const { data: registryData } = await supabase
+        .from('prompt_registry')
+        .select('prompt_key, dce_entry_questions')
+        .in('prompt_key', promptKeys)
+
+      const registryMap: Record<string, string[]> = {}
+      if (registryData) {
+        registryData.forEach((r: any) => {
+          registryMap[r.prompt_key] = r.dce_entry_questions || []
+        })
+      }
+
+      const merged = chatsData.map((c: any) => ({
+        ...c,
+        dce_entry_questions: registryMap[c.prompt_key] || [],
+      }))
+
+      setBrainChats(merged)
     } catch { }
     finally { setChatsLoading(false) }
   }, [])
@@ -396,6 +424,8 @@ export default function FounderPage() {
     setPromptText('')
     setVersion('')
     setIsDefault(false)
+    setDceQuestions('')
+    setContextSummary('')
   }
 
   // ── Upload prompt ──────────────────────────────────────────────────────────
@@ -415,6 +445,8 @@ export default function FounderPage() {
           version: version.trim(),
           label: promptLabel.trim(),
           is_default: isDefault,
+          dce_entry_questions: dceQuestions.split('\n').map(q => q.trim()).filter(Boolean),
+          context_summary: contextSummary.trim() || null,
         }),
       })
       const data = await res.json()
@@ -431,6 +463,33 @@ export default function FounderPage() {
     } finally {
       setUploading(false)
     }
+  }
+
+  // ── Delete DCE ────────────────────────────────────────────────────────────
+
+  const handleDeleteDCE = async (chatId: string) => {
+    if (!selectedBrainId) return
+    const supabase = createClient()
+    await supabase.from('chats').delete().eq('id', chatId)
+    await loadBrainChats(selectedBrainId)
+  }
+
+  // ── Reorder DCE ───────────────────────────────────────────────────────────
+
+  const handleReorderDCE = async (chatId: string, direction: 'up' | 'down') => {
+    if (!selectedBrainId) return
+    const idx = brainChats.findIndex(c => c.id === chatId)
+    if (idx === -1) return
+    const swapIdx = direction === 'up' ? idx - 1 : idx + 1
+    if (swapIdx < 0 || swapIdx >= brainChats.length) return
+
+    const supabase = createClient()
+    const a = brainChats[idx]
+    const b = brainChats[swapIdx]
+
+    await supabase.from('chats').update({ sort_order: b.sort_order }).eq('id', a.id)
+    await supabase.from('chats').update({ sort_order: a.sort_order }).eq('id', b.id)
+    await loadBrainChats(selectedBrainId)
   }
 
   // ── Derived ────────────────────────────────────────────────────────────────
@@ -923,13 +982,13 @@ export default function FounderPage() {
                 {tab === 'prompt' && (
                   <div>
                     <div style={{ marginBottom: '32px' }}>
-                      <p style={{ ...S.label, marginBottom: '12px' }}>Prompt Genesi™ attivi su questo brain</p>
+                      <p style={{ ...S.label, marginBottom: '12px' }}>Deterministic Context Engine attivi su questo brain</p>
                       {chatsLoading ? (
                         <p style={{ color: '#bbb', fontSize: '14px', fontFamily: 'system-ui, sans-serif' }}>Caricamento...</p>
                       ) : brainChats.length === 0 ? (
                         <div style={{ ...S.card }}>
                           <p style={{ color: '#bbb', fontSize: '14px', margin: 0, fontFamily: 'system-ui, sans-serif' }}>
-                            Nessun prompt caricato ancora.
+                            Nessun DCE caricato ancora.
                           </p>
                         </div>
                       ) : (
@@ -937,30 +996,68 @@ export default function FounderPage() {
                           {brainChats.map((chat, i) => (
                             <div
                               key={chat.id}
-                              onClick={() => {
-                                setPromptKey(chat.prompt_key)
-                                setPromptLabel(chat.label)
-                                setIsDefault(chat.is_default)
-                                setVersion('')
-                                setPromptText('')
-                                setUploadResult(null)
-                              }}
-                              style={{ ...S.card, display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', transition: 'border-color 0.12s' }}
+                              style={{ ...S.card, transition: 'border-color 0.12s' }}
                               onMouseEnter={e => (e.currentTarget.style.borderColor = '#1a1a1a')}
                               onMouseLeave={e => (e.currentTarget.style.borderColor = '#e8e8e8')}
                             >
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                <span style={{ fontSize: '12px', color: '#ccc', fontFamily: 'monospace', minWidth: '20px' }}>
-                                  {String(i + 1).padStart(2, '0')}
-                                </span>
-                                <span style={{ fontSize: '15px', color: '#1a1a1a', fontFamily: 'system-ui, sans-serif', fontWeight: '500' }}>
-                                  {chat.label}
-                                </span>
+                              {/* DCE header row */}
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: chat.dce_entry_questions?.length ? '10px' : '0' }}>
+                                <div
+                                  style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, cursor: 'pointer' }}
+                                  onClick={() => {
+                                    setPromptKey(chat.prompt_key)
+                                    setPromptLabel(chat.label)
+                                    setIsDefault(chat.is_default)
+                                    setVersion('')
+                                    setPromptText('')
+                                    setDceQuestions((chat.dce_entry_questions || []).join('\n'))
+                                    setContextSummary('')
+                                    setUploadResult(null)
+                                  }}
+                                >
+                                  <span style={{ fontSize: '12px', color: '#ccc', fontFamily: 'monospace', minWidth: '20px' }}>
+                                    {String(i + 1).padStart(2, '0')}
+                                  </span>
+                                  <span style={{ fontSize: '15px', color: '#1a1a1a', fontFamily: 'system-ui, sans-serif', fontWeight: '500' }}>
+                                    {chat.label}
+                                  </span>
+                                  {chat.is_default && <span style={chipStyle('#16a34a', '#dcfce7')}>default</span>}
+                                  <span style={{ fontSize: '11px', color: '#ccc', fontFamily: 'monospace', marginLeft: 'auto' }}>{chat.prompt_key}</span>
+                                </div>
+
+                                {/* Reorder + Delete buttons */}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginLeft: '12px', flexShrink: 0 }}>
+                                  <button
+                                    onClick={() => handleReorderDCE(chat.id, 'up')}
+                                    disabled={i === 0}
+                                    style={{ padding: '4px 6px', border: 'none', background: 'none', cursor: i === 0 ? 'default' : 'pointer', color: i === 0 ? '#ddd' : '#888', fontSize: '12px', borderRadius: '4px' }}
+                                    title="Sposta su"
+                                  >▲</button>
+                                  <button
+                                    onClick={() => handleReorderDCE(chat.id, 'down')}
+                                    disabled={i === brainChats.length - 1}
+                                    style={{ padding: '4px 6px', border: 'none', background: 'none', cursor: i === brainChats.length - 1 ? 'default' : 'pointer', color: i === brainChats.length - 1 ? '#ddd' : '#888', fontSize: '12px', borderRadius: '4px' }}
+                                    title="Sposta giù"
+                                  >▼</button>
+                                  <button
+                                    onClick={() => { if (confirm(`Eliminare il DCE "${chat.label}"?`)) handleDeleteDCE(chat.id) }}
+                                    style={{ padding: '4px 8px', border: 'none', background: 'none', cursor: 'pointer', color: '#dc2626', fontSize: '12px', borderRadius: '4px' }}
+                                    title="Elimina DCE"
+                                  >✕</button>
+                                </div>
                               </div>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                <span style={{ fontSize: '12px', color: '#ccc', fontFamily: 'monospace' }}>{chat.prompt_key}</span>
-                                {chat.is_default && <span style={chipStyle('#16a34a', '#dcfce7')}>default</span>}
-                              </div>
+
+                              {/* DCE entry questions */}
+                              {chat.dce_entry_questions && chat.dce_entry_questions.length > 0 && (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', paddingLeft: '32px' }}>
+                                  {chat.dce_entry_questions.map((q, qi) => (
+                                    <div key={qi} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                                      <span style={{ fontSize: '10px', color: '#ccc', fontFamily: 'monospace', paddingTop: '2px', flexShrink: 0 }}>{qi + 1}.</span>
+                                      <span style={{ fontSize: '13px', color: '#555', fontFamily: 'system-ui, sans-serif', lineHeight: '1.5' }}>{q}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
                             </div>
                           ))}
                         </div>
@@ -969,19 +1066,19 @@ export default function FounderPage() {
 
                     <div style={{ borderTop: '1.5px solid #e8e8e8', marginBottom: '28px', paddingTop: '10px' }}>
                       <p style={{ fontSize: '12px', color: '#aaa', fontFamily: 'system-ui, sans-serif', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>
-                        Aggiungi o aggiorna Prompt Genesi™
+                        Aggiungi o aggiorna Deterministic Context Engine
                       </p>
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
                       <div>
-                        <label style={S.label}>Label chat</label>
+                        <label style={S.label}>Nome DCE</label>
                         <input type="text" value={promptLabel} onChange={e => setPromptLabel(e.target.value)}
                           placeholder="es. Decisione operativa" style={S.input}
                           onFocus={e => (e.target.style.borderColor = '#1a1a1a')}
                           onBlur={e => (e.target.style.borderColor = '#d0d0d0')} />
                         <p style={{ margin: '5px 0 0', fontSize: '12px', color: '#aaa', fontFamily: 'system-ui, sans-serif' }}>
-                          Nome visibile al cliente nella lista chat.
+                          Nome visibile al cliente nella sidebar.
                         </p>
                       </div>
 
@@ -1048,6 +1145,42 @@ export default function FounderPage() {
                         </p>
                       </div>
 
+                      <div>
+                        <label style={S.label}>DCE Entry Questions</label>
+                        <textarea value={dceQuestions} onChange={e => setDceQuestions(e.target.value)}
+                          placeholder={'Una domanda per riga.\nes. Stai lavorando su una decisione operativa o strategica?\nes. Il problema che vuoi affrontare oggi è nuovo o ricorrente?'}
+                          rows={6}
+                          style={{
+                            width: '100%', background: '#fff', border: '1.5px solid #d0d0d0',
+                            borderRadius: '8px', padding: '14px 16px', fontSize: '14px', color: '#1a1a1a',
+                            outline: 'none', fontFamily: 'system-ui, sans-serif', resize: 'vertical', lineHeight: '1.6',
+                            boxSizing: 'border-box',
+                          }}
+                          onFocus={e => (e.target.style.borderColor = '#1a1a1a')}
+                          onBlur={e => (e.target.style.borderColor = '#d0d0d0')} />
+                        <p style={{ margin: '5px 0 0', fontSize: '12px', color: '#aaa', fontFamily: 'system-ui, sans-serif' }}>
+                          Una affermazione operativa per riga. Vengono inviate al cliente una alla volta all'avvio del DCE.
+                        </p>
+                      </div>
+
+                      <div>
+                        <label style={S.label}>Context Summary</label>
+                        <textarea value={contextSummary} onChange={e => setContextSummary(e.target.value)}
+                          placeholder="Sintesi del contesto completo del cliente (da Fase 1, 2, 3)..."
+                          rows={8}
+                          style={{
+                            width: '100%', background: '#fff', border: '1.5px solid #d0d0d0',
+                            borderRadius: '8px', padding: '14px 16px', fontSize: '14px', color: '#1a1a1a',
+                            outline: 'none', fontFamily: 'system-ui, sans-serif', resize: 'vertical', lineHeight: '1.6',
+                            boxSizing: 'border-box',
+                          }}
+                          onFocus={e => (e.target.style.borderColor = '#1a1a1a')}
+                          onBlur={e => (e.target.style.borderColor = '#d0d0d0')} />
+                        <p style={{ margin: '5px 0 0', fontSize: '12px', color: '#aaa', fontFamily: 'system-ui, sans-serif' }}>
+                          Viene usato come base del Prompt Genesi™ nel progetto OpenAI.
+                        </p>
+                      </div>
+
                       <button
                         onClick={handleUpload}
                         disabled={!canUpload}
@@ -1062,7 +1195,7 @@ export default function FounderPage() {
                         onMouseEnter={e => { if (canUpload) e.currentTarget.style.background = '#333' }}
                         onMouseLeave={e => { if (canUpload) e.currentTarget.style.background = '#1a1a1a' }}
                       >
-                        {uploading ? 'Cifratura e upload...' : 'Upload Prompt Genesi™'}
+                        {uploading ? 'Cifratura e upload...' : 'Upload DCE'}
                       </button>
 
                       {uploadResult && (
