@@ -12,13 +12,17 @@ import { createClient } from '@/lib/supabase/client'
 
 type Brain = {
   id: string
+  assessment_id: number
   name: string
   prompt_key: string
   prompt_version: string
   prompt_status: string
   user_id: string
+  user_email: string
   created_at: string
   submitted: boolean
+  status: 'active' | 'da_lavorare' | 'non_iniziato'
+  phases: { p1: boolean; p2: boolean; p3: boolean }
 }
 
 type ChatEntry = {
@@ -166,12 +170,7 @@ function FileCard({ file }: { file: ClientFile }) {
   })
 
   return (
-    <div style={{
-      ...S.card,
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '14px',
-    }}>
+    <div style={{ ...S.card, display: 'flex', flexDirection: 'column', gap: '14px' }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -182,21 +181,12 @@ function FileCard({ file }: { file: ClientFile }) {
         <span style={{ fontSize: '12px', color: '#bbb', fontFamily: 'system-ui, sans-serif' }}>{date}</span>
       </div>
 
-      {/* Content by type */}
       {file.file_type === 'image' && (
         <div>
           <img
             src={file.file_url}
             alt="Client upload"
-            style={{
-              maxWidth: '100%',
-              maxHeight: '420px',
-              objectFit: 'contain',
-              borderRadius: '8px',
-              border: '1px solid #e8e8e8',
-              cursor: 'pointer',
-              display: 'block',
-            }}
+            style={{ maxWidth: '100%', maxHeight: '420px', objectFit: 'contain', borderRadius: '8px', border: '1px solid #e8e8e8', cursor: 'pointer', display: 'block' }}
             onClick={() => window.open(file.file_url, '_blank')}
           />
           <p style={{ margin: '8px 0 0', fontSize: '12px', color: '#bbb', fontFamily: 'system-ui, sans-serif' }}>
@@ -206,139 +196,96 @@ function FileCard({ file }: { file: ClientFile }) {
       )}
 
       {file.file_type === 'audio' && (
-        <div>
-          <audio
-            controls
-            src={file.file_url}
-            style={{ width: '100%', borderRadius: '6px' }}
-          />
-        </div>
+        <audio controls src={file.file_url} style={{ width: '100%', borderRadius: '6px' }} />
       )}
 
       {file.file_type === 'video' && (
-        <div>
-          <video
-            controls
-            src={file.file_url}
-            style={{ width: '100%', maxHeight: '360px', borderRadius: '8px', background: '#000' }}
-          />
-        </div>
+        <video controls src={file.file_url} style={{ width: '100%', maxHeight: '360px', borderRadius: '8px', background: '#000' }} />
       )}
 
       {file.file_type === 'document' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-
-          {/* PDF inline preview */}
           {file.file_url.toLowerCase().includes('.pdf') && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-
-              {/* Toggle button — sempre visibile, molto chiaro */}
               <button
                 onClick={() => setExpanded(!expanded)}
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  width: '100%',
-                  padding: '12px 16px',
-                  borderRadius: '8px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  width: '100%', padding: '12px 16px', borderRadius: '8px',
                   border: `2px solid ${expanded ? '#1a1a1a' : '#d0d0d0'}`,
                   background: expanded ? '#1a1a1a' : '#f8f8f8',
                   color: expanded ? '#fff' : '#1a1a1a',
-                  cursor: 'pointer',
-                  fontFamily: 'system-ui, sans-serif',
-                  fontSize: '13px',
-                  fontWeight: '600',
-                  letterSpacing: '0.04em',
-                  transition: 'all 0.15s',
+                  cursor: 'pointer', fontFamily: 'system-ui, sans-serif',
+                  fontSize: '13px', fontWeight: '600', letterSpacing: '0.04em', transition: 'all 0.15s',
                 }}
               >
                 <span>{expanded ? '📄 Anteprima PDF aperta' : '📄 Apri anteprima PDF'}</span>
-                <span style={{
-                  fontSize: '18px',
-                  fontWeight: '300',
-                  lineHeight: 1,
-                  marginLeft: '12px',
-                }}>
+                <span style={{ fontSize: '18px', fontWeight: '300', lineHeight: 1, marginLeft: '12px' }}>
                   {expanded ? '✕' : '▸'}
                 </span>
               </button>
-
-              {/* PDF iframe */}
               {expanded && (
                 <div style={{ position: 'relative' }}>
                   <iframe
                     src={file.file_url}
-                    style={{
-                      width: '100%',
-                      height: '700px',
-                      border: '1.5px solid #e0e0e0',
-                      borderRadius: '8px',
-                      display: 'block',
-                    }}
+                    style={{ width: '100%', height: '700px', border: '1.5px solid #e0e0e0', borderRadius: '8px', display: 'block' }}
                     title="PDF preview"
                   />
-                  {/* Close button sopra il PDF */}
                   <button
                     onClick={() => setExpanded(false)}
                     style={{
-                      position: 'absolute',
-                      top: '12px',
-                      right: '12px',
-                      width: '36px',
-                      height: '36px',
-                      borderRadius: '50%',
-                      border: 'none',
-                      background: '#1a1a1a',
-                      color: '#fff',
-                      fontSize: '16px',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
+                      position: 'absolute', top: '12px', right: '12px',
+                      width: '36px', height: '36px', borderRadius: '50%',
+                      border: 'none', background: '#1a1a1a', color: '#fff',
+                      fontSize: '16px', cursor: 'pointer', display: 'flex',
+                      alignItems: 'center', justifyContent: 'center',
                       fontFamily: 'system-ui, sans-serif',
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-                      zIndex: 10,
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.3)', zIndex: 10,
                     }}
-                  >
-                    ✕
-                  </button>
+                  >✕</button>
                 </div>
               )}
             </div>
           )}
-
-          {/* Download button always shown */}
           <a
             href={file.file_url}
             target="_blank"
             rel="noopener noreferrer"
             download
             style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '10px 18px',
-              background: '#1a1a1a',
-              color: '#fff',
-              borderRadius: '7px',
-              fontSize: '13px',
-              fontWeight: '600',
-              fontFamily: 'system-ui, sans-serif',
-              textDecoration: 'none',
-              letterSpacing: '0.04em',
-              alignSelf: 'flex-start',
+              display: 'inline-flex', alignItems: 'center', gap: '8px',
+              padding: '10px 18px', background: '#1a1a1a', color: '#fff',
+              borderRadius: '7px', fontSize: '13px', fontWeight: '600',
+              fontFamily: 'system-ui, sans-serif', textDecoration: 'none',
+              letterSpacing: '0.04em', alignSelf: 'flex-start',
             }}
-          >
-            ↓ Scarica documento
-          </a>
+          >↓ Scarica documento</a>
         </div>
       )}
 
-      {/* URL fallback */}
       <p style={{ margin: 0, fontSize: '11px', color: '#d0d0d0', fontFamily: 'monospace', wordBreak: 'break-all' }}>
         {file.file_url}
       </p>
+    </div>
+  )
+}
+
+// ── Group separator ───────────────────────────────────────────────────────────
+
+function GroupLabel({ label }: { label: string }) {
+  return (
+    <div style={{
+      padding: '8px 20px 4px',
+      fontSize: '9px',
+      fontWeight: '800',
+      letterSpacing: '0.14em',
+      textTransform: 'uppercase',
+      color: '#bbb',
+      fontFamily: 'system-ui, sans-serif',
+      borderBottom: '1px solid #f0f0f0',
+      background: '#fafafa',
+    }}>
+      {label}
     </div>
   )
 }
@@ -355,7 +302,6 @@ export default function FounderPage() {
   const [brainsLoading, setBrainsLoading] = useState(false)
   const [selectedBrainId, setSelectedBrainId] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
-  const [filterSubmitted, setFilterSubmitted] = useState(false)
 
   // Client context
   const [context, setContext] = useState<ClientContext | null>(null)
@@ -490,17 +436,118 @@ export default function FounderPage() {
 
   const selectedBrain = brains.find(b => b.id === selectedBrainId)
   const canUpload = selectedBrainId && promptKey && promptText.trim() && version.trim() && promptLabel.trim() && !uploading
-  const submittedCount = brains.filter(b => b.submitted && b.prompt_status !== 'active').length
+  const daLavorareCount = brains.filter(b => b.status === 'da_lavorare').length
+
+  // Filter by search — when searching: show ALL brains of matching client
+  // When no search: show only active + da_lavorare (not non_iniziato)
   const filteredBrains = brains.filter(b => {
-    const matchesSearch = !searchQuery ||
-      (b.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-      b.id.includes(searchQuery) ||
-      b.user_id.includes(searchQuery)
-    const matchesFilter = !filterSubmitted || (b.submitted && b.prompt_status !== 'active')
-    return matchesSearch && matchesFilter
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase()
+      return (
+        (b.user_email || '').toLowerCase().includes(q) ||
+        (b.name || '').toLowerCase().includes(q) ||
+        b.user_id.includes(q)
+      )
+    }
+    // No search: hide non_iniziato
+    return b.status !== 'non_iniziato'
   })
+
+  // Group for rendering
+  const activeGroup = filteredBrains.filter(b => b.status === 'active')
+  const daLavorareGroup = filteredBrains.filter(b => b.status === 'da_lavorare')
+  const nonIniziatoGroup = filteredBrains.filter(b => b.status === 'non_iniziato')
+
   const phase3Files = (context?.files || [])
   const hasPhase3Text = !!(context?.assessment?.phase3)
+
+  // ── Render brain list item ─────────────────────────────────────────────────
+
+  const renderBrainItem = (brain: Brain) => {
+    const isSelected = brain.id === selectedBrainId
+    const statusColors: Record<string, [string, string]> = {
+      active: ['#16a34a', '#dcfce7'],
+      da_lavorare: ['#dc2626', '#fef2f2'],
+      non_iniziato: ['#aaa', '#f0f0f0'],
+    }
+    const [sc, sbg] = statusColors[brain.status] || ['#aaa', '#f0f0f0']
+    const statusLabels: Record<string, string> = {
+      active: 'active',
+      da_lavorare: 'da lavorare',
+      non_iniziato: 'non iniziato',
+    }
+
+    return (
+      <div
+        key={brain.id}
+        onClick={() => handleBrainSelect(brain.id)}
+        style={{
+          padding: '14px 20px',
+          borderBottom: '1px solid #f5f5f3',
+          cursor: 'pointer',
+          background: isSelected ? '#1a1a1a' : 'transparent',
+          transition: 'background 0.12s',
+        }}
+        onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = '#f8f8f6' }}
+        onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = 'transparent' }}
+      >
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px' }}>
+          <div style={{ minWidth: 0 }}>
+            <p style={{
+              margin: '0 0 2px',
+              fontSize: '13px',
+              fontWeight: '600',
+              color: isSelected ? '#fff' : '#1a1a1a',
+              fontFamily: 'system-ui, sans-serif',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}>
+              {brain.name || 'Second Brain'}
+            </p>
+            <p style={{
+              margin: 0,
+              fontSize: '11px',
+              color: isSelected ? '#888' : '#bbb',
+              fontFamily: 'system-ui, sans-serif',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}>
+              {brain.user_email}
+            </p>
+          </div>
+          <span style={{
+            ...chipStyle(isSelected ? '#fff' : sc, isSelected ? '#2a2a2a' : sbg),
+            marginTop: '2px',
+            whiteSpace: 'nowrap',
+          }}>
+            {statusLabels[brain.status]}
+          </span>
+        </div>
+
+        {/* Phase indicators for non_iniziato */}
+        {brain.status === 'non_iniziato' && (
+          <div style={{ display: 'flex', gap: '4px', marginTop: '6px' }}>
+            {(['p1', 'p2', 'p3'] as const).map(p => (
+              <span key={p} style={{
+                fontSize: '9px',
+                fontWeight: '700',
+                letterSpacing: '0.06em',
+                textTransform: 'uppercase',
+                fontFamily: 'system-ui, sans-serif',
+                color: brain.phases[p]
+                  ? (isSelected ? '#4ade80' : '#16a34a')
+                  : (isSelected ? '#555' : '#ccc'),
+              }}>
+                {p.toUpperCase()} {brain.phases[p] ? '✓' : '○'}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+    )
+  }
 
   // ── Render guards ──────────────────────────────────────────────────────────
 
@@ -523,14 +570,8 @@ export default function FounderPage() {
 
       {/* ── Top Header ─────────────────────────────────────────────────────── */}
       <div style={{
-        background: '#1a1a1a',
-        color: '#fff',
-        padding: '0 32px',
-        height: '56px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        flexShrink: 0,
+        background: '#1a1a1a', color: '#fff', padding: '0 32px', height: '56px',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           <p style={{ fontSize: '11px', letterSpacing: '0.16em', textTransform: 'uppercase', color: '#666', margin: 0, fontFamily: 'system-ui, sans-serif' }}>
@@ -541,90 +582,61 @@ export default function FounderPage() {
             Founder Interface
           </p>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#16a34a', display: 'block' }} />
-          <span style={{ fontSize: '12px', color: '#666', fontFamily: 'system-ui, sans-serif' }}>developer</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          {daLavorareCount > 0 && (
+            <span style={{
+              fontSize: '11px', fontWeight: '800', letterSpacing: '0.08em',
+              color: '#fca5a5', fontFamily: 'system-ui, sans-serif',
+            }}>
+              ● {daLavorareCount} DA LAVORARE
+            </span>
+          )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#16a34a', display: 'block' }} />
+            <span style={{ fontSize: '12px', color: '#666', fontFamily: 'system-ui, sans-serif' }}>developer</span>
+          </div>
         </div>
       </div>
 
       {/* ── Body: two-panel ────────────────────────────────────────────────── */}
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
 
-        {/* ── Left panel: client list ─────────────────────────────────────── */}
+        {/* ── Left panel ──────────────────────────────────────────────────── */}
         <div style={{
-          width: '300px',
-          flexShrink: 0,
-          background: '#fff',
-          borderRight: '1.5px solid #e8e8e8',
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden',
+          width: '300px', flexShrink: 0, background: '#fff',
+          borderRight: '1.5px solid #e8e8e8', display: 'flex',
+          flexDirection: 'column', overflow: 'hidden',
         }}>
           {/* Panel header */}
           <div style={{ padding: '20px 20px 16px', borderBottom: '1px solid #f0f0f0' }}>
-            <p style={{ ...S.label, marginBottom: '12px' }}>Second Brain — clienti ({brains.length})</p>
+            <p style={{ ...S.label, marginBottom: '12px' }}>
+              Second Brain ({brains.length})
+            </p>
             <input
               type="text"
-              placeholder="Cerca cliente o ID..."
+              placeholder="Cerca per email o nome..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               style={{
-                width: '100%',
-                background: '#f8f8f6',
-                border: '1.5px solid #e8e8e8',
-                borderRadius: '7px',
-                padding: '9px 12px',
-                fontSize: '14px',
-                color: '#1a1a1a',
-                outline: 'none',
-                fontFamily: 'system-ui, sans-serif',
+                width: '100%', background: '#f8f8f6', border: '1.5px solid #e8e8e8',
+                borderRadius: '7px', padding: '9px 12px', fontSize: '14px',
+                color: '#1a1a1a', outline: 'none', fontFamily: 'system-ui, sans-serif',
                 boxSizing: 'border-box',
               }}
             />
-            {/* Filter bar */}
-            <div style={{ display: 'flex', gap: '6px', marginTop: '10px' }}>
-              <button
-                onClick={() => setFilterSubmitted(false)}
-                style={{
-                  flex: 1,
-                  padding: '6px 10px',
-                  borderRadius: '6px',
-                  border: 'none',
-                  fontSize: '11px',
-                  fontWeight: '600',
-                  letterSpacing: '0.06em',
-                  fontFamily: 'system-ui, sans-serif',
-                  cursor: 'pointer',
-                  background: !filterSubmitted ? '#1a1a1a' : '#f0f0f0',
-                  color: !filterSubmitted ? '#fff' : '#888',
-                  transition: 'all 0.12s',
-                }}
-              >
-                TUTTI ({brains.length})
-              </button>
-              <button
-                onClick={() => setFilterSubmitted(true)}
-                style={{
-                  flex: 1,
-                  padding: '6px 10px',
-                  borderRadius: '6px',
-                  border: 'none',
-                  fontSize: '11px',
-                  fontWeight: '600',
-                  letterSpacing: '0.06em',
-                  fontFamily: 'system-ui, sans-serif',
-                  cursor: 'pointer',
-                  background: filterSubmitted ? '#dc2626' : '#fef2f2',
-                  color: filterSubmitted ? '#fff' : '#dc2626',
-                  transition: 'all 0.12s',
-                }}
-              >
-                DA LAVORARE {submittedCount > 0 ? `(${submittedCount})` : ''}
-              </button>
-            </div>
+            {searchQuery && (
+              <p style={{ margin: '6px 0 0', fontSize: '11px', color: '#aaa', fontFamily: 'system-ui, sans-serif' }}>
+                {filteredBrains.length} risultati — tutti i brain del cliente
+              </p>
+            )}
+            {!searchQuery && (
+              <p style={{ margin: '6px 0 0', fontSize: '11px', color: '#aaa', fontFamily: 'system-ui, sans-serif' }}>
+                Mostra: active + da lavorare · Cerca per vedere tutto
+              </p>
+            )}
           </div>
 
-          {/* List */}
+          {/* List with groups */}
           <div style={{ flex: 1, overflowY: 'auto' }}>
             {brainsLoading ? (
               <p style={{ padding: '24px 20px', color: '#bbb', fontSize: '14px', fontFamily: 'system-ui, sans-serif' }}>
@@ -632,75 +644,34 @@ export default function FounderPage() {
               </p>
             ) : filteredBrains.length === 0 ? (
               <p style={{ padding: '24px 20px', color: '#bbb', fontSize: '14px', fontFamily: 'system-ui, sans-serif' }}>
-                Nessun cliente trovato.
+                Nessun risultato.
               </p>
             ) : (
-              filteredBrains.map(brain => {
-                const isSelected = brain.id === selectedBrainId
-                return (
-                  <div
-                    key={brain.id}
-                    onClick={() => handleBrainSelect(brain.id)}
-                    style={{
-                      padding: '14px 20px',
-                      borderBottom: '1px solid #f5f5f3',
-                      cursor: 'pointer',
-                      background: isSelected ? '#1a1a1a' : 'transparent',
-                      transition: 'background 0.12s',
-                    }}
-                    onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = '#f8f8f6' }}
-                    onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = 'transparent' }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px' }}>
-                      <div style={{ minWidth: 0 }}>
-                        <p style={{
-                          margin: '0 0 4px',
-                          fontSize: '14px',
-                          fontWeight: '600',
-                          color: isSelected ? '#fff' : '#1a1a1a',
-                          fontFamily: 'system-ui, sans-serif',
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                        }}>
-                          {brain.name || 'Brain senza nome'}
-                        </p>
-                        <p style={{
-                          margin: 0,
-                          fontSize: '11px',
-                          color: isSelected ? '#888' : '#bbb',
-                          fontFamily: 'monospace',
-                        }}>
-                          {brain.id.slice(0, 12)}...
-                        </p>
-                      </div>
-                      <span style={{
-                        ...chipStyle(
-                          brain.prompt_status === 'active' ? (isSelected ? '#4ade80' : '#16a34a') : (isSelected ? '#888' : '#aaa'),
-                          isSelected ? '#2a2a2a' : (brain.prompt_status === 'active' ? '#dcfce7' : '#f0f0f0')
-                        ),
-                        marginTop: '2px',
-                      }}>
-                        {brain.prompt_status || 'draft'}
-                      </span>
-                    </div>
-                    {brain.submitted && brain.prompt_status !== 'active' && (
-                      <div style={{ marginTop: '6px' }}>
-                        <span style={{
-                          fontSize: '9px',
-                          fontWeight: '800',
-                          letterSpacing: '0.1em',
-                          textTransform: 'uppercase',
-                          color: isSelected ? '#fca5a5' : '#dc2626',
-                          fontFamily: 'system-ui, sans-serif',
-                        }}>
-                          ● DA LAVORARE
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                )
-              })
+              <>
+                {/* ACTIVE */}
+                {activeGroup.length > 0 && (
+                  <>
+                    <GroupLabel label={`Active (${activeGroup.length})`} />
+                    {activeGroup.map(renderBrainItem)}
+                  </>
+                )}
+
+                {/* DA LAVORARE */}
+                {daLavorareGroup.length > 0 && (
+                  <>
+                    <GroupLabel label={`Da lavorare (${daLavorareGroup.length})`} />
+                    {daLavorareGroup.map(renderBrainItem)}
+                  </>
+                )}
+
+                {/* NON INIZIATO — solo se ricerca attiva */}
+                {nonIniziatoGroup.length > 0 && (
+                  <>
+                    <GroupLabel label={`Non iniziato (${nonIniziatoGroup.length})`} />
+                    {nonIniziatoGroup.map(renderBrainItem)}
+                  </>
+                )}
+              </>
             )}
           </div>
         </div>
@@ -709,7 +680,6 @@ export default function FounderPage() {
         <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
 
           {!selectedBrainId ? (
-            // Empty state
             <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '12px' }}>
               <p style={{ fontSize: '28px', color: '#d0d0d0', margin: 0 }}>←</p>
               <p style={{ fontSize: '15px', color: '#bbb', fontFamily: 'system-ui, sans-serif', margin: 0 }}>
@@ -719,28 +689,17 @@ export default function FounderPage() {
           ) : (
             <>
               {/* Client header */}
-              <div style={{
-                background: '#fff',
-                borderBottom: '1.5px solid #e8e8e8',
-                padding: '16px 32px',
-                flexShrink: 0,
-              }}>
+              <div style={{ background: '#fff', borderBottom: '1.5px solid #e8e8e8', padding: '16px 32px', flexShrink: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '14px' }}>
                   <h2 style={{ margin: 0, fontSize: '20px', fontWeight: '400', color: '#1a1a1a', letterSpacing: '-0.01em' }}>
                     {selectedBrain?.name || 'Brain senza nome'}
                   </h2>
                   {selectedBrain && statusChip(selectedBrain.prompt_status)}
-                  {selectedBrain?.submitted && selectedBrain?.prompt_status !== 'active' && (
+                  {selectedBrain?.status === 'da_lavorare' && (
                     <span style={{
-                      fontSize: '11px',
-                      fontWeight: '800',
-                      letterSpacing: '0.1em',
-                      textTransform: 'uppercase',
-                      color: '#dc2626',
-                      background: '#fef2f2',
-                      padding: '4px 10px',
-                      borderRadius: '5px',
-                      fontFamily: 'system-ui, sans-serif',
+                      fontSize: '11px', fontWeight: '800', letterSpacing: '0.1em',
+                      textTransform: 'uppercase', color: '#dc2626', background: '#fef2f2',
+                      padding: '4px 10px', borderRadius: '5px', fontFamily: 'system-ui, sans-serif',
                       border: '1.5px solid #fecaca',
                     }}>
                       ● DA LAVORARE
@@ -748,7 +707,6 @@ export default function FounderPage() {
                   )}
                 </div>
 
-                {/* Context metadata */}
                 {contextLoading ? (
                   <p style={{ fontSize: '13px', color: '#bbb', fontFamily: 'system-ui, sans-serif', margin: 0 }}>Caricamento contesto...</p>
                 ) : context && (
@@ -789,13 +747,9 @@ export default function FounderPage() {
                         key={t}
                         onClick={() => setTab(t)}
                         style={{
-                          padding: '7px 16px',
-                          borderRadius: '7px',
-                          border: 'none',
-                          fontSize: '13px',
-                          fontWeight: isActive ? '700' : '400',
-                          letterSpacing: '0.02em',
-                          fontFamily: 'system-ui, sans-serif',
+                          padding: '7px 16px', borderRadius: '7px', border: 'none',
+                          fontSize: '13px', fontWeight: isActive ? '700' : '400',
+                          letterSpacing: '0.02em', fontFamily: 'system-ui, sans-serif',
                           cursor: 'pointer',
                           background: isActive ? '#1a1a1a' : 'transparent',
                           color: isActive ? '#fff' : '#666',
@@ -812,7 +766,6 @@ export default function FounderPage() {
               {/* Tab content */}
               <div style={{ flex: 1, overflowY: 'auto', padding: '28px 32px' }}>
 
-                {/* ── Fase 1 ──────────────────────────────────────────────── */}
                 {tab === 'fase1' && (
                   <div>
                     <p style={{ ...S.label, marginBottom: '20px' }}>Assessment — Fase 1</p>
@@ -824,7 +777,6 @@ export default function FounderPage() {
                   </div>
                 )}
 
-                {/* ── Fase 2 ──────────────────────────────────────────────── */}
                 {tab === 'fase2' && (
                   <div>
                     <p style={{ ...S.label, marginBottom: '20px' }}>Assessment — Fase 2</p>
@@ -836,37 +788,22 @@ export default function FounderPage() {
                   </div>
                 )}
 
-                {/* ── Fase 3 ──────────────────────────────────────────────── */}
                 {tab === 'fase3' && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
                     {contextLoading ? (
                       <p style={{ color: '#bbb', fontSize: '15px', fontFamily: 'system-ui, sans-serif' }}>Caricamento...</p>
                     ) : (
                       <>
-                        {/* Text from Phase 3 textarea */}
                         {hasPhase3Text && (
                           <div>
                             <p style={{ ...S.label, marginBottom: '12px' }}>Testo libero</p>
-                            <div style={{
-                              ...S.card,
-                              borderLeft: '3px solid #1a1a1a',
-                              borderRadius: '0 10px 10px 0',
-                            }}>
-                              <p style={{
-                                margin: 0,
-                                fontSize: '15px',
-                                color: '#1a1a1a',
-                                fontFamily: 'system-ui, sans-serif',
-                                lineHeight: '1.7',
-                                whiteSpace: 'pre-wrap',
-                              }}>
+                            <div style={{ ...S.card, borderLeft: '3px solid #1a1a1a', borderRadius: '0 10px 10px 0' }}>
+                              <p style={{ margin: 0, fontSize: '15px', color: '#1a1a1a', fontFamily: 'system-ui, sans-serif', lineHeight: '1.7', whiteSpace: 'pre-wrap' }}>
                                 {context?.assessment?.phase3}
                               </p>
                             </div>
                           </div>
                         )}
-
-                        {/* Files */}
                         {phase3Files.length > 0 && (
                           <div>
                             <p style={{ ...S.label, marginBottom: '12px' }}>
@@ -891,8 +828,6 @@ export default function FounderPage() {
                             </div>
                           </div>
                         )}
-
-                        {/* Empty state */}
                         {!hasPhase3Text && phase3Files.length === 0 && (
                           <div style={{ padding: '48px 32px', textAlign: 'center' }}>
                             <p style={{ fontSize: '15px', color: '#bbb', fontFamily: 'system-ui, sans-serif', margin: 0 }}>
@@ -905,10 +840,8 @@ export default function FounderPage() {
                   </div>
                 )}
 
-                {/* ── Prompt Genesi™ ───────────────────────────────────────── */}
                 {tab === 'prompt' && (
                   <div>
-                    {/* Existing prompts */}
                     <div style={{ marginBottom: '32px' }}>
                       <p style={{ ...S.label, marginBottom: '12px' }}>Prompt Genesi™ attivi su questo brain</p>
                       {chatsLoading ? (
@@ -932,14 +865,7 @@ export default function FounderPage() {
                                 setPromptText('')
                                 setUploadResult(null)
                               }}
-                              style={{
-                                ...S.card,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'space-between',
-                                cursor: 'pointer',
-                                transition: 'border-color 0.12s',
-                              }}
+                              style={{ ...S.card, display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', transition: 'border-color 0.12s' }}
                               onMouseEnter={e => (e.currentTarget.style.borderColor = '#1a1a1a')}
                               onMouseLeave={e => (e.currentTarget.style.borderColor = '#e8e8e8')}
                             >
@@ -961,90 +887,57 @@ export default function FounderPage() {
                       )}
                     </div>
 
-                    {/* Divider */}
                     <div style={{ borderTop: '1.5px solid #e8e8e8', marginBottom: '28px', paddingTop: '10px' }}>
                       <p style={{ fontSize: '12px', color: '#aaa', fontFamily: 'system-ui, sans-serif', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>
                         Aggiungi o aggiorna Prompt Genesi™
                       </p>
                     </div>
 
-                    {/* Form */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
-
-                      {/* Label */}
                       <div>
                         <label style={S.label}>Label chat</label>
-                        <input
-                          type="text"
-                          value={promptLabel}
-                          onChange={e => setPromptLabel(e.target.value)}
-                          placeholder="es. Decisione operativa"
-                          style={S.input}
+                        <input type="text" value={promptLabel} onChange={e => setPromptLabel(e.target.value)}
+                          placeholder="es. Decisione operativa" style={S.input}
                           onFocus={e => (e.target.style.borderColor = '#1a1a1a')}
-                          onBlur={e => (e.target.style.borderColor = '#d0d0d0')}
-                        />
+                          onBlur={e => (e.target.style.borderColor = '#d0d0d0')} />
                         <p style={{ margin: '5px 0 0', fontSize: '12px', color: '#aaa', fontFamily: 'system-ui, sans-serif' }}>
                           Nome visibile al cliente nella lista chat.
                         </p>
                       </div>
 
-                      {/* Prompt Key */}
                       <div>
                         <label style={S.label}>Prompt Key</label>
-                        <input
-                          type="text"
-                          value={promptKey}
-                          onChange={e => setPromptKey(e.target.value)}
-                          placeholder="es. pg_client_001_decisione"
-                          style={{ ...S.input, fontFamily: 'monospace' }}
+                        <input type="text" value={promptKey} onChange={e => setPromptKey(e.target.value)}
+                          placeholder="es. pg_client_001_decisione" style={{ ...S.input, fontFamily: 'monospace' }}
                           onFocus={e => (e.target.style.borderColor = '#1a1a1a')}
-                          onBlur={e => (e.target.style.borderColor = '#d0d0d0')}
-                        />
+                          onBlur={e => (e.target.style.borderColor = '#d0d0d0')} />
                       </div>
 
-                      {/* Version */}
                       <div>
                         <label style={S.label}>Versione</label>
-                        <input
-                          type="text"
-                          value={version}
-                          onChange={e => setVersion(e.target.value)}
-                          placeholder="es. 1.0"
-                          style={{ ...S.input, fontFamily: 'monospace', maxWidth: '200px' }}
+                        <input type="text" value={version} onChange={e => setVersion(e.target.value)}
+                          placeholder="es. 1.0" style={{ ...S.input, fontFamily: 'monospace', maxWidth: '200px' }}
                           onFocus={e => (e.target.style.borderColor = '#1a1a1a')}
-                          onBlur={e => (e.target.style.borderColor = '#d0d0d0')}
-                        />
+                          onBlur={e => (e.target.style.borderColor = '#d0d0d0')} />
                       </div>
 
-                      {/* Default toggle */}
                       <div>
                         <label style={S.label}>Chat default</label>
                         <div
                           onClick={() => setIsDefault(!isDefault)}
                           style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '10px',
-                            cursor: 'pointer',
-                            padding: '10px 14px',
-                            borderRadius: '8px',
+                            display: 'inline-flex', alignItems: 'center', gap: '10px', cursor: 'pointer',
+                            padding: '10px 14px', borderRadius: '8px',
                             border: `1.5px solid ${isDefault ? '#16a34a' : '#d0d0d0'}`,
-                            background: isDefault ? '#f0fdf4' : '#fff',
-                            transition: 'all 0.12s',
-                            userSelect: 'none',
+                            background: isDefault ? '#f0fdf4' : '#fff', transition: 'all 0.12s', userSelect: 'none',
                           }}
                         >
                           <div style={{
-                            width: '18px',
-                            height: '18px',
-                            borderRadius: '4px',
+                            width: '18px', height: '18px', borderRadius: '4px',
                             border: `2px solid ${isDefault ? '#16a34a' : '#ccc'}`,
                             background: isDefault ? '#16a34a' : '#fff',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            flexShrink: 0,
-                            transition: 'all 0.12s',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            flexShrink: 0, transition: 'all 0.12s',
                           }}>
                             {isDefault && (
                               <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
@@ -1052,64 +945,39 @@ export default function FounderPage() {
                               </svg>
                             )}
                           </div>
-                          <span style={{
-                            fontSize: '14px',
-                            color: isDefault ? '#16a34a' : '#555',
-                            fontFamily: 'system-ui, sans-serif',
-                            fontWeight: isDefault ? '600' : '400',
-                          }}>
+                          <span style={{ fontSize: '14px', color: isDefault ? '#16a34a' : '#555', fontFamily: 'system-ui, sans-serif', fontWeight: isDefault ? '600' : '400' }}>
                             {isDefault ? 'Chat di default attiva' : 'Imposta come chat di default'}
                           </span>
                         </div>
                       </div>
 
-                      {/* Prompt text */}
                       <div>
                         <label style={S.label}>Prompt Genesi™</label>
-                        <textarea
-                          value={promptText}
-                          onChange={e => setPromptText(e.target.value)}
-                          placeholder="Incolla qui il Prompt Genesi™..."
-                          rows={14}
+                        <textarea value={promptText} onChange={e => setPromptText(e.target.value)}
+                          placeholder="Incolla qui il Prompt Genesi™..." rows={14}
                           style={{
-                            width: '100%',
-                            background: '#fff',
-                            border: '1.5px solid #d0d0d0',
-                            borderRadius: '8px',
-                            padding: '14px 16px',
-                            fontSize: '14px',
-                            color: '#1a1a1a',
-                            outline: 'none',
-                            fontFamily: 'monospace',
-                            resize: 'vertical',
-                            lineHeight: '1.6',
+                            width: '100%', background: '#fff', border: '1.5px solid #d0d0d0',
+                            borderRadius: '8px', padding: '14px 16px', fontSize: '14px', color: '#1a1a1a',
+                            outline: 'none', fontFamily: 'monospace', resize: 'vertical', lineHeight: '1.6',
                             boxSizing: 'border-box',
                           }}
                           onFocus={e => (e.target.style.borderColor = '#1a1a1a')}
-                          onBlur={e => (e.target.style.borderColor = '#d0d0d0')}
-                        />
+                          onBlur={e => (e.target.style.borderColor = '#d0d0d0')} />
                         <p style={{ margin: '5px 0 0', fontSize: '12px', color: '#aaa', fontFamily: 'system-ui, sans-serif' }}>
                           Il testo viene cifrato AES-256-GCM immediatamente. Non viene mai salvato in chiaro.
                         </p>
                       </div>
 
-                      {/* Upload button */}
                       <button
                         onClick={handleUpload}
                         disabled={!canUpload}
                         style={{
-                          padding: '16px',
-                          borderRadius: '8px',
-                          border: 'none',
-                          fontSize: '13px',
-                          fontWeight: '700',
-                          letterSpacing: '0.08em',
-                          textTransform: 'uppercase',
+                          padding: '16px', borderRadius: '8px', border: 'none',
+                          fontSize: '13px', fontWeight: '700', letterSpacing: '0.08em', textTransform: 'uppercase',
                           cursor: canUpload ? 'pointer' : 'not-allowed',
                           background: canUpload ? '#1a1a1a' : '#e8e8e8',
                           color: canUpload ? '#fff' : '#aaa',
-                          transition: 'all 0.12s',
-                          fontFamily: 'system-ui, sans-serif',
+                          transition: 'all 0.12s', fontFamily: 'system-ui, sans-serif',
                         }}
                         onMouseEnter={e => { if (canUpload) e.currentTarget.style.background = '#333' }}
                         onMouseLeave={e => { if (canUpload) e.currentTarget.style.background = '#1a1a1a' }}
@@ -1117,11 +985,9 @@ export default function FounderPage() {
                         {uploading ? 'Cifratura e upload...' : 'Upload Prompt Genesi™'}
                       </button>
 
-                      {/* Upload result */}
                       {uploadResult && (
                         <div style={{
-                          borderRadius: '8px',
-                          padding: '18px 20px',
+                          borderRadius: '8px', padding: '18px 20px',
                           border: `1.5px solid ${uploadResult.success ? '#16a34a' : '#dc2626'}`,
                           background: uploadResult.success ? '#f0fdf4' : '#fef2f2',
                         }}>
@@ -1131,12 +997,7 @@ export default function FounderPage() {
                                 ✓ Upload completato
                               </p>
                               <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '8px', fontFamily: 'system-ui, sans-serif' }}>
-                                {[
-                                  ['key', uploadResult.prompt_key],
-                                  ['label', uploadResult.label],
-                                  ['version', uploadResult.version],
-                                  ['default', uploadResult.is_default ? 'sì' : 'no'],
-                                ].map(([k, v]) => (
+                                {[['key', uploadResult.prompt_key], ['label', uploadResult.label], ['version', uploadResult.version], ['default', uploadResult.is_default ? 'sì' : 'no']].map(([k, v]) => (
                                   <>
                                     <span key={k + 'k'} style={{ fontSize: '12px', color: '#888' }}>{k}</span>
                                     <span key={k + 'v'} style={{ fontSize: '13px', color: '#1a1a1a', fontWeight: '500' }}>{v}</span>
