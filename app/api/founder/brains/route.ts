@@ -1,6 +1,6 @@
 // app/api/founder/brains/route.ts
-// Returns all Second Brains — founder only
-// Includes submitted status from latest assessment per user
+// Returns Second Brains with prompt_status = 'pending' (work queue)
+// and prompt_status = 'active' (delivered) — founder only
 // Verifies session + role = 'developer' before responding
 
 import { NextRequest, NextResponse } from 'next/server'
@@ -51,31 +51,24 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ brains: [] })
     }
 
-    // ── Get submitted status per user ──
-    // A user is "DA LAVORARE" if ANY of their assessments has submitted = true
+    // ── Get user emails ──
     const userIds = Array.from(new Set(brains.map(b => b.user_id)))
-
-    const { data: assessments } = await supabaseAdmin
-      .from('assessments')
-      .select('user_id, submitted')
-      .in('user_id', userIds)
-      .eq('submitted', true)
-
-    // Build set of user_ids that have at least one submitted assessment
-    const submittedUsers = new Set((assessments || []).map(a => a.user_id))
-
-    const submittedMap: Record<string, boolean> = {}
+    const emailMap: Record<string, string> = {}
     for (const uid of userIds) {
-      submittedMap[uid] = submittedUsers.has(uid)
+      try {
+        const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(uid)
+        if (authUser?.user?.email) emailMap[uid] = authUser.user.email
+      } catch { }
     }
 
-    // ── Attach submitted to each brain ──
-    const brainsWithStatus = brains.map(b => ({
+    // ── Attach email and submitted flag ──
+    const result = brains.map(b => ({
       ...b,
-      submitted: submittedMap[b.user_id] ?? false,
+      user_email: emailMap[b.user_id] || b.user_id,
+      submitted: b.prompt_status === 'pending',
     }))
 
-    return NextResponse.json({ brains: brainsWithStatus })
+    return NextResponse.json({ brains: result })
 
   } catch {
     return NextResponse.json({ error: 'Server error' }, { status: 500 })
