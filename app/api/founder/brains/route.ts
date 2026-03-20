@@ -1,6 +1,6 @@
 // app/api/founder/brains/route.ts
-// Returns Second Brains with prompt_status = 'pending' (work queue)
-// and prompt_status = 'active' (delivered) — founder only
+// Returns all clients with submitted = true (from assessments)
+// LEFT JOIN with second_brains — shows all submitted, with or without brain record
 // Verifies session + role = 'developer' before responding
 
 import { NextRequest, NextResponse } from 'next/server'
@@ -37,22 +37,35 @@ export async function GET(request: NextRequest) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     )
 
-    // ── Fetch all Second Brains ──
-    const { data: brains, error: brainsError } = await supabaseAdmin
-      .from('second_brains')
-      .select('id, name, prompt_key, prompt_version, prompt_status, user_id, created_at')
+    // ── Fetch all submitted assessments ──
+    const { data: assessments, error: assessmentsError } = await supabaseAdmin
+      .from('assessments')
+      .select('id, user_id, brain_name, created_at')
+      .eq('submitted', true)
       .order('created_at', { ascending: false })
 
-    if (brainsError) {
-      return NextResponse.json({ error: 'Failed to fetch brains' }, { status: 500 })
+    if (assessmentsError) {
+      return NextResponse.json({ error: 'Failed to fetch assessments' }, { status: 500 })
     }
 
-    if (!brains || brains.length === 0) {
+    if (!assessments || assessments.length === 0) {
       return NextResponse.json({ brains: [] })
     }
 
+    // ── Fetch all second_brains for these assessments ──
+    const assessmentIds = assessments.map(a => a.id)
+    const { data: secondBrains } = await supabaseAdmin
+      .from('second_brains')
+      .select('id, assessment_id, prompt_key, prompt_version, prompt_status')
+      .in('assessment_id', assessmentIds)
+
+    const brainMap: Record<number, any> = {}
+    if (secondBrains) {
+      secondBrains.forEach((sb: any) => { brainMap[sb.assessment_id] = sb })
+    }
+
     // ── Get user emails ──
-    const userIds = Array.from(new Set(brains.map(b => b.user_id)))
+    const userIds = Array.from(new Set(assessments.map(a => a.user_id)))
     const emailMap: Record<string, string> = {}
     for (const uid of userIds) {
       try {
@@ -61,12 +74,22 @@ export async function GET(request: NextRequest) {
       } catch { }
     }
 
-    // ── Attach email and submitted flag ──
-    const result = brains.map(b => ({
-      ...b,
-      user_email: emailMap[b.user_id] || b.user_id,
-      submitted: b.prompt_status === 'pending',
-    }))
+    // ── Build result ──
+    const result = assessments.map((a: any) => {
+      const sb = brainMap[a.id]
+      return {
+        id: sb?.id || `assessment_${a.id}`,
+        assessment_id: a.id,
+        name: a.brain_name || 'Second Brain',
+        user_id: a.user_id,
+        user_email: emailMap[a.user_id] || a.user_id,
+        created_at: a.created_at,
+        prompt_key: sb?.prompt_key || '',
+        prompt_version: sb?.prompt_version || '',
+        prompt_status: sb?.prompt_status || 'pending',
+        submitted: true,
+      }
+    })
 
     return NextResponse.json({ brains: result })
 
