@@ -92,24 +92,27 @@ const S: Record<string, React.CSSProperties> = {
     borderRadius: '10px',
     padding: '16px 18px',
   },
-  chip: (color: string, bg: string): React.CSSProperties => ({
+}
+
+function chipStyle(color: string, bg: string): React.CSSProperties {
+  return {
     fontSize: '10px',
     fontWeight: '700',
     letterSpacing: '0.1em',
-    textTransform: 'uppercase',
+    textTransform: 'uppercase' as const,
     color,
     background: bg,
     padding: '3px 8px',
     borderRadius: '4px',
     fontFamily: 'system-ui, sans-serif',
     flexShrink: 0,
-  }),
+  }
 }
 
 function statusChip(status: string | null) {
-  if (status === 'active') return <span style={S.chip('#16a34a', '#dcfce7')}>active</span>
-  if (status === 'pending') return <span style={S.chip('#d97706', '#fef3c7')}>pending</span>
-  return <span style={S.chip('#888', '#f0f0f0')}>{status || 'draft'}</span>
+  if (status === 'active') return <span style={chipStyle('#16a34a', '#dcfce7')}>active</span>
+  if (status === 'pending') return <span style={chipStyle('#d97706', '#fef3c7')}>pending</span>
+  return <span style={chipStyle('#888', '#f0f0f0')}>{status || 'draft'}</span>
 }
 
 function fileTypeChip(type: string) {
@@ -120,7 +123,7 @@ function fileTypeChip(type: string) {
     video: ['#be185d', '#fce7f3'],
   }
   const [c, bg] = map[type] || ['#888', '#f0f0f0']
-  return <span style={S.chip(c, bg)}>{type}</span>
+  return <span style={chipStyle(c, bg)}>{type}</span>
 }
 
 // ── Phase Response Renderer ───────────────────────────────────────────────────
@@ -573,7 +576,7 @@ export default function FounderPage() {
                         </p>
                       </div>
                       <span style={{
-                        ...S.chip(
+                        ...chipStyle(
                           brain.prompt_status === 'active' ? (isSelected ? '#4ade80' : '#16a34a') : (isSelected ? '#888' : '#aaa'),
                           isSelected ? '#2a2a2a' : (brain.prompt_status === 'active' ? '#dcfce7' : '#f0f0f0')
                         ),
@@ -822,7 +825,7 @@ export default function FounderPage() {
                               </div>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                 <span style={{ fontSize: '12px', color: '#ccc', fontFamily: 'monospace' }}>{chat.prompt_key}</span>
-                                {chat.is_default && <span style={S.chip('#16a34a', '#dcfce7')}>default</span>}
+                                {chat.is_default && <span style={chipStyle('#16a34a', '#dcfce7')}>default</span>}
                               </div>
                             </div>
                           ))}
