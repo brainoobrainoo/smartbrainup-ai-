@@ -226,31 +226,84 @@ function FileCard({ file }: { file: ClientFile }) {
       )}
 
       {file.file_type === 'document' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+
           {/* PDF inline preview */}
-          {file.file_url.toLowerCase().endsWith('.pdf') && (
-            <div>
-              <div
+          {file.file_url.toLowerCase().includes('.pdf') && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+
+              {/* Toggle button — sempre visibile, molto chiaro */}
+              <button
+                onClick={() => setExpanded(!expanded)}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '8px',
-                  marginBottom: '8px',
+                  justifyContent: 'space-between',
+                  width: '100%',
+                  padding: '12px 16px',
+                  borderRadius: '8px',
+                  border: `2px solid ${expanded ? '#1a1a1a' : '#d0d0d0'}`,
+                  background: expanded ? '#1a1a1a' : '#f8f8f8',
+                  color: expanded ? '#fff' : '#1a1a1a',
                   cursor: 'pointer',
-                  userSelect: 'none',
+                  fontFamily: 'system-ui, sans-serif',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  letterSpacing: '0.04em',
+                  transition: 'all 0.15s',
                 }}
-                onClick={() => setExpanded(!expanded)}
               >
-                <span style={{ fontSize: '13px', fontFamily: 'system-ui, sans-serif', color: '#555' }}>
-                  {expanded ? '▾ Nascondi anteprima' : '▸ Mostra anteprima PDF'}
+                <span>{expanded ? '📄 Anteprima PDF aperta' : '📄 Apri anteprima PDF'}</span>
+                <span style={{
+                  fontSize: '18px',
+                  fontWeight: '300',
+                  lineHeight: 1,
+                  marginLeft: '12px',
+                }}>
+                  {expanded ? '✕' : '▸'}
                 </span>
-              </div>
+              </button>
+
+              {/* PDF iframe */}
               {expanded && (
-                <iframe
-                  src={file.file_url}
-                  style={{ width: '100%', height: '600px', border: '1px solid #e0e0e0', borderRadius: '8px' }}
-                  title="PDF preview"
-                />
+                <div style={{ position: 'relative' }}>
+                  <iframe
+                    src={file.file_url}
+                    style={{
+                      width: '100%',
+                      height: '700px',
+                      border: '1.5px solid #e0e0e0',
+                      borderRadius: '8px',
+                      display: 'block',
+                    }}
+                    title="PDF preview"
+                  />
+                  {/* Close button sopra il PDF */}
+                  <button
+                    onClick={() => setExpanded(false)}
+                    style={{
+                      position: 'absolute',
+                      top: '12px',
+                      right: '12px',
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: '50%',
+                      border: 'none',
+                      background: '#1a1a1a',
+                      color: '#fff',
+                      fontSize: '16px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontFamily: 'system-ui, sans-serif',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                      zIndex: 10,
+                    }}
+                  >
+                    ✕
+                  </button>
+                </div>
               )}
             </div>
           )}
@@ -820,7 +873,6 @@ export default function FounderPage() {
                               File caricati — {phase3Files.length} {phase3Files.length === 1 ? 'file' : 'files'}
                             </p>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                              {/* Group by type */}
                               {['image', 'audio', 'video', 'document'].map(type => {
                                 const typeFiles = phase3Files.filter(f => f.file_type === type)
                                 if (typeFiles.length === 0) return null
