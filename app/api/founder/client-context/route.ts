@@ -1,6 +1,6 @@
 // app/api/founder/client-context/route.ts
 // Returns full client context for a given brain_id — founder only
-// Assessment (phase1, phase2, phase3) + uploaded files
+// Assessment (phase1, phase2, phase3) + uploaded files with signed URLs
 // Handles both real second_brain UUIDs and assessment_XXX fallback IDs
 // Verifies session + role = 'developer' before responding
 
@@ -48,7 +48,6 @@ export async function GET(request: NextRequest) {
 
     // ── Detect if brain_id is a fake assessment_XXX id or a real UUID ──
     if (brain_id.startsWith('assessment_')) {
-      // No second_brain record exists — read directly from assessment
       assessment_id = parseInt(brain_id.replace('assessment_', ''))
 
       const { data: assessment, error: aErr } = await supabaseAdmin
@@ -64,7 +63,6 @@ export async function GET(request: NextRequest) {
       user_id = assessment.user_id
 
     } else {
-      // Real second_brain UUID — look up brain to get user_id and assessment_id
       const { data: brain, error: brainError } = await supabaseAdmin
         .from('second_brains')
         .select('user_id, assessment_id')
@@ -96,14 +94,42 @@ export async function GET(request: NextRequest) {
     // ── Get files ──
     const { data: files } = await supabaseAdmin
       .from('files')
-      .select('id, file_type, asset_type, file_url, phase, status, created_at')
+      .select('id, file_type, asset_type, file_url, phase, status, created_at, storage_path')
       .eq('assessment_id', assessment_id)
       .order('created_at', { ascending: false })
+
+    // ── Generate signed URLs for private bucket files ──
+    const filesWithSignedUrls = await Promise.all(
+      (files || []).map(async (file: any) => {
+        // Use storage_path if available, otherwise extract from file_url
+        let storagePath = file.storage_path
+
+        if (!storagePath && file.file_url) {
+          // Extract path from public URL pattern
+          const match = file.file_url.match(/phase3-assets\/(.+)$/)
+          if (match) storagePath = match[1]
+        }
+
+        if (storagePath) {
+          try {
+            const { data: signedData } = await supabaseAdmin.storage
+              .from('phase3-assets')
+              .createSignedUrl(storagePath, 3600) // 1 hour
+
+            if (signedData?.signedUrl) {
+              return { ...file, file_url: signedData.signedUrl }
+            }
+          } catch { }
+        }
+
+        return file
+      })
+    )
 
     return NextResponse.json({
       user_email,
       assessment: assessment?.responses || null,
-      files: files || [],
+      files: filesWithSignedUrls,
     })
 
   } catch {
