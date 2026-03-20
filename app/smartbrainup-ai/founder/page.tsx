@@ -302,6 +302,7 @@ export default function FounderPage() {
   const [brainsLoading, setBrainsLoading] = useState(false)
   const [selectedBrainId, setSelectedBrainId] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
+  const [showSuggestions, setShowSuggestions] = useState(false)
 
   // Client context
   const [context, setContext] = useState<ClientContext | null>(null)
@@ -612,18 +613,88 @@ export default function FounderPage() {
             <p style={{ ...S.label, marginBottom: '12px' }}>
               Second Brain ({brains.length})
             </p>
-            <input
-              type="text"
-              placeholder="Cerca per email o nome..."
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              style={{
-                width: '100%', background: '#f8f8f6', border: '1.5px solid #e8e8e8',
-                borderRadius: '7px', padding: '9px 12px', fontSize: '14px',
-                color: '#1a1a1a', outline: 'none', fontFamily: 'system-ui, sans-serif',
-                boxSizing: 'border-box',
-              }}
-            />
+            {/* Search with autocomplete */}
+            <div style={{ position: 'relative' }}>
+              <input
+                type="text"
+                placeholder="Cerca per email o nome..."
+                value={searchQuery}
+                onChange={e => {
+                  setSearchQuery(e.target.value)
+                  setShowSuggestions(true)
+                }}
+                onFocus={() => setShowSuggestions(true)}
+                onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+                style={{
+                  width: '100%', background: '#f8f8f6', border: '1.5px solid #e8e8e8',
+                  borderRadius: '7px', padding: '9px 36px 9px 12px', fontSize: '14px',
+                  color: '#1a1a1a', outline: 'none', fontFamily: 'system-ui, sans-serif',
+                  boxSizing: 'border-box',
+                }}
+              />
+              {/* Clear button */}
+              {searchQuery && (
+                <button
+                  onClick={() => { setSearchQuery(''); setShowSuggestions(false) }}
+                  style={{
+                    position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)',
+                    background: 'none', border: 'none', cursor: 'pointer',
+                    color: '#aaa', fontSize: '14px', padding: '2px', lineHeight: 1,
+                  }}
+                >✕</button>
+              )}
+
+              {/* Autocomplete dropdown */}
+              {showSuggestions && searchQuery.length > 0 && (() => {
+                const q = searchQuery.toLowerCase()
+                const uniqueEmails = Array.from(new Set(
+                  brains
+                    .filter(b => (b.user_email || '').toLowerCase().includes(q) || (b.name || '').toLowerCase().includes(q))
+                    .map(b => b.user_email)
+                )).slice(0, 6)
+
+                if (uniqueEmails.length === 0) return null
+
+                return (
+                  <div style={{
+                    position: 'absolute', top: 'calc(100% + 4px)', left: 0, right: 0,
+                    background: '#fff', border: '1.5px solid #e8e8e8', borderRadius: '8px',
+                    boxShadow: '0 4px 16px rgba(0,0,0,0.10)', zIndex: 100,
+                    overflow: 'hidden',
+                  }}>
+                    {uniqueEmails.map(email => {
+                      const clientBrains = brains.filter(b => b.user_email === email)
+                      const activeCount = clientBrains.filter(b => b.status === 'active').length
+                      const daLavorareCount = clientBrains.filter(b => b.status === 'da_lavorare').length
+                      return (
+                        <div
+                          key={email}
+                          onMouseDown={() => {
+                            setSearchQuery(email)
+                            setShowSuggestions(false)
+                          }}
+                          style={{
+                            padding: '10px 14px', cursor: 'pointer', borderBottom: '1px solid #f5f5f5',
+                            transition: 'background 0.1s',
+                          }}
+                          onMouseEnter={e => (e.currentTarget.style.background = '#f8f8f6')}
+                          onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                        >
+                          <p style={{ margin: '0 0 2px', fontSize: '13px', fontWeight: '600', color: '#1a1a1a', fontFamily: 'system-ui, sans-serif' }}>
+                            {email}
+                          </p>
+                          <p style={{ margin: 0, fontSize: '11px', color: '#aaa', fontFamily: 'system-ui, sans-serif' }}>
+                            {clientBrains.length} brain
+                            {activeCount > 0 ? ` · ${activeCount} active` : ''}
+                            {daLavorareCount > 0 ? ` · ${daLavorareCount} da lavorare` : ''}
+                          </p>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )
+              })()}
+            </div>
             {searchQuery && (
               <p style={{ margin: '6px 0 0', fontSize: '11px', color: '#aaa', fontFamily: 'system-ui, sans-serif' }}>
                 {filteredBrains.length} risultati — tutti i brain del cliente
