@@ -51,25 +51,22 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ brains: [] })
     }
 
-    // ── Get latest assessment submitted status per user ──
-    // One query: latest assessment per distinct user_id
+    // ── Get submitted status per user ──
+    // A user is "DA LAVORARE" if ANY of their assessments has submitted = true
     const userIds = Array.from(new Set(brains.map(b => b.user_id)))
 
     const { data: assessments } = await supabaseAdmin
       .from('assessments')
       .select('user_id, submitted')
       .in('user_id', userIds)
-      .order('id', { ascending: false })
+      .eq('submitted', true)
 
-    // Build map: user_id → submitted (from latest assessment)
+    // Build set of user_ids that have at least one submitted assessment
+    const submittedUsers = new Set((assessments || []).map(a => a.user_id))
+
     const submittedMap: Record<string, boolean> = {}
-    if (assessments) {
-      for (const a of assessments) {
-        // First occurrence = latest (ordered DESC) — only set once
-        if (!(a.user_id in submittedMap)) {
-          submittedMap[a.user_id] = a.submitted === true
-        }
-      }
+    for (const uid of userIds) {
+      submittedMap[uid] = submittedUsers.has(uid)
     }
 
     // ── Attach submitted to each brain ──
