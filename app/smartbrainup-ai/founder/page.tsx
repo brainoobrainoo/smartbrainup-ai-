@@ -322,6 +322,7 @@ export default function FounderPage() {
   const [isDefault, setIsDefault] = useState(false)
   const [dceQuestions, setDceQuestions] = useState('')
   const [contextSummary, setContextSummary] = useState('')
+  const [dceDescription, setDceDescription] = useState('')
   const [uploading, setUploading] = useState(false)
   const [uploadResult, setUploadResult] = useState<UploadResult | null>(null)
 
@@ -426,6 +427,7 @@ export default function FounderPage() {
     setIsDefault(false)
     setDceQuestions('')
     setContextSummary('')
+    setDceDescription('')
   }
 
   // ── Upload prompt ──────────────────────────────────────────────────────────
@@ -447,6 +449,7 @@ export default function FounderPage() {
           is_default: isDefault,
           dce_entry_questions: dceQuestions.split('\n').map(q => q.trim()).filter(Boolean),
           context_summary: contextSummary.trim() || null,
+          dce_description: dceDescription.trim() || null,
         }),
       })
       const data = await res.json()
@@ -1012,6 +1015,7 @@ export default function FounderPage() {
                                     setPromptText('')
                                     setDceQuestions((chat.dce_entry_questions || []).join('\n'))
                                     setContextSummary('')
+                                    setDceDescription('')
                                     setUploadResult(null)
                                   }}
                                 >
@@ -1178,6 +1182,24 @@ export default function FounderPage() {
                           onBlur={e => (e.target.style.borderColor = '#d0d0d0')} />
                         <p style={{ margin: '5px 0 0', fontSize: '12px', color: '#aaa', fontFamily: 'system-ui, sans-serif' }}>
                           Viene usato come base del Prompt Genesi™ nel progetto OpenAI.
+                        </p>
+                      </div>
+
+                      <div>
+                        <label style={S.label}>Descrizione DCE</label>
+                        <textarea value={dceDescription} onChange={e => setDceDescription(e.target.value)}
+                          placeholder="Descrizione breve e chiara del DCE per il cliente. Appare nella sidebar come guida visiva."
+                          rows={4}
+                          style={{
+                            width: '100%', background: '#fff', border: '1.5px solid #d0d0d0',
+                            borderRadius: '8px', padding: '14px 16px', fontSize: '14px', color: '#1a1a1a',
+                            outline: 'none', fontFamily: 'system-ui, sans-serif', resize: 'vertical', lineHeight: '1.6',
+                            boxSizing: 'border-box',
+                          }}
+                          onFocus={e => (e.target.style.borderColor = '#1a1a1a')}
+                          onBlur={e => (e.target.style.borderColor = '#d0d0d0')} />
+                        <p style={{ margin: '5px 0 0', fontSize: '12px', color: '#aaa', fontFamily: 'system-ui, sans-serif' }}>
+                          Testo visibile al cliente nella sidebar, sotto i pulsanti DCE.
                         </p>
                       </div>
 

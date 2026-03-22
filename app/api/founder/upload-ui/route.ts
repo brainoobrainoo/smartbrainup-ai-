@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     }
 
     // ── Parse body ──
-    const { brain_id, prompt_key, prompt_text, version, label, is_default, dce_entry_questions, context_summary } = await request.json()
+    const { brain_id, prompt_key, prompt_text, version, label, is_default, dce_entry_questions, context_summary, dce_description } = await request.json()
 
     if (!brain_id || !prompt_key || !prompt_text || !version || !label) {
       return NextResponse.json({
@@ -81,6 +81,7 @@ export async function POST(request: NextRequest) {
           second_brain_id: brain_id,
           dce_entry_questions: dce_entry_questions || [],
           context_summary: context_summary || null,
+          dce_description: dce_description || null,
         },
         { onConflict: 'prompt_key' }
       )
