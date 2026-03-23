@@ -376,7 +376,17 @@ const AssistantInputBar = forwardRef<AssistantInputBarHandle, AssistantInputBarP
   })
 
   return (
-    <div className="assistant-input-wrap" style={{ padding: L.containerPadding, paddingBottom: L.containerPaddingBottom, position: 'relative' }}>
+    <div
+      className="assistant-input-wrap"
+      style={{ padding: L.containerPadding, paddingBottom: L.containerPaddingBottom, position: 'relative' }}
+      onDragOver={e => { e.preventDefault(); e.stopPropagation() }}
+      onDragEnter={e => { e.preventDefault(); e.stopPropagation() }}
+      onDrop={e => {
+        e.preventDefault()
+        e.stopPropagation()
+        if (e.dataTransfer.files?.length) handleFiles(e.dataTransfer.files)
+      }}
+    >
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
         @media (max-width: 767px) {
