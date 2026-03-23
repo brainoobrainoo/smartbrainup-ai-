@@ -712,11 +712,10 @@ export default function ClientArea() {
               <div className="flex flex-col gap-4 mb-5">
                 {(() => {
                   const all = [...(pendingBrain ? [pendingBrain] : []), ...brains]
-                  const ordered = [
-                    ...all.filter(b => b.status === 'active'),
-                    ...all.filter(b => b.status !== 'active' && submittedBrainIds.includes(b.id)),
-                    ...all.filter(b => b.status !== 'active' && !submittedBrainIds.includes(b.id)),
-                  ]
+                  const active = all.filter(b => b.status === 'active')
+                  const submitted = all.filter(b => b.status !== 'active' && submittedBrainIds.includes(b.id))
+                  const incomplete = all.filter(b => b.status !== 'active' && !submittedBrainIds.includes(b.id))
+                  const ordered = [...active, ...submitted, ...incomplete]
                   return ordered
                 })().map((b) => {
                   if (b.status === 'active') {
@@ -768,7 +767,30 @@ export default function ClientArea() {
                         <p className="font-ui text-[11px] font-medium tracking-widest uppercase text-[#1a1a1a]/45 mb-1">
                           Second Brain {b.num}
                         </p>
-                        <div className="h-[28px]" />
+                        {editingBrainId === b.id ? (
+                          <input
+                            autoFocus
+                            value={editingBrainName}
+                            onChange={e => setEditingBrainName(e.target.value)}
+                            onBlur={async () => {
+                              if (!editingBrainName.trim()) { setEditingBrainId(null); return }
+                              setSavingBrainName(true)
+                              await supabase.from('assessments').update({ brain_name: editingBrainName.trim() }).eq('id', parseInt(b.id))
+                              setBrains(prev => prev.map(br => br.id === b.id ? { ...br, name: editingBrainName.trim() } : br))
+                              setEditingBrainId(null)
+                              setSavingBrainName(false)
+                            }}
+                            onKeyDown={e => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur() }}
+                            style={{ background: 'transparent', border: 'none', borderBottom: '1px solid rgba(26,26,26,0.3)', outline: 'none', fontSize: '15px', fontWeight: 500, color: '#1a1a1a', width: '100%', padding: '0', fontFamily: 'var(--font-inter), sans-serif' }}
+                          />
+                        ) : (
+                          <p
+                            onClick={() => { setEditingBrainId(b.id); setEditingBrainName(b.name || '') }}
+                            style={{ fontSize: '15px', fontWeight: 500, color: b.name && b.name !== 'Second Brain' ? 'rgba(26,26,26,0.8)' : 'rgba(26,26,26,0.25)', cursor: 'text', margin: 0, fontFamily: 'var(--font-inter), sans-serif' }}
+                          >
+                            {b.name && b.name !== 'Second Brain' ? b.name : 'Add name...'}
+                          </p>
+                        )}
                       </div>
                       <div className="flex-shrink-0 mt-auto md:mt-0 w-full md:w-auto">
                         {isSubmitted ? (
