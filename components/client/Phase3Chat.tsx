@@ -127,7 +127,11 @@ export default function Phase3Chat({ initialText = '', assessmentId, onComplete,
       position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 50,
       display: 'flex', flexDirection: 'column', touchAction: 'none',
       background: isDayMode ? '#ffffff' : `linear-gradient(to bottom, #252525 0%, #252525 80px, ${themeBottom} 100%)`,
-    }}>
+    }}
+      onDragOver={e => e.preventDefault()}
+      onDragEnter={e => e.preventDefault()}
+      onDrop={e => { e.preventDefault(); const file = e.dataTransfer.files?.[0]; if (file) handleFileAsset(file) }}
+    >
       <div style={{
         position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
         background: 'linear-gradient(to bottom, #252525 0%, #252525 80px, #3a3a3a 100%)',
