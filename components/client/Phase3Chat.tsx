@@ -130,7 +130,6 @@ export default function Phase3Chat({ initialText = '', assessmentId, onComplete,
     }}
       onDragOver={e => e.preventDefault()}
       onDragEnter={e => e.preventDefault()}
-      onDrop={e => { e.preventDefault(); const file = e.dataTransfer.files?.[0]; if (file) handleFileAsset(file) }}
     >
       <div style={{
         position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
