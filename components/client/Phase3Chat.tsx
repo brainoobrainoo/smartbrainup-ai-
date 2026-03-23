@@ -57,6 +57,9 @@ export default function Phase3Chat({ initialText = '', assessmentId, onComplete,
     setCanHover(window.matchMedia('(hover: hover)').matches)
     document.documentElement.style.overflow = 'hidden'
     document.body.style.overflow = 'hidden'
+    const preventDrag = (e: DragEvent) => e.preventDefault()
+    document.addEventListener('dragover', preventDrag)
+    document.addEventListener('drop', preventDrag)
     const preventTouch = (e: TouchEvent) => {
       if (scrollRef.current?.contains(e.target as Node)) return
       e.preventDefault()
@@ -65,6 +68,8 @@ export default function Phase3Chat({ initialText = '', assessmentId, onComplete,
     return () => {
       document.documentElement.style.overflow = ''
       document.body.style.overflow = ''
+      document.removeEventListener('dragover', preventDrag)
+      document.removeEventListener('drop', preventDrag)
       document.removeEventListener('touchmove', preventTouch)
     }
   }, [])
