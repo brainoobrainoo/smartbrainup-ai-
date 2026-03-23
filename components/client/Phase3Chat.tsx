@@ -179,21 +179,28 @@ export default function Phase3Chat({ initialText = '', assessmentId, onComplete,
         pointerEvents: 'none', zIndex: 0,
       }} />
 
-      {/* Drag overlay */}
+      {/* Drag overlay — identical to secondbrain-chat */}
       {isDraggingPage && (
-        <div style={{
-          position: 'absolute', inset: 0, zIndex: 100,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          backgroundColor: isDayMode ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.6)',
-          backdropFilter: 'blur(6px)',
-          pointerEvents: 'none',
-        }}>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke={isDayMode ? '#252525' : '#ffffff'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.6 }}>
-              <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" />
+        <div
+          onClick={() => { setIsDraggingPage(false); dragCounterRef.current = 0 }}
+          style={{
+            position: 'absolute', inset: 0, zIndex: 100,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            backgroundColor: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)', cursor: 'pointer',
+          }}>
+          <div style={{
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px',
+            padding: '48px 64px', borderRadius: '24px',
+            border: '2px dashed rgba(255,255,255,0.5)',
+            backgroundColor: 'rgba(0,0,0,0.3)',
+          }}>
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+              <polyline points="17 8 12 3 7 8" />
+              <line x1="12" y1="3" x2="12" y2="15" />
             </svg>
-            <span style={{ color: isDayMode ? '#252525' : '#ffffff', opacity: 0.7, fontSize: '15px', fontFamily: 'var(--font-inter), sans-serif', fontWeight: 400 }}>
-              Drop to attach
+            <span style={{ color: 'rgba(255,255,255,0.85)', fontSize: '17px', fontWeight: 500, fontFamily: 'var(--font-inter), sans-serif' }}>
+              Drop files here
             </span>
           </div>
         </div>
