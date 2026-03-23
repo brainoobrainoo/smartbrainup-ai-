@@ -214,13 +214,13 @@ interface AssistantInputBarProps {
   onToggleTheme?: () => void
   placeholder?: string
   disclaimer?: string
-  // Optional: called after transcription with blob + transcript (used by Phase3Chat)
   onAudioAsset?: (blob: Blob, transcript: string) => void
-  // Optional: called when user attaches a file (used by Phase3Chat)
   onFileAsset?: (file: File) => void
+  externalFiles?: File[]
+  onExternalFilesProcessed?: () => void
 }
 
-const AssistantInputBar = forwardRef<AssistantInputBarHandle, AssistantInputBarProps>(({ onSend, isLoading, isDayMode = false, onToggleTheme, placeholder = 'Ask your question...', disclaimer = 'AI-UP Second Brain\u2122', onAudioAsset, onFileAsset }, ref) => {
+const AssistantInputBar = forwardRef<AssistantInputBarHandle, AssistantInputBarProps>(({ onSend, isLoading, isDayMode = false, onToggleTheme, placeholder = 'Ask your question...', disclaimer = 'AI-UP Second Brain\u2122', onAudioAsset, onFileAsset, externalFiles, onExternalFilesProcessed }, ref) => {
   const C = isDayMode ? C_DAY : C_NIGHT
   const [input, setInput] = useState('')
   const [attachments, setAttachments] = useState<FileAttachment[]>([])
@@ -266,6 +266,14 @@ const AssistantInputBar = forwardRef<AssistantInputBarHandle, AssistantInputBarP
   const removeAttachment = useCallback((index: number) => {
     setAttachments(prev => prev.filter((_, i) => i !== index))
   }, [])
+
+  // ── PROCESS EXTERNAL FILES (from page-level drag & drop) ──
+  useEffect(() => {
+    if (externalFiles && externalFiles.length > 0) {
+      handleFiles(externalFiles)
+      onExternalFilesProcessed?.()
+    }
+  }, [externalFiles, handleFiles, onExternalFilesProcessed])
 
   const handleUploadClick = useCallback(() => {
     fileInputRef.current?.click()
@@ -376,17 +384,7 @@ const AssistantInputBar = forwardRef<AssistantInputBarHandle, AssistantInputBarP
   })
 
   return (
-    <div
-      className="assistant-input-wrap"
-      style={{ padding: L.containerPadding, paddingBottom: L.containerPaddingBottom, position: 'relative' }}
-      onDragOver={e => { e.preventDefault(); e.stopPropagation() }}
-      onDragEnter={e => { e.preventDefault(); e.stopPropagation() }}
-      onDrop={e => {
-        e.preventDefault()
-        e.stopPropagation()
-        if (e.dataTransfer.files?.length) handleFiles(e.dataTransfer.files)
-      }}
-    >
+    <div className="assistant-input-wrap" style={{ padding: L.containerPadding, paddingBottom: L.containerPaddingBottom, position: 'relative' }}>
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
         @media (max-width: 767px) {

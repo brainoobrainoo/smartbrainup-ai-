@@ -37,6 +37,8 @@ export default function Phase3Chat({ initialText = '', assessmentId, onComplete,
   const [isScrolledDown, setIsScrolledDown] = useState(false)
   const [isAtBottom, setIsAtBottom] = useState(true)
   const [isSaved, setIsSaved] = useState(false)
+  const [droppedFiles, setDroppedFiles] = useState<File[] | undefined>(undefined)
+  const dragCounterRef = useRef(0)
 
   // messages — starts with the intro assistant message
   const [messages, setMessages] = useState<Message[]>([
@@ -57,9 +59,6 @@ export default function Phase3Chat({ initialText = '', assessmentId, onComplete,
     setCanHover(window.matchMedia('(hover: hover)').matches)
     document.documentElement.style.overflow = 'hidden'
     document.body.style.overflow = 'hidden'
-    const preventDrag = (e: DragEvent) => e.preventDefault()
-    document.addEventListener('dragover', preventDrag)
-    document.addEventListener('drop', preventDrag)
     const preventTouch = (e: TouchEvent) => {
       if (scrollRef.current?.contains(e.target as Node)) return
       e.preventDefault()
@@ -68,8 +67,6 @@ export default function Phase3Chat({ initialText = '', assessmentId, onComplete,
     return () => {
       document.documentElement.style.overflow = ''
       document.body.style.overflow = ''
-      document.removeEventListener('dragover', preventDrag)
-      document.removeEventListener('drop', preventDrag)
       document.removeEventListener('touchmove', preventTouch)
     }
   }, [])
@@ -119,6 +116,40 @@ export default function Phase3Chat({ initialText = '', assessmentId, onComplete,
     }
   }, [assessmentId])
 
+  const handlePageDragEnter = useCallback((e: React.DragEvent) => {
+    e.preventDefault(); e.stopPropagation()
+    dragCounterRef.current++
+    if (e.dataTransfer.types.includes('Files')) {}
+  }, [])
+
+  const handlePageDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault(); e.stopPropagation()
+    dragCounterRef.current--
+  }, [])
+
+  const handlePageDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault(); e.stopPropagation()
+  }, [])
+
+  const handlePageDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault(); e.stopPropagation()
+    dragCounterRef.current = 0
+    if (e.dataTransfer.files?.length) {
+      setDroppedFiles(Array.from(e.dataTransfer.files))
+    }
+  }, [])
+
+  const handleExternalFilesProcessed = useCallback(() => {
+    setDroppedFiles(undefined)
+  }, [])
+
+  useEffect(() => {
+    const reset = () => { dragCounterRef.current = 0 }
+    window.addEventListener('dragend', reset)
+    window.addEventListener('drop', reset)
+    return () => { window.removeEventListener('dragend', reset); window.removeEventListener('drop', reset) }
+  }, [])
+
   const handleSave = () => {
     if (!hasUserText || isSaved) return
     setIsSaved(true)
@@ -132,7 +163,12 @@ export default function Phase3Chat({ initialText = '', assessmentId, onComplete,
       position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 50,
       display: 'flex', flexDirection: 'column', touchAction: 'none',
       background: isDayMode ? '#ffffff' : `linear-gradient(to bottom, #252525 0%, #252525 80px, ${themeBottom} 100%)`,
-    }}>
+    }}
+      onDragEnter={handlePageDragEnter}
+      onDragLeave={handlePageDragLeave}
+      onDragOver={handlePageDragOver}
+      onDrop={handlePageDrop}
+    >
       <div style={{
         position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
         background: 'linear-gradient(to bottom, #252525 0%, #252525 80px, #3a3a3a 100%)',
@@ -253,6 +289,8 @@ export default function Phase3Chat({ initialText = '', assessmentId, onComplete,
           disclaimer={phase3Content.disclaimer}
           onAudioAsset={handleAudioAsset}
           onFileAsset={handleFileAsset}
+          externalFiles={droppedFiles}
+          onExternalFilesProcessed={handleExternalFilesProcessed}
           onToggleTheme={() => {
             if (isDayMode) setThemeBottom(NIGHT_THEMES[Math.floor(Math.random() * NIGHT_THEMES.length)])
             toggleTheme()
