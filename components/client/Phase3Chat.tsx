@@ -38,6 +38,7 @@ export default function Phase3Chat({ initialText = '', assessmentId, onComplete,
   const [isAtBottom, setIsAtBottom] = useState(true)
   const [isSaved, setIsSaved] = useState(false)
   const [droppedFiles, setDroppedFiles] = useState<File[] | undefined>(undefined)
+  const [isDraggingPage, setIsDraggingPage] = useState(false)
   const dragCounterRef = useRef(0)
 
   // messages — starts with the intro assistant message
@@ -119,12 +120,13 @@ export default function Phase3Chat({ initialText = '', assessmentId, onComplete,
   const handlePageDragEnter = useCallback((e: React.DragEvent) => {
     e.preventDefault(); e.stopPropagation()
     dragCounterRef.current++
-    if (e.dataTransfer.types.includes('Files')) {}
+    if (e.dataTransfer.types.includes('Files')) setIsDraggingPage(true)
   }, [])
 
   const handlePageDragLeave = useCallback((e: React.DragEvent) => {
     e.preventDefault(); e.stopPropagation()
     dragCounterRef.current--
+    if (dragCounterRef.current === 0) setIsDraggingPage(false)
   }, [])
 
   const handlePageDragOver = useCallback((e: React.DragEvent) => {
@@ -134,6 +136,7 @@ export default function Phase3Chat({ initialText = '', assessmentId, onComplete,
   const handlePageDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault(); e.stopPropagation()
     dragCounterRef.current = 0
+    setIsDraggingPage(false)
     if (e.dataTransfer.files?.length) {
       setDroppedFiles(Array.from(e.dataTransfer.files))
     }
@@ -144,7 +147,7 @@ export default function Phase3Chat({ initialText = '', assessmentId, onComplete,
   }, [])
 
   useEffect(() => {
-    const reset = () => { dragCounterRef.current = 0 }
+    const reset = () => { setIsDraggingPage(false); dragCounterRef.current = 0 }
     window.addEventListener('dragend', reset)
     window.addEventListener('drop', reset)
     return () => { window.removeEventListener('dragend', reset); window.removeEventListener('drop', reset) }
@@ -175,6 +178,26 @@ export default function Phase3Chat({ initialText = '', assessmentId, onComplete,
         opacity: (hasFaded || isDayMode) ? 0 : 1, transition: isDayMode ? 'none' : 'opacity 5s ease',
         pointerEvents: 'none', zIndex: 0,
       }} />
+
+      {/* Drag overlay */}
+      {isDraggingPage && (
+        <div style={{
+          position: 'absolute', inset: 0, zIndex: 100,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          backgroundColor: isDayMode ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.6)',
+          backdropFilter: 'blur(6px)',
+          pointerEvents: 'none',
+        }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke={isDayMode ? '#252525' : '#ffffff'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.6 }}>
+              <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" />
+            </svg>
+            <span style={{ color: isDayMode ? '#252525' : '#ffffff', opacity: 0.7, fontSize: '15px', fontFamily: 'var(--font-inter), sans-serif', fontWeight: 400 }}>
+              Drop to attach
+            </span>
+          </div>
+        </div>
+      )}
 
       <div style={{ height: '67px', flexShrink: 0, position: 'relative', zIndex: 2, display: 'flex', alignItems: 'center' }}>
         <div style={{ maxWidth: '880px', width: '100%', margin: '0 auto', display: 'flex', justifyContent: 'flex-end', padding: '0 48px', boxSizing: 'border-box' }}>
